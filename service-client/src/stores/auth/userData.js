@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { BASE_URL } from "@/api";
 
 export const user_data = defineStore('users',{
     state : () => ({
@@ -11,6 +12,19 @@ export const user_data = defineStore('users',{
         //     this.users = JSON.parse(localStorage.getItem('users'))
         //     this.tokenDatas = JSON.parse(localStorage.getItem('token'))
         // }
+        apiRequest(){
+            const token = JSON.parse(localStorage.getItem('token'))
+             return axios.create({
+                baseURL : BASE_URL + "api/",
+                timeout : 15000,
+                headers : {
+                    "Authorization" : `Bearer ${token}`,
+                    "Content-Type" : "application/json",
+                    Accept : "application/json",
+                },
+                withCredentials : true,
+            })
+        }
     },
     getters : {
         getUserData(){

@@ -24,7 +24,6 @@ class WorkOrder extends Controller
         $peripherals = $request->peripherals;
         $equipments = $request->equipments;
         if (!empty($peripherals) && is_array($peripherals)) {
-            // $add_equipment[] = $request->add_equipment_id;
             $status = self::IT_DEPARTMENT;
         } else {
             $status = self::APM_NSM_SM;
@@ -43,6 +42,7 @@ class WorkOrder extends Controller
             'internal_request' => $request->internalRequest,
             'endorsement' => $request->endorsement,
             'status' => $status,
+            'main_status' => self::ONGOING,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];
@@ -89,7 +89,7 @@ class WorkOrder extends Controller
                     return response()->json([
                         'isError' => 'Something went wrong inserting batch file',
                     ], 500);
-                    throw new Exception('Error addig to the databse, batch file');
+                    throw new Exception('Error adding to the database, batch file');
                 }
             } else {
                 // return response()->json([

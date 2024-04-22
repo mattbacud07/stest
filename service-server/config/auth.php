@@ -13,6 +13,7 @@ return [
     */
 
     'defaults' => [
+        // 'guard' => 'usersSecond',
         'guard' => 'web',
         'passwords' => 'users',
     ],

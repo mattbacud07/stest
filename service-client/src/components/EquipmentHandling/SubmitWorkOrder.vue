@@ -39,7 +39,7 @@
                         </v-dialog>
                         <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary"
                             class="text-none btnSubmit"><v-icon class="mr-2">mdi-note-plus-outline</v-icon>
-                            Submit</v-btn>
+                            Create</v-btn>
                     </div>
                 </v-row>
                 <v-card style="padding: 3em 1em;" elevation="1">
@@ -77,7 +77,7 @@
                             <v-checkbox v-model="ocular" color="primary" label="Request for Ocular" value="1"
                                 class="vCheckbox"></v-checkbox>
                             <v-checkbox v-model="bypass" color="primary" label="Bypass Internal Servicing Procedures"
-                                value="1" class="vCheckbox"></v-checkbox>
+                                value="1" class="vCheckbox" :disabled="disableExternalCheckbox"></v-checkbox>
                             <v-checkbox v-model="ship" color="primary"
                                 label="Ship & Deliver direct to customer immediately" class="vCheckbox"
                                 value="1"></v-checkbox>
@@ -102,9 +102,9 @@
                                 <v-radio color="primary" label="Service Unit" value="5"></v-radio>
                                 <v-radio color="primary" label="Others" value="11"></v-radio>
                             </v-radio-group>
-                            <v-checkbox v-model="attached_gate" class="vCheckbox" color="primary"
+                            <v-checkbox v-model="attached_gate" :disabled="disableExternalCheckbox" class="vCheckbox" color="primary"
                                 label="Attached gate/entry pass" value="1"></v-checkbox>
-                            <v-checkbox v-model="with_contract" class="vCheckbox" color="primary"
+                            <v-checkbox v-model="with_contract" :disabled="disableExternalCheckbox" class="vCheckbox" color="primary"
                                 label="with contract/other docs" value="1"></v-checkbox>
                         </v-col>
                         <v-col cols="12" md="6" sm="6">
@@ -122,7 +122,7 @@
                 </v-card>
 
                 <!-- Equipment & Peripherals -->
-                <v-card class="mt-3 p-3">
+                <v-card class="mt-3 p-3" elevation="0" style="border: 1px dashed #191970;">
                     <v-row>
                         <h5 class="p-3" style="font-weight: 700;color: #191970;">EQUIPMENT & PERIPHERALS</h5>
                         <v-col cols="12">
@@ -212,7 +212,7 @@
                 </v-card>
 
                 <!-- Additional Peripherals -->
-                <v-card class="mt-3 p-3" elevation="1">
+                <v-card class="mt-3 p-3" elevation="0" style="border: .5px dashed #191970;">
 
                     <v-row>
                         <h5 class="p-3 mt-2" style="font-weight: 700;color: #191970;">ADDITIONAL PERIPHERALS <span style="font-size: .8em;font-weight: 100;color: #777;"><i> (Serial number to be filled by the IT Department)</i></span></h5>
@@ -299,12 +299,11 @@
                     <v-icon>mdi-information-box</v-icon> Please ensure that required fields are not left blank
                 </v-snackbar>
                 <v-snackbar color="success" v-model="snackbarSuccess" location="right bottom" :timeout="5000">
-                    <v-icon>mdi-check-circle-outline</v-icon> Successfully submitted.
+                    <v-icon>mdi-check-circle-outline</v-icon> Successfully created.
                 </v-snackbar>
                 <v-snackbar color="error" v-model="snackbarError" location="right bottom" :timeout="5000">
                     <v-icon>mdi-alert-circle-outline</v-icon> Something went wrong.
                 </v-snackbar>
-                <v-progress-linear color="primary" :model-value="modelValueProgress"></v-progress-linear>
             </v-container>
         </v-form>
     </div>
@@ -335,6 +334,7 @@ const overlayMasterData = ref(false)
 const overlayMasterDataPeripherals = ref(false)
 const dialog = ref(false)
 const btnDisable = ref(false)
+const disableExternalCheckbox = ref(false)
 const btnLoading = ref(false)
 const institutionData = ref([])
 const errorMessage = ref('')
@@ -342,7 +342,6 @@ const deliveryDateError = ref('')
 const snackbarErrorGeneral = ref(false)
 const snackbarSuccess = ref(false)
 const snackbarError = ref(false)
-const modelValueProgress = ref(100)
 
 
 // 1st
@@ -395,6 +394,12 @@ watch(internalRequest, (val) => {
     if (val !== null) {
         externalRequest.value = null
         rule.value.ruleExternal = []
+        disableExternalCheckbox.value = true
+        attached_gate.value = ''
+        with_contract.value = ''
+        bypass.value = ''
+    }else{
+        disableExternalCheckbox.value = false
     }
 })
 watch(externalRequest, (val) => {
@@ -645,6 +650,6 @@ onMounted(() => {
     top: 72px;
     background: #fff;
     border-bottom: 1px solid #3333331c;
-    z-index: 999;
+    /* z-index: 999; */
 }
 </style>

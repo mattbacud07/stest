@@ -2,7 +2,7 @@
     
     <Sidebar v-if="user.user.role_name !== pub_const.approverRole" />
     <AdminSidebar v-if="user.user.role === adminRole" />
-    <ApproverSidebar v-if="user.user.role_name === 'Approver'" />
+    <ApproverSidebar v-if="user.user.role_name === approverRole" />
 
 </template>
 
@@ -16,5 +16,6 @@ import * as pub_const from '@/global/global.js';
 const user = user_data()
 user.getUserData
 const adminRole = pub_const.adminRole
+const approverRole = pub_const.approverRole
 
 </script>

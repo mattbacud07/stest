@@ -14,17 +14,15 @@
             </form>
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+                    <a class="nav-link dropdown-toggle" ref="#" id="profileDropdown" role="button"
                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img class="wd-30 ht-30 rounded-circle" src="#" alt="profile">
+                        <v-icon color="primary" class="mr-3">mdi-account-settings</v-icon>
+                        <span class="text-dark"><b>{{ user.user.first_name }} {{ user.user.last_name }}</b></span>
                     </a>
-                    <div class="dropdown-menu p-0" aria-labelledby="profileDropdown">
+                    <div class="dropdown-menu p-0" aria-labelledby="profileDropdown" style="box-shadow: inset 0 0 3px #999;z-index: 9999!important;">
                         <div class="d-flex flex-column align-items-center border-bottom px-5 py-3">
-                            <div class="mb-3">
-                                <img class="wd-80 ht-80 rounded-circle" src="#" alt="">
-                            </div>
                             <div class="text-center">
-                                <p class="tx-16 fw-bolder">{{ user.user.first_name }}</p>
+                                <!-- <p class="tx-16 fw-bolder">{{ user.user.first_name }}</p> -->
                                 <p class="tx-12 text-muted">{{ user.user.email }}</p>
                             </div>
                         </div>

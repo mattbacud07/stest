@@ -301,3 +301,47 @@ table.dataTable>tbody>tr.selected>* {
 @media screen and (min-width: 1905px) {
   /* Your CSS styles for extra large devices */
 }
+
+
+
+/* Scrollbar */
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 7px;
+  border-radius: 50px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #eaeaea; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #191970; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+
+
+/** Checkboc in tables */
+.bh-table-responsive input[type=checkbox]:checked+div,
+.bh-table-responsive input[type=checkbox]:indeterminate+div {
+    background: #191970 !important;
+    border: 1px solid #191970 !important;
+}
+
+
+/** Table remove responsive */
+/* .bh-table-responsive table{
+  width: 150%!important;
+  min-width: 100%;
+  border-collapse: separate !important;
+  max-width: none !important;
+  overflow: auto!important;
+} */

@@ -1,13 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import Login from '../views/Login.vue'
-import EquipmentHandling from '../views/EquipmentHandling/EquipmentHandling.vue'
-import WorkOrder from '../views/EquipmentHandling/WorkOrder.vue'
-import ApprovalConfiguration from '../views/Admin/ApprovalConfiguration.vue'
-import Roles from '../views/Admin/Roles.vue'
-import DashboardApprover from '../views/Approver/DashboardApprover.vue'
-import EquipmentHandlingApprover from '../views/Approver/EquipmentHandlingApprover.vue'
-import WorkOrderApprover from '../views/Approver/WorkOrderApprover.vue'
+// import EquipmentHandling from '../views/EquipmentHandling/EquipmentHandling.vue'
+// import WorkOrder from '../views/EquipmentHandling/WorkOrder.vue'
+// import ApprovalConfiguration from '../views/Admin/ApprovalConfiguration.vue'
+// import Roles from '../views/Admin/Roles.vue'
+// import DashboardApprover from '../views/Approver/DashboardApprover.vue'
+// import EquipmentHandlingApprover from '../views/Approver/EquipmentHandlingApprover.vue'
+// import WorkOrderApprover from '../views/Approver/WorkOrderApprover.vue'
+// import ViewWorkOrder from '../views/EquipmentHandling/ViewWorkOrder.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,12 +16,8 @@ const router = createRouter({
     {
       path: '/',
       name: 'login',
-      component: Login,
-      // beforeEnter: (to, from, next) =>{
-      //   if(){
-
-      //   }
-      // }
+      // component: () => import('../views/Login.vue'),
+      component : Login,
     },
     {
       path: '/dashboard',
@@ -28,16 +25,18 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      // component: () => import('../views/AboutView.vue')
+      // component: () => import('../views/Dashboard.vue'),
       component: Dashboard,
       meta: {
         requiresAuth: true
       }
     },
+
+    /** Equipment Handling */
     {
       path: '/equipment-handling',
       name: 'EquipmentHandling',
-      component: EquipmentHandling,
+      component: () => import('../views/EquipmentHandling/EquipmentHandling.vue'),
       meta: {
         requiresAuth: true
       }
@@ -45,7 +44,16 @@ const router = createRouter({
     {
       path: '/work-order',
       name: 'WorkOrder',
-      component: WorkOrder,
+      component: () => import('../views/EquipmentHandling/WorkOrder.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/view-work-order/:id',
+      name: 'ViewWorkOrder',
+      component: () => import('../views/EquipmentHandling/ViewWorkOrder.vue'),
+      props : true,
       meta: {
         requiresAuth: true
       }
@@ -56,7 +64,7 @@ const router = createRouter({
     {
       path: '/aprroval-config',
       name: 'ApprovalConfiguration',
-      component: ApprovalConfiguration,
+      component: () => import('../views/Admin/ApprovalConfiguration.vue'),
       meta: {
         requiresAuth: true
       }
@@ -64,7 +72,7 @@ const router = createRouter({
     {
       path: '/roles',
       name: 'Roles',
-      component: Roles,
+      component: () => import('../views/Admin/Roles.vue'),
       meta: {
         requiresAuth: true
       }
@@ -75,7 +83,7 @@ const router = createRouter({
     {
       path:'/approver-dashboard',
       name : 'DashboardApprover',
-      component : DashboardApprover,
+      component : () => import('../views/Approver/DashboardApprover.vue'),
       meta: {
         requiresAuth: true
       }
@@ -83,7 +91,7 @@ const router = createRouter({
     {
       path:'/approver-equipment-handling',
       name : 'EquipmentHandlingApprover',
-      component : EquipmentHandlingApprover,
+      component : () => import('../views/Approver/EquipmentHandlingApprover.vue'),
       meta: {
         requiresAuth: true
       }
@@ -91,7 +99,7 @@ const router = createRouter({
     {
       path:'/approver-work-order/:id',
       name : 'WorkOrderApprover',
-      component : WorkOrderApprover,
+      component : () => import('../views/Approver/WorkOrderApprover.vue'),
       props : true,
       meta: {
         requiresAuth: true

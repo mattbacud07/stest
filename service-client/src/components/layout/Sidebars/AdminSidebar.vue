@@ -26,7 +26,7 @@
                     <li class="nav-item">
                         <a class="nav-link">
                             <v-icon class="myIcon">mdi-tag-check</v-icon>
-                            <span class="link-title">Approval Config</span>
+                            <span class="link-title">Approver Config</span>
                         </a>
                     </li>
                 </router-link>

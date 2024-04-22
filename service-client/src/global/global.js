@@ -16,3 +16,14 @@ export const SERVICE_TL = 4;
 export const SERVICE_HEAD_ENGINEER = 5;
 export const BILLING_WIM = 6;
 
+
+/** 
+ * Work Order Status
+ */
+export const ONGOING = 1;
+export const PARTIAL_COMPLETE = 2;
+export const COMPLETE = 3;
+export const DISAPPROVED = 4;
+export const RESCHEDULE = 5;
+
+

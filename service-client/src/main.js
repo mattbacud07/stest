@@ -3,7 +3,7 @@ import './assets/css/app.css'
 import './assets/css/general.css'
 
 // Import Plugins
-import '@/assets/fonts/font-awesome-4.7.0/css/font-awesome.css'
+// import '@/assets/fonts/font-awesome-4.7.0/css/font-awesome.css'
 
 // Import JS Files
 import '@/assets/js/app.js'
@@ -25,9 +25,6 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import "vuetify/styles";
 
-// /** Vuue3 DataTable */
-// import Vue3Datatable from '@bhplugin/vue3-datatable'
-// import '@bhplugin/vue3-datatable/dist/style.css'
 
 const icons = {
     defaultSet: 'mdi',

@@ -146,18 +146,6 @@ const saveRole = async () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 /** Fetching Data Users */
 const loading = ref(true);
 const total_rows = ref(0);
@@ -172,7 +160,7 @@ const cols =
     ref([
         { field: 'id', title: 'ID', isUnique: true, type: 'number', hide:true },
         { field: 'user_name', title: 'Name' },
-        { field: 'name', title: 'Position' },
+        { field: 'name', title: 'Department' },
     ]) || [];
 
 const getUsers = async () => {

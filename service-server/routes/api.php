@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\Roles;
 use App\Http\Controllers\authController;
 use App\Http\Controllers\ehController\EhMainApproverController;
 use App\Http\Controllers\ehController\EhMainController;
+use App\Http\Controllers\ehController\InternalRequest;
 use App\Http\Controllers\ehController\WorkOrder;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
@@ -30,13 +31,25 @@ Route::post('/authentication', [authController::class, 'dashboardLogin']);
 Route::middleware(['auth:sanctum'])->group(function () {
     /* Equipment Handling */
     Route::get('/get-equipment-handling-data', [EhMainController::class, 'index']);
+        // Internal Request
+        Route::get('/get-engineers-data', [InternalRequest::class, 'get_engineers_data']);
+        Route::post('/internal-process', [InternalRequest::class, 'add_internal_process']);
+
+
 
     /** Approver */
         Route::get('/approver-get-equipment-handling-data', [EhMainApproverController::class, 'index']);
+        Route::get('/get-equipments', [EhMainApproverController::class, 'get_equipments']);
+        Route::post('/approve-request', [EhMainApproverController::class, 'approve_request']);
+        Route::post('/disapprove-request', [EhMainApproverController::class, 'disapprove_request']);
+        Route::get('/get-approval-history', [ApprovalConfiguration::class, 'approval_history']);
+
+
 
     /** Submit Work Order */
     Route::get('/master-data-equipments', [EhMainController::class, 'addWorkOrder']); // List of Equipments
     Route::post('/submit-work-order', [WorkOrder::class, 'submit_work_order']); // Submit Work Order
+
 
     /* Admin Account - subject to edit auth/middleware */
     Route::get('/users', [ApprovalConfiguration::class, 'index']);
@@ -44,9 +57,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get-approver', [ApprovalConfiguration::class, 'get_approvers_data']);
     Route::delete('/delete-approver', [ApprovalConfiguration::class, 'delete_approver']);
 
+
     // Assign Role
     Route::post('/assign-role', [Roles::class, 'assign_role']);
     Route::get('/assigned-user-role', [Roles::class, 'get_assigned_roles']);
+
 
     /* Log Me Out */
     Route::post('/log-me-out', [authController::class, 'logmeout']);

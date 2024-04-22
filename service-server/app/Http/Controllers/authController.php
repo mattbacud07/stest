@@ -25,11 +25,12 @@ class authController extends Controller
 
                     /** Get Complete User Datails */
                     $userInformation = DB::select('
-                        SELECT u.id, u.first_name , u.last_name, p.position_name, d.name as department_name, r.role_name
+                        SELECT u.id, u.first_name , u.last_name, p.position_name, d.name as department_name, r.role_name, a.approval_level
                         FROM '.DB::connection('mysqlSecond')->getDatabaseName().'.users u
                         JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.positions p ON u.position = p.id
                         JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.departments d ON u.department = d.id
                         JOIN '.DB::connection('mysql')->getDatabaseName().'.roles r ON u.id = r.user_id
+                        JOIN '.DB::connection('mysql')->getDatabaseName().'.approval_configuration a ON a.user_id = u.id
                         WHERE u.id = '.$user->id.'
                     ');
                     $userData = [];

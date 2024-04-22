@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class ApprovalConfiguration extends Controller
 {
-    public function index()
+    public function index() //Approvers and Users
     {
         // $users = DB::connection('mysqlSecond')->select('SELECT * FROM users');
 
@@ -36,10 +36,14 @@ class ApprovalConfiguration extends Controller
         ]);
     }
 
+
+    /**
+     * Approver Data
+     */
     public function get_approvers_data()
     {
         $users = DB::select('
-            SELECT a.*, concat(u.first_name , u.last_name) as user_name, p.position_name, d.name
+            SELECT a.*,u.first_name , u.last_name, concat(u.first_name , u.last_name) as user_name, p.position_name, d.name
             FROM approval_configuration a
             JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.users u ON a.user_id = u.id
             JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.positions p ON u.position = p.id
@@ -75,6 +79,24 @@ class ApprovalConfiguration extends Controller
             } else {
                 return response()->json(['error' => 'Something went wrong'], 200);
             }
+        }
+    }
+
+
+
+    /**
+     * Get Approval History
+     */
+    public function approval_history(Request $request){
+        try {
+            $approvalHistory = DB::table('approvals')->where('service_id', $request->service_id)->select('*')->get();
+           return response()->json([
+                'approval_history' => $approvalHistory,
+           ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
