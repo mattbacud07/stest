@@ -141,25 +141,25 @@ const delegateInternalServicing = async () => {
     }
 }
 
-/**
- * Get Engineers Data - Use for Delegation
- */
-const getEngineeresData = async () => {
-    try {
-        const response = await apiRequest.get('get-engineers-data')
-        if (response.data && response.data.engineers) {
-            const engineersValue = response.data.engineers.map(data => {
-                return {
-                    key: data.first_name + ' ' + data.last_name,
-                    value: data.user_id
-                }
-            })
-            engineersData.value = engineersValue
+    /**
+     * Get Engineers Data - Use for Delegation
+     */
+    const getEngineeresData = async () => {
+        try {
+            const response = await apiRequest.get('get-engineers-data')
+            if (response.data && response.data.engineers) {
+                const engineersValue = response.data.engineers.map(data => {
+                    return {
+                        key: data.first_name + ' ' + data.last_name,
+                        value: data.user_id
+                    }
+                })
+                engineersData.value = engineersValue
+            }
+        } catch (error) {
+            alert(error)
         }
-    } catch (error) {
-        alert(error)
     }
-}
 
 
 // Type of Activity Disable

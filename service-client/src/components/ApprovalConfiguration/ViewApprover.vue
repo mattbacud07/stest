@@ -6,8 +6,9 @@
                     variant="outlined"></v-text-field>
             </v-col>
             <v-col cols="8" style="text-align: right;">
-                <v-btn color="error" align-self="end"  :disabled="disableDelete"
-                    :loading="deleteLoading" class="text-none" @click="deleteApprover">Delete</v-btn>
+                <v-btn color="error" align-self="end" :disabled="disableDelete"
+                    :loading="deleteLoading" class="text-none" @click="deleteApprover">
+                    <v-icon>mdi-trash-can-outline</v-icon> Delete</v-btn>
                 <p class="text-body-1" color="success" v-if="deletedMessage">Record deleted successfully</p>
                 </v-col>
         </v-row>

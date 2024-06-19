@@ -12,9 +12,19 @@
         </div>
         <div class="sidebar-body" v-on:mouseover="hoverNav" v-on:mouseleave="hoverNavLeave">
             <ul class="nav">
+                <router-link to="/dashboard">
+                    <li class="nav-item" style="padding: 5px 0;">
+                        <a class="nav-link">
+                            <v-icon class="myIcon">mdi-account-card</v-icon>
+                            <span class="link-title">Switch Account<br><span
+                                    style="color: #999;font-weight: 100;font-size: .8em;">as Requestor</span></span>
+                        </a>
+                    </li>
+                    <v-divider></v-divider>
+                </router-link>
                 <li class="nav-item nav-category ml-3">Main Admin</li>
 
-                <router-link to="/dashboard">
+                <router-link to="/admin-dashboard">
                     <li class="nav-item">
                         <a href="#" class="nav-link">
                             <v-icon class="myIcon">mdi-shield-home-outline</v-icon>
@@ -22,22 +32,69 @@
                         </a>
                     </li>
                 </router-link>
-                <router-link to="/aprroval-config">
+
+                <!-- Account Managment Links -->
+                <a href="#">
                     <li class="nav-item">
-                        <a class="nav-link">
-                            <v-icon class="myIcon">mdi-tag-check</v-icon>
-                            <span class="link-title">Approver Config</span>
+                        <a class="nav-link" data-bs-toggle="collapse" href="#accntMgt" role="button">
+                            <v-icon>mdi-account-multiple-outline</v-icon>
+                            <span class="link-title">Account Management</span>
+                            <v-icon class="link-arrow">mdi-menu-down</v-icon>
                         </a>
+                        <div class="collapse" id="accntMgt">
+                            <ul class="nav sub-menu">
+                                <router-link to="/aprroval-config">
+                                    <li class="nav-item">
+                                        <a class="nav-link">
+                                            <v-icon class="myIcon">mdi-tag-check</v-icon>
+                                            <span class="link-title">Approver Config</span>
+                                        </a>
+                                    </li>
+                                </router-link>
+                                <router-link to="/roles">
+                                    <li class="nav-item">
+                                        <a class="nav-link">
+                                            <v-icon class="myIcon">mdi-account-badge</v-icon>
+                                            <span class="link-title">Roles</span>
+                                        </a>
+                                    </li>
+                                </router-link>
+                            </ul>
+                        </div>
                     </li>
-                </router-link>
-                <router-link to="/roles">
+                </a>
+
+                <!-- Maintenance Settings -->
+                <a href="#">
                     <li class="nav-item">
-                        <a class="nav-link">
-                            <v-icon class="myIcon">mdi-account-badge</v-icon>
-                            <span class="link-title">Roles</span>
+                        <a class="nav-link" data-bs-toggle="collapse" href="#maintenance" role="button">
+                            <v-icon>mdi-cogs</v-icon>
+                            <span class="link-title">Maintenance Settings</span>
+                            <v-icon class="link-arrow">mdi-menu-down</v-icon>
                         </a>
+                        <div class="collapse" id="maintenance">
+                            <ul class="nav sub-menu">
+                                <router-link to="/pm-settings">
+                                    <li class="nav-item">
+                                        <a class="nav-link">
+                                            <v-icon class="myIcon">mdi-file-cog</v-icon>
+                                            <span class="link-title">PM Settings</span>
+                                        </a>
+                                    </li>
+                                </router-link>
+                                <router-link to="/pm-settings">
+                                    <li class="nav-item">
+                                        <a class="nav-link">
+                                            <v-icon class="myIcon">mdi-file-edit</v-icon>
+                                            <span class="link-title">CM Settings</span>
+                                        </a>
+                                    </li>
+                                </router-link>
+                            </ul>
+                        </div>
                     </li>
-                </router-link>
+                </a>
+
                 <!-- <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="collapse" href="#uiComponents" role="button">
                         <i class="mdi mdi-application-edit-outline"></i>
@@ -86,7 +143,7 @@ const hoverNavLeave = () => {
 <style scoped>
 .sidebar li:hover {
     font-weight: 600 !important;
-    background: #1919702c !important;
+    /* background: #1919702c !important; */
     color: #191970 !important;
 }
 
@@ -109,7 +166,7 @@ const hoverNavLeave = () => {
 }
 
 .sidebar .router-link-exact-active {
-    background: #eeeeee !important;
-
+    /* background: #eeeeee !important; */
+    border-left: 7px solid #191970;
 }
 </style>

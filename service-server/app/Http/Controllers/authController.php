@@ -23,28 +23,60 @@ class authController extends Controller
                     // Create token
                     $token = $user->createToken($user->email);
 
-                    /** Get Complete User Datails */
-                    $userInformation = DB::select('
-                        SELECT u.id, u.first_name , u.last_name, p.position_name, d.name as department_name, r.role_name, a.approval_level
-                        FROM '.DB::connection('mysqlSecond')->getDatabaseName().'.users u
-                        JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.positions p ON u.position = p.id
-                        JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.departments d ON u.department = d.id
-                        JOIN '.DB::connection('mysql')->getDatabaseName().'.roles r ON u.id = r.user_id
-                        JOIN '.DB::connection('mysql')->getDatabaseName().'.approval_configuration a ON a.user_id = u.id
-                        WHERE u.id = '.$user->id.'
-                    ');
+                    /** Get Complete User Details available for all users*/
+                    $userInformation = DB::table(DB::connection('mysqlSecond')->getDatabaseName().'.users as u')
+                        ->select('p.position_name' , 'd.name as department_name')
+                        ->join(DB::connection('mysqlSecond')->getDatabaseName().'.positions as p','u.position','=','p.id')
+                        ->join(DB::connection('mysqlSecond')->getDatabaseName().'.departments as d','u.department','=','d.id')
+                        ->where('u.id',$user->id)->get();
+                    //     select('
+                    //     SELECT u.id, u.first_name , u.last_name, p.position_name, d.name as department_name
+                    //     FROM '.DB::connection('mysqlSecond')->getDatabaseName().'.users u
+                    //     JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.positions p ON u.position = p.id
+                    //     JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.departments d ON u.department = d.id
+                    //     WHERE u.id = '.$user->id.'
+                    // ');
+
+                    
+                    /** Get Approval Config details */
+                    $getApprovalConfig = DB::table('approval_configuration')->select('approval_level')->where('user_id',$user->id)->get();
+                    // , a.approval_level
+                    // JOIN '.DB::connection('mysql')->getDatabaseName().'.approval_configuration a ON a.user_id = u.id
+
+                    /** Get user role */
+                    $getRole = DB::table('roles')->select('role_name')->where('user_id', $user->id)->pluck('role_name')->toArray();
+                    // , r.role_name
+                    // JOIN '.DB::connection('mysql')->getDatabaseName().'.roles r ON u.id = r.user_id
+
                     $userData = [];
-                    if(isset($userInformation[0]) && !empty($userInformation[0])){
-                        $userInfo = (array)$userInformation[0];
-                        $userData = array_merge($user->toArray(), $userInfo);
+                    /** Approval Config */
+                    if(isset($getApprovalConfig[0]) && !empty($getApprovalConfig[0])){
+                        $userApprovalConfig = (array)$getApprovalConfig[0];
                     }else{
-                        $userData = $user;
+                        $userApprovalConfig = [];
                     }
+
+                    /** Roles */
+                    if(isset($getRole) && !empty($getRole)){
+                        $getUserRole = $getRole;
+                    }else{
+                        $getUserRole = [];
+                    }
+                    // if(isset($getRole[0]) && !empty($getRole[0])){
+                    //     $getUserRole = (array)$getRole[0];
+                    // }else{
+                    //     $getUserRole = [];
+                    // }
+                    
+                    // $userData = $userInformation;
+                    $userData = array_merge($user->toArray(), (array)$userInformation[0], $userApprovalConfig);
+                    $userData['user_roles'] = $getUserRole;
 
                     return response()->json([
                         'isLogin' => $isLogin,
                         'accessToken' => $token->plainTextToken,
                         'user' => $userData,
+                        // 'user_roles' => $getUserRole,
                     ], 200);
                 } else {
                     return response()->json([
@@ -57,7 +89,7 @@ class authController extends Controller
             }
         } catch (\Throwable $th) {
             // throw $th;
-            Log::error($th);
+            Log::error($th->getMessage());
 
             return response()->json(['error' => 'An error occurred.'.$th], 500);
         }

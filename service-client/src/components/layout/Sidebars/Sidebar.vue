@@ -11,10 +11,10 @@
             </a>
         </div>
         <div class="sidebar-body" v-on:mouseover="hoverNav" v-on:mouseleave="hoverNavLeave">
-            <ul class="nav" v-if="user.user.role !== pub_const.adminRole">
+            <ul class="nav" style="padding: 0 0 !important;" v-if="user.user.role !== pub_const.adminRole">
                 <!-- <li class="nav-item nav-category ml-3">Switch Account</li> -->
                 <router-link to="/approver-dashboard" class="router-link-active"
-                    v-if="user.user.role_name === 'Approver'">
+                    v-if="user.user.role_name === pub_const.approverRole">
                     <li class="nav-item" style="padding: 5px 0;">
                         <a class="nav-link">
                             <v-icon class="myIcon">mdi-account-card</v-icon>
@@ -24,24 +24,100 @@
                     </li>
                     <v-divider></v-divider>
                 </router-link>
-                <router-link to="/" class="router-link-active">
-                    <li class="nav-item">
+                <!-- <router-link to="/engineer-dashboard" class="router-link-active"
+                    v-if="user.user.role_name === pub_const.engineerRole">
+                    <li class="nav-item" style="padding: 5px 0;">
                         <a class="nav-link">
+                            <v-icon class="myIcon">mdi-account-card</v-icon>
+                            <span class="link-title">Switch Account<br><span
+                                    style="color: #999;font-weight: 100;font-size: .8em;">as Engineer</span></span>
+                        </a>
+                    </li>
+                    <v-divider></v-divider>
+                </router-link> -->
+                <!-- <router-link to="/engineer-dashboard" class="router-link-active"> -->
+                <!-- v-if="user.user.role_name === pub_const.engineerRole"> -->
+                <a href="#" class="" v-if="user.user.user_roles.length !== 0">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <v-icon class="myIcon">mdi-account-card</v-icon>
+                            <select v-model="changeRole" @change="handleChangeRole" class="form-select w-100 rounded-0 link-title"
+                                placeholder="Switch Account">
+                                <option disabled value="">Switch Account</option>
+                                <option v-for="role in data_roles" :key="role" :value="role">{{ role }}</option>
+                            </select>
+                        </a>
+                    </li>
+                </a>
+                <!-- <li class="nav-item nav-category ml-3">Main Admin</li> -->
+                <!-- </router-link> -->
+                <router-link to="/tl-dashboard" class="router-link-active"
+                    v-if="user.user.role_name === pub_const.serviceTLRole">
+                    <li class="nav-item" style="padding: 5px 0;">
+                        <a class="nav-link">
+                            <v-icon class="myIcon">mdi-account-card</v-icon>
+                            <span class="link-title">Switch Account<br><span
+                                    style="color: #999;font-weight: 100;font-size: .8em;">as Team Leader</span></span>
+                        </a>
+                    </li>
+                    <v-divider></v-divider>
+                </router-link>
+                <router-link to="/">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
                             <v-icon class="myIcon">mdi-shield-home-outline</v-icon>
                             <span class="link-title">Dashboard</span>
                         </a>
                     </li>
                 </router-link>
                 <!-- <li class="nav-item nav-category">Request</li> -->
+                <!-- <li class="nav-item mt-5" style="background: #1919702c;color: #191970;font-weight: 600;"><span
+                        class="ml-5">Request</span></li> -->
+                <!-- <v-divider></v-divider> -->
 
-                <router-link to="/equipment-handling" class="router-link-active">
+                <a href="#"><li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#requestLink" role="button">
+                        <v-icon>mdi-file-plus</v-icon>
+                        <span class="link-title">Request</span>
+                        <v-icon class="link-arrow">mdi-menu-down</v-icon>
+                    </a>
+                    <div class="collapse" id="requestLink">
+                        <ul class="nav sub-menu">
+                            <!-- <li class="nav-item">
+                                <a href="{{ route('ApprovalConfiguration') }}"
+                                    class="nav-link {{ active_class(['ui-components/accordion']) }}">Approval
+                                    Configuration</a>
+                            </li> -->
+                            <router-link to="/equipment-handling" class="router-link-active">
+                                <li class="nav-item">
+                                    <a class="nav-link">
+                                        <v-icon class="myIcon">mdi-file-document-edit</v-icon>
+                                        <span class="link-title">Equipment Handling</span>
+                                    </a>
+                                </li>
+                            </router-link>
+                        </ul>
+                    </div>
+                </li></a>
+
+                <!-- <router-link to="/equipment-handling" class="router-link-active">
                     <li class="nav-item">
                         <a class="nav-link">
                             <v-icon class="myIcon">mdi-file-document-edit</v-icon>
                             <span class="link-title">Equipment Handling</span>
                         </a>
                     </li>
-                </router-link>
+                </router-link> -->
+
+                <!-- <router-link to="/preventive-maintenance" v-if="user.user.department_name === 'Service Department'"
+                    class="router-link-active">
+                    <li class="nav-item">
+                        <a class="nav-link">
+                            <v-icon class="myIcon">mdi-wrench-clock</v-icon>
+                            <span class="link-title">Preventive Maintenance</span>
+                        </a>
+                    </li>
+                </router-link> -->
             </ul>
 
 
@@ -85,11 +161,46 @@
 
 
 <script setup>
+import { computed, ref, onMounted } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import * as pub_const from '@/global/global.js';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 const user = user_data()
-user.getrUserData
+user.getUserData
+const changeRole = ref('')
+
+
+/** Hande Change of Role */
+const handleChangeRole = () => {
+    switch (changeRole.value) {
+        case pub_const.adminServiceRole:
+            router.push('/admin-dashboard')
+            break;
+        case pub_const.approverRole:
+            router.push('/approver-dashboard')
+            break;
+        case pub_const.engineerRole:
+            router.push('/engineer-dashboard')
+            break;
+        case pub_const.serviceTLRole:
+            router.push('/tl-dashboard')
+            break;
+        default:
+            break;
+    }
+}
+
+
+const data_roles = ref([])
+
+onMounted(() => {
+    data_roles.value = user.user.user_roles
+})
+
+
 const toggleSidebar = () => {
     $('.sidebar-header .sidebar-toggler').toggleClass('active not-active');
     if (window.matchMedia('(min-width: 992px)').matches) {
@@ -114,7 +225,7 @@ const hoverNavLeave = () => {
 <style scoped>
 .sidebar li:hover {
     font-weight: 600 !important;
-    background: #1919702c !important;
+    /* background: #1919702c !important; */
     color: #191970 !important;
 }
 
@@ -132,20 +243,13 @@ const hoverNavLeave = () => {
     margin-left: 15px !important;
 }
 
-.sidebar .myIcon {
+.myIcon {
     font-size: 1.8em !important;
+    padding: 5px 0;
 }
 
 .sidebar .router-link-exact-active {
-    background: #eeeeee !important;
-
+    /* background: #eeeeee !important; */
+    border-left: 7px solid #191970;
 }
-
-/* .sidebar .sidebar-header .sidebar-brand span{
-    background: #191970;
-    border-radius: 4px;
-    padding: 3px 7px;
-    color: rgb(255, 255, 255)!important;
-    font-size: 12px;
-} */
 </style>

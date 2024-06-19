@@ -3,7 +3,7 @@
         <v-row class="d-flex mb-3">
             <v-col cols="12">
                 <!-- <v-label class="font-weight-bold mb-1">email</v-label> -->
-                <v-text-field v-model="auth.email" :rules="rules.emailRules" density="compact" label="email"
+                <v-text-field v-model="auth.email" :rules="rules.emailRules" density="compact" label="Email"
                     variant="outlined" hide-details="auto" color="primary" required></v-text-field>
             </v-col>
             <v-col cols="12">
@@ -15,7 +15,9 @@
                 <v-btn type="submit" density="compact" color="primary" size="large" block rounded="0"
                     class="text-none" :loading="loading">Sign in</v-btn>
             </v-col>
-            <v-col cols="12" class="mt-3">
+        </v-row>
+        <v-row>
+            <v-col cols="12">
                 <v-alert v-if="alert.alertMessage" :type="alert.type" transition="fade-transition" variant="outlined" closable>
                     {{ alert.alertMessage }}
                 </v-alert>

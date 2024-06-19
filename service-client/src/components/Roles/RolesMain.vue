@@ -16,8 +16,11 @@
                                     <v-card-text class="px-4">
                                         <v-radio-group v-model="selectedRole"
                                             messages="Assign roles to the selected users">
-                                            <v-radio color="primary" label="Approver" value="Approver"></v-radio>
-                                            <v-radio color="primary" label="Engineers" value="Engineers"></v-radio>
+                                            <v-radio color="primary" v-for="roles in pub_var.rolesArray" :label="roles" :value="roles"></v-radio>
+                                            <!-- <v-radio color="primary" :label="pub_var.adminServiceRole" :value="pub_var.adminServiceRole"></v-radio>
+                                            <v-radio color="primary" :label="pub_var.approverRole" :value="pub_var.approverRole"></v-radio>
+                                            <v-radio color="primary" :label="pub_var.engineerRole" :value="pub_var.engineerRole"></v-radio>
+                                            <v-radio color="primary" :label="pub_var.serviceTLRole" :value="pub_var.serviceTLRole"></v-radio> -->
                                         </v-radio-group>
                                     </v-card-text>
 
@@ -56,6 +59,9 @@
     <v-snackbar color="error" v-model="snackbarErrorGeneral" location="right bottom" :timeout="3000">
         <v-icon class="ml-3">mdi-account-alert</v-icon> Please select one option
     </v-snackbar>
+    <!-- <v-snackbar color="success" v-model="success" location="right bottom" :timeout="3000">
+        <v-icon class="ml-3">mdi-account-check-outline</v-icon> Successfully set
+    </v-snackbar> -->
     <v-snackbar color="#19197000" variant="outlined" v-model="userExistDisplay" location="right bottom" :timeout="3000">
         <v-card v-if="userExist.length > 0" color="error" class="p-3">
             <div v-for="(userName, index) in userExist" :key="index" class="mt-4">
@@ -73,6 +79,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import { BASE_URL } from '@/api/index'
+import * as pub_var from '@/global/global.js'
 import axios from 'axios'
 import AssignedRoles from './AssignedRoles.vue'
 
@@ -91,6 +98,7 @@ const btnDisable = ref(true)
 const userExist = ref([])
 const userSucceed = ref([])
 const snackbarErrorGeneral = ref(false)
+// const success = ref(false)
 const userExistDisplay = ref(false)
 const loadingSave = ref(false)
 const refreshKey = ref(0)
@@ -128,6 +136,7 @@ const saveRole = async () => {
             userExist.value = response.data.userExist
             userSucceed.value = response.data.succeed
             userExistDisplay.value = true
+            // success.value= true
             datatable.value.clearSelectedRows()
             setTimeout(()=>{
                 isActive.value = false

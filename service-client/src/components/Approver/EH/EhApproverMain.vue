@@ -17,7 +17,7 @@
                 
                 <router-link :to="{name: 'WorkOrderApprover', params : {id : selectedId ?? 0}}">
                     <v-btn type="submit" color="primary" :disabled="btnDisabled"
-                    class="text-none btnSubmit"><v-icon class="mr-2">mdi-eye-arrow-right</v-icon>
+                    class="text-none btnSubmit"><v-icon class="mr-2">mdi-file-eye</v-icon>
                     View Request</v-btn>
                 </router-link>
             </div>

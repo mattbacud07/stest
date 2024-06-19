@@ -19,24 +19,27 @@
                         <v-icon color="primary" class="mr-3">mdi-account-settings</v-icon>
                         <span class="text-dark"><b>{{ user.user.first_name }} {{ user.user.last_name }}</b></span>
                     </a>
-                    <div class="dropdown-menu p-0" aria-labelledby="profileDropdown" style="box-shadow: inset 0 0 3px #999;z-index: 9999!important;">
+                    <a class="nav-link ml-5" ref="#" role="button" @click="logOut">
+                        <v-icon color="primary" class="mr-3">mdi-logout</v-icon>
+                        <v-tooltip activator="parent" location="bottom">Logout. Are you sure?</v-tooltip>
+                    </a>
+                    <!-- <div class="dropdown-menu p-0" aria-labelledby="profileDropdown"
+                        style="box-shadow: inset 0 0 3px #999;z-index: 9999!important;">
                         <div class="d-flex flex-column align-items-center border-bottom px-5 py-3">
                             <div class="text-center">
-                                <!-- <p class="tx-16 fw-bolder">{{ user.user.first_name }}</p> -->
                                 <p class="tx-12 text-muted">{{ user.user.email }}</p>
                             </div>
                         </div>
                         <ul class="list-unstyled p-1">
                             <li class="dropdown-item py-2">
-                                <!-- <form action="#" method="post"> -->
-                                <button @click="logOut" class="text-body ms-0 border-0" style="background: none;">
+                                <v-btn @click="logOut" class="text-body ms-0 border-0" style="background: none;"
+                                    :loading="loading">
                                     <i class="me-2 icon-md" data-feather="log-out"></i>
                                     <span>Log Out</span>
-                                </button>
-                                <!-- </form> -->
+                                </v-btn>
                             </li>
                         </ul>
-                    </div>
+                    </div> -->
                 </li>
             </ul>
         </div>
@@ -44,6 +47,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { user_data } from '@/stores/auth/userData';
 import { logout } from '@/stores/auth/logout'
 import { useRouter } from 'vue-router';
@@ -52,9 +56,17 @@ const user = user_data()
 user.getUserData
 const logMeOut = logout()
 const router = useRouter()
+const loading = ref(false)
 
 const logOut = async () => {
-    await logMeOut.log_me_out();
-    window.location.href ='/'
+    loading.value = true
+    try {
+        await logMeOut.log_me_out();
+        window.location.href = '/'
+    } catch (error) {
+        alert(error)
+    } finally {
+        loading.value = false
+    }
 }
 </script>

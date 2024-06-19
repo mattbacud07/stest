@@ -154,7 +154,7 @@ const getDetails = async () => {
             const field = data[0]
             // console.log(field.approver_name)
 
-            institution.value = field.name
+            institution.value = field.name ?? 0
             address.value = field.address
             requested_by.value = field.first_name + ' ' + field.last_name
             proposed_delivery_date.value = field.proposed_delivery_date

@@ -9,7 +9,7 @@
                 <v-dialog v-model="dialog" max-width="400" persistent>
                     <template v-slot:activator="{ props: activatorProps }">
                         <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" elevation="1"
-                            class="text-none mr-2"><v-icon class="mr-2">mdi-cog-play</v-icon>
+                            class="text-none mr-2"><v-icon class="mr-2">mdi-account-check-outline</v-icon>
                             Set Approver</v-btn>
                     </template>
                     <v-card text="" title="Set Approver">
@@ -49,7 +49,11 @@
                 <vue3-datatable ref="dataTable" :rows="rows" :columns="cols" :loading="loading" :search="params.search"
                     :columnFilter="enableFilter ?? false" :hasCheckbox="true" :selectRowOnClick="true" :sortable="true"
                     :hide="true" :filter="true" skin="bh-table-compact bh-table-bordered" class="set_approver_tables"
-                    @rowSelect="rowSelection"> </vue3-datatable>
+                    @rowSelect="rowSelection">
+                    <template #first_name="data">
+                        {{ data.value.first_name }} {{ data.value.last_name }}
+                    </template>
+                </vue3-datatable>
             </v-col>
         </v-row>
         <v-snackbar color="success" v-model="snackbarSuccess" location="right bottom" :timeout="5000">
@@ -120,8 +124,9 @@ const rows = ref(null);
 
 const cols =
     ref([
-        { field: 'id', title: 'User ID', isUnique: true, type: 'number' },
-        { field: 'user_name', title: 'Name' },
+        { field: 'user_id', title: 'User ID', isUnique: true, type: 'number' },
+        { field: 'first_name', title: 'Name' },
+        { field: 'last_name', title: 'Last Name', hide : true, },
         { field: 'position_name', title: 'Position' },
         { field: 'name', title: 'Department' },
     ]) || [];
@@ -131,8 +136,8 @@ const rowSelection = (data) => {
     const selectedRow = dataTable.value.getSelectedRows()
     if (selectedRow && selectedRow.length === 1) {
         btnDisable.value = false
-        userName.value = selectedRow[0].user_name
-        userId.value = selectedRow[0].id
+        userName.value = selectedRow[0].first_name + ' ' + selectedRow[0].last_name
+        userId.value = selectedRow[0].user_id
     } else {
         btnDisable.value = true
     }
@@ -184,13 +189,13 @@ const submitApprover = async () => {
 const getUsers = async () => {
     try {
         loading.value = true;
-        const response = await axios.get(uri + 'api/users', {
+        const response = await axios.get(uri + 'api/get-approver-roles', {
             headers: {
                 'Authorization': `Bearer ${user.tokenData}`
             }
         }
         );
-        const data = response.data.users
+        const data = response.data.approver_role
 
         rows.value = data
         total_rows.value = data?.meta?.total;

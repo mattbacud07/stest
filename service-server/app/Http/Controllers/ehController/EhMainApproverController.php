@@ -34,9 +34,11 @@ class EhMainApproverController extends Controller
         
         
         $service_id = $request->service_id ?? 0;
-        $service_data = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address', 'u.first_name', 'u.last_name', 'e.name as request_name','iR.name as internal_name','a.approver_level', 'a.approver_name')
+        $service_data = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address', 'i.area', 'u.first_name', 'u.last_name', 'ui.first_name as fname', 'ui.last_name as lname', 'ua.first_name as assigned_tl_fname', 'ua.last_name as assigned_tl_lname', 'e.name as request_name','iR.name as internal_name','a.approver_level', 'a.approver_name')
         ->where(['equipment_handling.id' => $service_id])
         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.users as u', 'equipment_handling.requested_by', '=', 'u.id')
+        ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.users as ui', 'equipment_handling.installer', '=', 'ui.id')
+        ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.users as ua', 'equipment_handling.tl_assigned', '=', 'ua.id')
         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
         ->leftjoin('internal_external_requests as e', 'equipment_handling.external_request', '=', 'e.id')
         ->leftjoin('internal_external_requests as iR', 'equipment_handling.internal_request', '=', 'iR.id')
@@ -72,9 +74,17 @@ class EhMainApproverController extends Controller
      */
     public function approve_request(Request $request, Guard $guard){
         $user_id = $guard->user()->id;
+        $service_id = $request->service_id;
+        $approval_level = $request->approval_level;
+        $institution_area = $request->institution_area;
+        $tl_assigned = null;
+        $assigned_date = null;
+        $installer = null;
+        $date_installed = null;
+        $status = $request->status ?? 0;
 
         /** IT Department Approver */
-        if($request->approval_level === self::IT_DEPARTMENT){
+        if($approval_level === self::IT_DEPARTMENT){
             $items = $request->item;
             try {
                 DB::beginTransaction();
@@ -100,7 +110,7 @@ class EhMainApproverController extends Controller
                     'service_id' => $request->service_id,
                     'user_id' => $user_id,
                     'remarks' => $request->remark,
-                    'level' => 1,
+                    'level' => self::IT_DEPARTMENT,
                     'status' => self::ONGOING,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
@@ -119,22 +129,73 @@ class EhMainApproverController extends Controller
                 ]); 
             }
         }else{
-            if($request->approval_level === self::APM_NSM_SM){
+            $main_status = self::ONGOING;
+            if($approval_level === self::APM_NSM_SM){
                 $approval_level =  self::WIM; 
                 $level = self::APM_NSM_SM;
-            }elseif($request->approval_level === self::WIM){
+            }elseif($approval_level === self::WIM){
                 $approval_level =  self::SERVICE_TL;
                 $level = self::WIM;
-            }elseif($request->approval_level === self::SERVICE_TL){
+            }elseif($approval_level === self::SERVICE_TL){
                 $approval_level =  self::SERVICE_HEAD_ENGINEER;
                 $level = self::SERVICE_TL;
-            }elseif($request->approval_level === self::SERVICE_HEAD_ENGINEER){
+            }elseif($approval_level === self::SERVICE_HEAD_ENGINEER){
                 $approval_level =  self::BILLING_WIM;
                 $level = self::SERVICE_HEAD_ENGINEER;
-            }elseif($request->approval_level === self::BILLING_WIM){
-                $approval_level =  self::PARTIAL_COMPLETE;
+            }elseif($approval_level === self::BILLING_WIM){
+                $approval_level =  self::INSTALLATION_TL;
                 $level = self::BILLING_WIM;
-            }else{
+                $main_status = self::INSTALLING;
+
+                //Check Institution Area if not Luzon
+                // if($institution_area === self::LUZON){
+
+                // }
+            }elseif($status === self::INSTALLATION_TL){
+                $approval_level =  self::INSTALLATION_ENGINEER;
+                $level = self::INSTALLATION_TL;
+                $main_status = self::INSTALLING;
+
+                $tl_assigned = $request->tl_assigned ?? null;
+                $installer = $request->installer ?? null;
+                $assigned_date = Carbon::now();
+                // $date_installed = $request->date_installed ?? null;
+            }elseif($status === self::INSTALLATION_ENGINEER){
+                $approval_level =  self::INSTALLATION_ENGINEER + 1;
+                $level = self::INSTALLATION_ENGINEER + 1;
+                $main_status = self::COMPLETE;
+
+                $get_equipments  = DB::table('equipment_peripherals')->select('equipment_peripherals.*','m.category')
+                    ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName().'.master_data as m', 'equipment_peripherals.item_id', '=', 'm.id')
+                    ->leftJoin('equipment_handling as e', 'equipment_peripherals.service_id', '=', 'e.id')
+                    ->where([
+                        'equipment_peripherals.service_id' => $service_id,
+                        'equipment_peripherals.category' => 'Equipment',
+                        ])
+                    ->get();
+                    
+                    /** Insert Equipment for Auto PM Schedule */
+                    DB::beginTransaction();
+                    try {
+                        foreach($get_equipments as $equipment){
+                            $saveEquipment = DB::table('preventive_maintenance')->insert([
+                                'equipment' => $equipment['item_id'],
+                                'institution' => $equipment['institution'],
+                                'serial_number' => $equipment['serial_number'],
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now(),
+                            ]);
+                        }
+                        if(!$saveEquipment){
+                            throw new Exception('Inserting failed');
+                        }
+                    } catch (\Throwable $th) {
+                        //throw $th;
+                    }
+                    
+                    
+            }
+            else{
                 throw new Exception('Invalid approver');
             }
             
@@ -147,9 +208,15 @@ class EhMainApproverController extends Controller
                 $updateStatus = DB::table('equipment_handling')
                             ->where('id', $request->service_id)
                             ->update([
+                                'tl_assigned' => $tl_assigned,
+                                'assigned_date' => $assigned_date,
+                                'installer' => $installer,
+                                'date_installed' => $date_installed,
                                 'status' => $approval_level,
+                                'main_status' => $main_status,
                                 'updated_at' => Carbon::now(),
                             ]);
+
                 if(!$updateStatus){
                     throw new Exception('Failed to update approver status');
                 }
@@ -158,7 +225,7 @@ class EhMainApproverController extends Controller
                     'user_id' => $user_id,
                     'remarks' => $request->remark,
                     'level' => $level,
-                    'status' => self::ONGOING,
+                    'status' => $main_status,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ]);

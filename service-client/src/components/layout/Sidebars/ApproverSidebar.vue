@@ -12,8 +12,8 @@
         </div>
         <div class="sidebar-body" v-on:mouseover="hoverNav" v-on:mouseleave="hoverNavLeave">
             <ul class="nav">
-                <!-- <li class="nav-item nav-category ml-3">Switch Account</li> -->
-                <router-link to="/dashboard" v-if="user.user.role_name === pub_const.approverRole">
+                <!-- v-if="user.user.role_name === pub_const.approverRole" -->
+                <router-link to="/dashboard">
                     <li class="nav-item" style="padding: 5px 0;">
                         <a class="nav-link">
                             <v-icon class="myIcon">mdi-account-card</v-icon>
@@ -41,6 +41,7 @@
                         </a>
                     </li>
                 </router-link>
+                
             </ul>
         </div>
     </nav>
@@ -81,7 +82,7 @@ user.getrUserData
 <style scoped>
 .sidebar li:hover {
     font-weight: 600 !important;
-    background: #1919702c !important;
+    /* background: #1919702c !important; */
     color: #191970 !important;
 }
 
@@ -104,15 +105,7 @@ user.getrUserData
 }
 
 .sidebar .router-link-exact-active {
-    background: #eeeeee !important;
-
+    /* background: #eeeeee !important; */
+    border-left: 7px solid #191970;
 }
-
-/* .sidebar .sidebar-header .sidebar-brand span{
-    background: #191970;
-    border-radius: 4px;
-    padding: 3px 7px;
-    color: rgb(255, 255, 255)!important;
-    font-size: 12px;
-} */
 </style>

@@ -14,12 +14,12 @@
                     <!-- <router-link :to="{name : 'WorkOrderApprover', params : {id : selectedId ?? 0}}"> -->
                     <router-link :to="{name: 'ViewWorkOrder', params : {id : selectedId ?? 0}}">
                         <v-btn :disabled="btnDisable" type="button" color="primary" class="text-none mr-2">
-                            <v-icon class="mr-2">mdi-eye-arrow-right</v-icon> View Request
+                            <v-icon class="mr-2">mdi-file-eye-outline</v-icon> View
                         </v-btn>
                     </router-link>
                     <router-link to="/work-order">
                         <v-btn type="button" color="primary" class="text-none">
-                            <v-icon class="mr-2">mdi-file-edit-outline</v-icon> Create Work Order
+                            <v-icon class="mr-2">mdi-file-edit-outline</v-icon> Create
                         </v-btn>
                     </router-link>
                 </v-col>
@@ -28,13 +28,14 @@
             <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading" :search="params.search" @rowSelect="rowSelect"
                 :columnFilter="false" :sortColumn="params.sortColumn" :sortDirection="params.sortDirection" :sortable="true" skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true" :selectRowOnClick="true">
                 <template #id="data">
-                    <span>JOF-{{ String(data.value.id).padStart(3,0) }}-{{moment(data.value.created_at).format('YYYY')}}</span> 
+                    <span>{{ pub_var.setReportNumber(data.value.id,data.value.created_at) }}</span> 
+                    <!-- <span>JOF-{{ String(data.value.id).padStart(3,0) }}-{{moment(data.value.created_at).format('YYYY')}}</span>  -->
                 </template>
                 <template #approver_name="data">
                     <span>{{ parseInt(data.value.main_status) === pub_var.DISAPPROVED ? '' : data.value.approver_name  }}</span>
                 </template>
                 <template #main_status="data">
-                    <span :style="{color : getStatusText(data.value.main_status).color}">{{ getStatusText(data.value.main_status).text }}</span>
+                    <span :style="{color : pub_var.setJOStatus(data.value.main_status).color}">{{ pub_var.setJOStatus(data.value.main_status).text }}</span>
                 </template>
                 <template #created_at="data">
                     <span>{{ moment(data.value.created_at).format('MM/DD/YYYY') }}</span>

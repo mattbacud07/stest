@@ -11,7 +11,7 @@ class EhMainController extends Controller
 {
     public function index(Request $request)
     {
-        $data = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address', 'u.first_name', 'u.last_name', 'e.name as request_name','iR.name as internal_name','a.approver_level', 'a.approver_name')
+        $data = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address','i.area', 'u.first_name', 'u.last_name', 'e.name as request_name','iR.name as internal_name','a.approver_level', 'a.approver_name')
         ->where(['requested_by' => $request->input('user_id')])
         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.users as u', 'equipment_handling.requested_by', '=', 'u.id')
         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
@@ -26,9 +26,9 @@ class EhMainController extends Controller
     }
 
     /**
-     * Submit Work Order Form.
+     * Master Data of Equipments and Institution.
      */
-    public function addWorkOrder()
+    public function master_data_equipments()
     {
         $equipments = DB::connection('mysqlSecond')->table('master_data')->get();
         $institutions = DB::connection('mysqlSecond')->table('mt_bp_institutions')->get();
