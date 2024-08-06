@@ -11,6 +11,8 @@ class PMSetting extends Model
 
     protected $table='pm_setting';
 
+    public $timestamps = true;
+    
     protected $fillable = [
         'equipment',
         'schedule',

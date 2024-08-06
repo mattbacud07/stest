@@ -21,7 +21,7 @@
                                     style="color: #999;font-weight: 100;font-size: .8em;">as Requestor</span></span>
                         </a>
                     </li>
-                <v-divider></v-divider>
+                    <!-- <v-divider></v-divider> -->
                 </router-link>
                 <router-link to="/tl-dashboard" class="router-link-active">
                     <li class="nav-item">
@@ -32,25 +32,52 @@
                     </li>
                 </router-link>
                 <!-- <li class="nav-item nav-category">Request</li> -->
+                <!-- EH Links -->
+                <a href="#">
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#eh" role="button">
+                            <v-icon>mdi-folder-wrench</v-icon>
+                            <span class="link-title">Equipment Handling</span>
+                            <v-icon class="link-arrow mr-3">mdi-chevron-down</v-icon>
+                        </a>
+                        <div class="collapse" id="eh">
+                            <ul class="nav sub-menu">
+                                <router-link to="/set-schedule-equipment-installation" class="router-link-active">
+                                    <li class="nav-item">
+                                        <a class="nav-link">
+                                            <v-icon class="myIcon">mdi-wrench-cog-outline</v-icon>
+                                            <span class="link-title">Equipment Installation</span>
+                                        </a>
+                                    </li>
+                                </router-link>
+                            </ul>
+                        </div>
+                    </li>
+                </a>
 
-                <router-link to="/set-schedule-equipment-installation"
-                    class="router-link-active">
+                <!-- PM Links -->
+                <a href="#">
                     <li class="nav-item">
-                        <a class="nav-link">
-                            <v-icon class="myIcon">mdi-wrench-cog-outline</v-icon>
-                            <span class="link-title">Equipment Installation</span>
+                        <a class="nav-link" data-bs-toggle="collapse" href="#pm" role="button">
+                            <v-icon>mdi-file-cog</v-icon>
+                            <span class="link-title">Preventive Maintenance</span>
+                            <v-icon class="link-arrow mr-3">mdi-chevron-down</v-icon>
                         </a>
+                        <div class="collapse" id="pm">
+                            <ul class="nav sub-menu">
+                                <router-link to="/pm-sched" class="router-link-active">
+                                    <li class="nav-item">
+                                        <a class="nav-link">
+                                            <v-icon class="myIcon">mdi-wrench-clock</v-icon>
+                                            <span class="link-title">PM Schedule</span>
+                                        </a>
+                                    </li>
+                                </router-link>
+                            </ul>
+                        </div>
                     </li>
-                </router-link>
-                <router-link to="/preventive-maintenance-engineer"
-                    class="router-link-active">
-                    <li class="nav-item">
-                        <a class="nav-link">
-                            <v-icon class="myIcon">mdi-wrench-clock</v-icon>
-                            <span class="link-title">PM Schedule</span>
-                        </a>
-                    </li>
-                </router-link>
+                </a>
+
             </ul>
         </div>
     </nav>
@@ -67,25 +94,25 @@ import * as pub_const from '@/global/global.js';
 const user = user_data()
 user.getrUserData
 
-    const toggleSidebar = () => {
-        $('.sidebar-header .sidebar-toggler').toggleClass('active not-active');
-        if (window.matchMedia('(min-width: 992px)').matches) {
-            $('body').toggleClass('sidebar-folded');
-        } else if (window.matchMedia('(max-width: 991px)').matches) {
-            $('body').toggleClass('sidebar-open');
-        }
-    };
+const toggleSidebar = () => {
+    $('.sidebar-header .sidebar-toggler').toggleClass('active not-active');
+    if (window.matchMedia('(min-width: 992px)').matches) {
+        $('body').toggleClass('sidebar-folded');
+    } else if (window.matchMedia('(max-width: 991px)').matches) {
+        $('body').toggleClass('sidebar-open');
+    }
+};
 
-    const hoverNav = () => {
-        if ($('body').hasClass('sidebar-folded')) {
-            $('body').addClass("open-sidebar-folded");
-        }
+const hoverNav = () => {
+    if ($('body').hasClass('sidebar-folded')) {
+        $('body').addClass("open-sidebar-folded");
     }
-    const hoverNavLeave = () => {
-        if ($('body').hasClass('sidebar-folded')) {
-            $('body').removeClass("open-sidebar-folded");
-        }
+}
+const hoverNavLeave = () => {
+    if ($('body').hasClass('sidebar-folded')) {
+        $('body').removeClass("open-sidebar-folded");
     }
+}
 </script>
 
 <style scoped>
@@ -102,18 +129,19 @@ user.getrUserData
 .sidebar a {
     font-weight: 600 !important;
     color: #191970 !important;
-    padding: 5px 0 3px 10px !important;
+    padding: 2px 0 2px 10px !important;
 }
 
 .sidebar .link-title {
     margin-left: 15px !important;
 }
 
-.sidebar .myIcon {
+/* .sidebar .myIcon {
     font-size: 1.8em !important;
-}
+} */
 
 .sidebar .router-link-exact-active {
-    border-left: 7px solid #191970;
+    background: #eeeeee !important;
+    /* border-left: 7px solid #191970; */
 }
 </style>

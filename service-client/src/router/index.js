@@ -79,8 +79,8 @@ const router = createRouter({
     },
     {
       path: '/roles',
-      name: 'Roles',
-      component: () => import('../views/Admin/Roles.vue'),
+      name: 'RolesMain',
+      component: () => import('../views/Admin/RolesMain.vue'),
       meta: {
         requiresAuth: true
       }
@@ -113,9 +113,31 @@ const router = createRouter({
       }
     },
     {
-      path: '/approver-work-order/:id',
+      path: '/approver-work-order/:id/:status',
       name: 'WorkOrderApprover',
       component: () => import('../views/Approver/WorkOrderApprover.vue'),
+      props: true,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    
+    
+    
+    /** Outbound Routes */
+    {
+      path: '/outbound-dashboard',
+      name: 'OutboundDashboard',
+      component: () => import('../views/Outbound/OutboundDashboard.vue'),
+      props: true,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/outbound-equipment-handling',
+      name: 'OutboundEquipmentHandling',
+      component: () => import('../views/Outbound/OutboundEquipmentHandling.vue'),
       props: true,
       meta: {
         requiresAuth: true
@@ -151,6 +173,15 @@ const router = createRouter({
         requiresAuth: true
       }
     },
+    { //PM Sched
+      path: '/pm-sched',
+      name: 'PMSched',
+      component: () => import('../views/TeamLeader/PMSched.vue'),
+      props: true,
+      meta: {
+        requiresAuth: true
+      }
+    },
 
 
     /** Engineer Routes */
@@ -166,7 +197,7 @@ const router = createRouter({
     {
       path: '/internal-servicing',
       name: 'InternalServicing',
-      component: () => import('../views/Engineers/InternalRequestProcedure.vue'),
+      component: () => import('../views/Engineers/InternalRequestMainData.vue'),
       props: true,
       meta: {
         requiresAuth: true
@@ -191,9 +222,27 @@ const router = createRouter({
       }
     },
     {
-      path: '/internal-servicing-process/:id/:requestedId',
+      path: '/internal-servicing-process/:id/:service_id',
       name: 'InternalServicingProcess',
       component: () => import('../views/Engineers/InternalRequestProcess.vue'),
+      props: true,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/pm-sched-engineer',
+      name: 'PMSchedEngineers',
+      component: () => import('../views/Engineers/PMSchedEngineers.vue'),
+      props: true,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/pm-sched-accepted/:service_id',
+      name: 'PMSchedAccepted',
+      component: () => import('../views/Engineers/PMSchedAccepted.vue'),
       props: true,
       meta: {
         requiresAuth: true

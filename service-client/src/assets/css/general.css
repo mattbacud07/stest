@@ -264,67 +264,29 @@ table.dataTable>tbody>tr.selected>* {
 
 
 
-/** Breakpoints **/
-/* Extra small devices (phones) */
-@media screen and (max-width: 600px) {
-
-  /* Your CSS styles for extra small devices */
-  .container-form {
-    padding: 10px 3px !important;
-  }
-}
-
-/* Small devices (tablets) */
-@media screen and (min-width: 601px) and (max-width: 960px) {
-
-  /* Your CSS styles for small devices */
-  .container-form {
-    padding: 10px 2em !important;
-  }
-}
-
-/* Medium devices (laptops) */
-@media screen and (min-width: 961px) and (max-width: 1264px) {
-
-  /* Your CSS styles for medium devices */
-  .container-form {
-    padding: 10px 8em !important;
-  }
-}
-
-/* Large devices (desktops) */
-@media screen and (min-width: 1265px) and (max-width: 1904px) {
-  /* Your CSS styles for large devices */
-}
-
-/* Extra large devices (large desktops) */
-@media screen and (min-width: 1905px) {
-  /* Your CSS styles for extra large devices */
-}
-
-
 
 /* Scrollbar */
 /* width */
 ::-webkit-scrollbar {
   width: 10px;
-  height: 7px;
-  border-radius: 50px;
+  height: 11px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #eaeaea; 
+  background: #eaeaea;
+  box-shadow: inset 2px 2px 3px #e1e1e1;
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #191970; 
+  background: #c0c0c0;
+  border-radius: 50px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #555; 
+  background: #949494;
 }
 
 
@@ -332,8 +294,8 @@ table.dataTable>tbody>tr.selected>* {
 /** Checkboc in tables */
 .bh-table-responsive input[type=checkbox]:checked+div,
 .bh-table-responsive input[type=checkbox]:indeterminate+div {
-    background: #191970 !important;
-    border: 1px solid #191970 !important;
+  background: #191970 !important;
+  border: 1px solid #191970 !important;
 }
 
 
@@ -345,3 +307,59 @@ table.dataTable>tbody>tr.selected>* {
   max-width: none !important;
   overflow: auto!important;
 } */
+
+.v-input__details{
+  min-height: 0 !important;
+}
+
+@media (max-width: 600px) {
+  .topActions {
+    width: calc(100%);
+    /* left: 20px; */
+    height: 120px;
+  }
+}
+
+
+/* **************************************************** Table Vue3 DataTable ******************************************** */
+.bh-table-responsive{
+  min-height: 300px!important;
+}
+
+.bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered thead tr th {
+  border-color: #f4f4f4!important;
+}
+.bh-table-responsive table.bh-table-bordered thead tr, .bh-table-responsive table.bh-table-bordered thead tr{
+  background: rgb(255, 255, 255)!important;
+  /* text-transform: uppercase; */
+}
+.bh-table-responsive table.bh-table-bordered thead tr th, .bh-table-responsive table.bh-table-bordered thead tr th{
+ white-space: nowrap;
+ text-transform: uppercase;
+ font-size: 11px;
+}
+.bh-table-responsive table.bh-table-bordered tbody tr, .bh-table-responsive table.bh-table-bordered tbody tr{
+  background: rgb(255, 255, 255)!important;
+}
+.bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered tbody tr rd{
+  white-space: nowrap;
+}
+
+/* ****************************************************End  Table Vue3 DataTable ******************************************** */
+
+/* Limit TExt to Show in table Data  */
+.tableLimitText tbody td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* Adjust the width as needed */
+}
+.bh-py-5 {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+
+.custom-pointer {
+  cursor: pointer;
+}

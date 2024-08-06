@@ -1,312 +1,315 @@
 <template>
-    <div>
-        <v-form @submit.prevent="submitWorkOrder" ref="form"> <!--@submit.prevent="submitWorkOrder" ref="form" -->
-            <v-container class="container-form mt-10">
-                <v-row justify="space-between" class="topActions">
-                    <div>
-                        <nav class="mt-5 ml-3">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#">
-                                        <router-link to="/equipment-handling">
-                                            <v-icon>mdi-menu-left</v-icon> back
-                                        </router-link></a></li>
-                                <li class="breadcrumb-item"><a href="#">Equipment Handling</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Work Order</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="mt-3 mr-4">
-                        <v-dialog v-model="dialog" max-width="400" persistent>
-                            <template v-slot:activator="{ props: activatorProps }">
-                                <v-btn :disabled="btnLoading" v-bind="activatorProps" color="default" elevation="1"
-                                    class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
-                                    Cancel</v-btn>
-                            </template>
-                            <v-card text="Discard Changes?" title="Discard">
-                                <template v-slot:actions>
-                                    <v-row justify="end">
-                                        <router-link to="/equipment-handling"><v-btn elevation="2"
-                                                background-color="red" size="small" color="#191970"
-                                                class="text-none mr-2">Yes,
-                                                Discard</v-btn></router-link>
-                                        <v-btn @click="dialog = false" color="primary" elevation="2" size="small"
-                                            class="text-none mr-3"
-                                            style="background-color: #191970;color: #fff!important;">Keep
-                                            Editing</v-btn>
-                                    </v-row>
-                                </template>
-                            </v-card>
-                        </v-dialog>
-                        <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary"
-                            class="text-none btnSubmit"><v-icon class="mr-2">mdi-note-plus-outline</v-icon>
-                            Create</v-btn>
-                    </div>
-                </v-row>
-                <v-card style="padding: 3em 1em;" elevation="1">
-                    <v-row>
-                        <v-col cols="6">
-                            <v-combobox color="primary" v-model="institutionValue" clearable label="Institution" density="compact"
-                                :items="institutionData" variant="outlined" itemValue="value" itemTitle="key"
-                                :rules="rule.ruleInstitution"></v-combobox>
-                        </v-col>
-                        <v-col cols="6">
-                            <v-text-field color="primary" density="compact" label="Requested by" placeholder="Requested by"
-                                variant="outlined" readonly v-model="requested_by"
-                                :rules="rule.ruleRequestedBy"></v-text-field>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col cols="6">
-                            <v-text-field color="primary" v-model="address" label="Address" density="compact" variant="outlined"
-                                readonly onUpdate:Item="(newVal) => { address.value = newVal.key }"
-                                :rules="rule.ruleAddress"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                            <VueDatePicker v-model="proposed_delivery_date" auto-apply :min-date="new Date()"
-                                :enable-time-picker="false" placeholder="Propose Delivery Date" />
-                            <!-- <input type="date" class="form-control" v-model="proposed_delivery_date" placeholder="Propose Delivery Date"> -->
-                            <p class="text-danger" v-if="deliveryDateError !== ''">{{ deliveryDateError }}</p>
-                        </v-col>
-                    </v-row>
-                    <v-divider></v-divider>
-
-                    <!-- OTHER REQUEST DETAILS -->
-                    <v-row>
-                        <v-col cols="6">
-                            <h5 class="mb-1" style="font-weight: 700;color: #191970;">Other Request Details</h5>
-                            <v-checkbox v-model="ocular" color="primary" label="Request for Ocular" value="1"
-                                class="vCheckbox"></v-checkbox>
-                            <v-checkbox v-model="bypass" color="primary" label="Bypass Internal Servicing Procedures"
-                                value="1" class="vCheckbox" :disabled="disableExternalCheckbox"></v-checkbox>
-                            <v-checkbox v-model="ship" color="primary"
-                                label="Ship & Deliver direct to customer immediately" class="vCheckbox"
-                                value="1"></v-checkbox>
-                        </v-col>
-                        <v-col cols="6">
-                            <v-textarea color="primary" label="Endorsement" v-model="endorsement" row-height="25" rows="3"
-                                variant="outlined" auto-grow shaped>
-                            </v-textarea>
-                        </v-col>
-                    </v-row>
-
-                    <v-divider class="mb-3"></v-divider>
-                    <!-- Internal External Request -->
-                    <v-row>
-                        <v-col cols="12" md="6" sm="6">
-                            <h5 class="mb-2" style="font-weight: 700;color: #191970;">External Request</h5>
-                            <v-radio-group v-model="externalRequest" :rules="rule.ruleExternal" column>
-                                <v-radio color="primary" label="For Demonstration" value="1"></v-radio>
-                                <v-radio color="primary" label="Reagent Tie-up" value="2"></v-radio>
-                                <v-radio color="primary" label="Purchased" value="3"></v-radio>
-                                <v-radio color="primary" label="Shipment / Delivery" value="4"></v-radio>
-                                <v-radio color="primary" label="Service Unit" value="5"></v-radio>
-                                <v-radio color="primary" label="Others" value="11"></v-radio>
-                            </v-radio-group>
-                            <v-checkbox v-model="attached_gate" :disabled="disableExternalCheckbox" class="vCheckbox" color="primary"
-                                label="Attached gate/entry pass" value="1"></v-checkbox>
-                            <v-checkbox v-model="with_contract" :disabled="disableExternalCheckbox" class="vCheckbox" color="primary"
-                                label="with contract/other docs" value="1"></v-checkbox>
-                        </v-col>
-                        <v-col cols="12" md="6" sm="6">
-                            <h5 class="mb-2" style="font-weight: 700;color: #191970;">Internal Request</h5>
-                            <v-radio-group v-model="internalRequest" :rules="rule.ruleInternal" column>
-                                <v-radio color="primary" label="For Corrective" value="6"></v-radio>
-                                <v-radio color="primary" label="For Refurbishment" value="7"></v-radio>
-                                <v-radio color="primary" label="For Quality Control" value="8"></v-radio>
-                                <v-radio color="primary" label="Training Purposes" value="9"></v-radio>
-                                <v-radio color="primary" label="For Disposal" value="10"></v-radio>
-                                <v-radio color="primary" label="Other" value="11"></v-radio>
-                            </v-radio-group>
-                        </v-col>
-                    </v-row>
+<v-form @submit.prevent="submitWorkOrder" ref="form"> <!--@submit.prevent="submitWorkOrder" ref="form" -->
+    <LayoutSinglePage>
+        <template #topBarFixed>
+            <v-breadcrumbs :items="breadcrumbItems" class="pt-7">
+                <template v-slot:divider>
+                    <v-icon icon="mdi-chevron-right"></v-icon>
+                </template>
+            </v-breadcrumbs>
+            <v-spacer></v-spacer>
+            <v-dialog v-model="dialog" max-width="400" persistent>
+                <template v-slot:activator="{ props: activatorProps }">
+                    <v-btn :disabled="btnLoading" v-bind="activatorProps" color="primary" variant="tonal"
+                        class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
+                        Cancel</v-btn>
+                </template>
+                <v-card text="Discard Changes?" title="Discard">
+                    <template v-slot:actions>
+                        <v-row justify="end">
+                            <router-link to="/equipment-handling"><v-btn elevation="2" background-color="red"
+                                    size="small" color="#191970" class="text-none mr-2">Yes,
+                                    Discard</v-btn></router-link>
+                            <v-btn @click="dialog = false" color="primary" elevation="2" size="small"
+                                class="text-none mr-3" style="background-color: #191970;color: #fff!important;">Keep
+                                Editing</v-btn>
+                        </v-row>
+                    </template>
                 </v-card>
+            </v-dialog>
+            <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary" variant="flat"
+                class="text-none btnSubmit"><v-icon class="mr-2">mdi-note-plus-outline</v-icon>
+                Create</v-btn>
+        </template>
 
-                <!-- Equipment & Peripherals -->
-                <v-card class="mt-3 p-3" elevation="0" style="border: 1px dashed #191970;">
-                    <v-row>
-                        <h5 class="p-3" style="font-weight: 700;color: #191970;">EQUIPMENT & PERIPHERALS</h5>
-                        <v-col cols="12">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered">
-                                    <thead style="background: #afafaf2e;">
-                                        <tr>
-                                            <th scope="col">Item Code</th>
-                                            <th scope="col">Item Description</th>
-                                            <th scope="col">Serial Number</th>
-                                            <th scope="col">Remarks</th>
-                                            <th scope="col"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody v-if="selectedEquipment.length > 0">
-                                        <tr v-for="(equipment, index) in selectedEquipment" :key="index">
-                                            <td>
-                                                {{ equipment.item_code }}
-                                                <v-text-field class="hideID">{{ equipment.id }}</v-text-field>
-                                                <!-- <input type="text" class="myInputText" v-model="equipment.id"> -->
-                                            </td>
-                                            <td>{{ equipment.description }}</td>
-                                            <td><v-text-field clearable density="compact" variant="plain"
-                                                    placeholder="Serial number ...." w-100
-                                                    v-model="equipment.equipmentSerial"
-                                                    :rules="rule.ruleEquipmentSerial"></v-text-field>
-                                            </td>
-                                            <td><v-text-field clearable density="compact" variant="plain"
-                                                    placeholder="Remarks..." w-100
-                                                    v-model="equipment.equipmentRemark"></v-text-field>
-                                            </td>
-                                            <td><v-icon @click="removeSelectedEquipment(index)"
-                                                    class="text-danger">mdi-trash-can-outline</v-icon>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tbody v-else>
-                                        <tr>
-                                            <td colspan="5" class="text-center p-3" style="color: red;">
-                                                <h6 v-if="errorMessage !== ''"> {{ errorMessage }}</h6>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="5" class="text-center p-1" style="opacity: .3;">
-                                                <v-icon class="mb-3"
-                                                    style="font-size: 30px">mdi-file-document-alert-outline</v-icon><br>
-                                                No records found
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+        <template #default>
+                <v-container class="container-form">
+                    <v-card style="padding: 3em 1em;" elevation="1">
+                        <v-row>
+                            <v-col cols="6">
+                                <v-combobox color="primary" v-model="institutionValue" clearable label="Institution"
+                                    density="compact" :items="institutionData" variant="outlined" itemValue="value"
+                                    itemTitle="key" :rules="rule.ruleInstitution"></v-combobox>
+                            </v-col>
+                            <v-col cols="6">
+                                <v-text-field color="primary" density="compact" label="Requested by"
+                                    placeholder="Requested by" variant="outlined" readonly v-model="requested_by"
+                                    :rules="rule.ruleRequestedBy"></v-text-field>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="6">
+                                <v-text-field color="primary" v-model="address" label="Address" density="compact"
+                                    variant="outlined" readonly
+                                    onUpdate:Item="(newVal) => { address.value = newVal.key }"
+                                    :rules="rule.ruleAddress"></v-text-field>
+                            </v-col>
+                            <v-col cols="6">
+                                <VueDatePicker v-model="proposed_delivery_date" auto-apply :min-date="new Date()"
+                                    :enable-time-picker="false" placeholder="Propose Delivery Date" />
+                                <!-- <input type="date" class="form-control" v-model="proposed_delivery_date" placeholder="Propose Delivery Date"> -->
+                                <p class="text-danger" v-if="deliveryDateError !== ''">{{ deliveryDateError }}</p>
+                            </v-col>
+                        </v-row>
+                        <v-divider></v-divider>
 
-                            <!-- Overlay box for Equipment Peripherals -->
-                            <div class="d-flex justify-content-center">
-                                <v-btn color="primary" size="medium" flat class="text-none mt-3 p-2">
-                                    <v-icon class="mr-3">mdi-database-cog</v-icon>
-                                    Select Equipment & Peripherals
-                                </v-btn>
-                                <v-overlay v-model="overlayMasterData" max-width="400" activator="parent"
-                                    location-strategy="connected" scroll-strategy="none">
-                                    <v-card class="pa-2" min-height="600" min-width="600">
-                                        <v-row>
-                                            <v-col cols="4">
-                                                <v-text-field v-model="params.searchEquipment" clearable
-                                                    density="compact" label="Search all fields"
-                                                    variant="outlined"></v-text-field>
-                                            </v-col>
-                                        </v-row>
-                                        <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading"
-                                            :selectRowOnClick="true" :sortable="true" :search="params.searchEquipment"
-                                            :hide="true" :filter="true" skin="bh-table-compact bh-table-bordered"
-                                            class="" @rowClick="rowClickEquipment"></vue3-datatable>
-                                        <p><b>List of Selected Row</b><br>
-                                            <span v-for="itemRow in selectedEquipment" :key="itemRow.id">
-                                                [ {{ itemRow.item_code }} - <v-icon
-                                                    @click="removeSelectedEquipment(index)"
-                                                    class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
-                                            </span>
-                                        </p>
-                                    </v-card>
-                                </v-overlay>
-                            </div>
-                        </v-col>
+                        <!-- OTHER REQUEST DETAILS -->
+                        <v-row>
+                            <v-col cols="6">
+                                <h5 class="mb-1" style="font-weight: 700;color: #191970;">Other Request Details</h5>
+                                <v-checkbox v-model="ocular" color="primary" label="Request for Ocular" value="1"
+                                    class="vCheckbox"></v-checkbox>
+                                <v-checkbox v-model="bypass" color="primary"
+                                    label="Bypass Internal Servicing Procedures" value="1" class="vCheckbox"
+                                    :disabled="disableExternalCheckbox"></v-checkbox>
+                                <v-checkbox v-model="ship" color="primary"
+                                    label="Ship & Deliver direct to customer immediately" class="vCheckbox"
+                                    value="1"></v-checkbox>
+                            </v-col>
+                            <v-col cols="6">
+                                <v-textarea color="primary" label="Endorsement" v-model="endorsement" row-height="25"
+                                    rows="3" variant="outlined" auto-grow shaped>
+                                </v-textarea>
+                            </v-col>
+                        </v-row>
 
-                    </v-row>
-                </v-card>
+                        <v-divider class="mb-3"></v-divider>
+                        <!-- Internal External Request -->
+                        <v-row>
+                            <v-col cols="12" md="6" sm="6">
+                                <h5 class="mb-2" style="font-weight: 700;color: #191970;">External Request</h5>
+                                <v-radio-group v-model="externalRequest" :rules="rule.ruleExternal" column>
+                                    <v-radio color="primary" label="For Demonstration" value="1"></v-radio>
+                                    <v-radio color="primary" label="Reagent Tie-up" value="2"></v-radio>
+                                    <v-radio color="primary" label="Purchased" value="3"></v-radio>
+                                    <v-radio color="primary" label="Shipment / Delivery" value="4"></v-radio>
+                                    <v-radio color="primary" label="Service Unit" value="5"></v-radio>
+                                    <v-radio color="primary" label="Others" value="11"></v-radio>
+                                </v-radio-group>
+                                <v-checkbox v-model="attached_gate" :disabled="disableExternalCheckbox"
+                                    class="vCheckbox" color="primary" label="Attached gate/entry pass"
+                                    value="1"></v-checkbox>
+                                <v-checkbox v-model="with_contract" :disabled="disableExternalCheckbox"
+                                    class="vCheckbox" color="primary" label="with contract/other docs"
+                                    value="1"></v-checkbox>
+                            </v-col>
+                            <v-col cols="12" md="6" sm="6">
+                                <h5 class="mb-2" style="font-weight: 700;color: #191970;">Internal Request</h5>
+                                <v-radio-group v-model="internalRequest" :rules="rule.ruleInternal" column>
+                                    <v-radio color="primary" label="For Corrective" value="6"></v-radio>
+                                    <v-radio color="primary" label="For Refurbishment" value="7"></v-radio>
+                                    <v-radio color="primary" label="For Quality Control" value="8"></v-radio>
+                                    <v-radio color="primary" label="Training Purposes" value="9"></v-radio>
+                                    <v-radio color="primary" label="For Disposal" value="10"></v-radio>
+                                    <v-radio color="primary" label="Other" value="11"></v-radio>
+                                </v-radio-group>
+                            </v-col>
+                        </v-row>
+                    </v-card>
 
-                <!-- Additional Peripherals -->
-                <v-card class="mt-3 p-3" elevation="0" style="border: .5px dashed #191970;">
+                    <!-- Equipment & Peripherals -->
+                    <v-card class="mt-3 p-3" elevation="0" style="border: 1px dashed #191970;">
+                        <v-row>
+                            <h5 class="p-3" style="font-weight: 700;color: #191970;">EQUIPMENT & PERIPHERALS</h5>
+                            <v-col cols="12">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead style="background: #afafaf2e;">
+                                            <tr>
+                                                <th scope="col">Item Code</th>
+                                                <th scope="col">Item Description</th>
+                                                <th scope="col">Serial Number</th>
+                                                <th scope="col">Remarks</th>
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody v-if="selectedEquipment.length > 0">
+                                            <tr v-for="(equipment, index) in selectedEquipment" :key="index">
+                                                <td>
+                                                    {{ equipment.item_code }}
+                                                    <v-text-field class="hideID">{{ equipment.id }}</v-text-field>
+                                                    <!-- <input type="text" class="myInputText" v-model="equipment.id"> -->
+                                                </td>
+                                                <td>{{ equipment.description }}</td>
+                                                <td><v-text-field clearable density="compact" variant="plain"
+                                                        placeholder="Serial number ...." w-100
+                                                        v-model="equipment.equipmentSerial"
+                                                        :rules="rule.ruleEquipmentSerial"></v-text-field>
+                                                </td>
+                                                <td><v-text-field clearable density="compact" variant="plain"
+                                                        placeholder="Remarks..." w-100
+                                                        v-model="equipment.equipmentRemark"></v-text-field>
+                                                </td>
+                                                <td><v-icon @click="removeSelectedEquipment(index)"
+                                                        class="text-danger">mdi-trash-can-outline</v-icon>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tbody v-else>
+                                            <tr>
+                                                <td colspan="5" class="text-center p-3" style="color: red;">
+                                                    <h6 v-if="errorMessage !== ''"> {{ errorMessage }}</h6>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5" class="text-center p-1" style="opacity: .3;">
+                                                    <v-icon class="mb-3"
+                                                        style="font-size: 30px">mdi-file-document-alert-outline</v-icon><br>
+                                                    No records found
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                    <v-row>
-                        <h5 class="p-3 mt-2" style="font-weight: 700;color: #191970;">ADDITIONAL PERIPHERALS <span style="font-size: .8em;font-weight: 100;color: #777;"><i> (Serial number to be filled by the IT Department)</i></span></h5>
-                        <v-col cols="12">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered table-responsive">
-                                    <thead style="background: #afafaf2e;">
-                                        <tr>
-                                            <th scope="col">Item Code</th>
-                                            <th scope="col">Item Description</th>
-                                            <!-- <th scope="col">Serial Number</th> -->
-                                            <th scope="col">Remarks</th>
-                                            <th scope="col"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody v-if="selectedPeripherals.length > 0">
-                                        <tr v-for="(peripheral, index) in selectedPeripherals" :key="index">
-                                            <td>
-                                                {{ peripheral.item_code }}
-                                                <v-text-field class="hideID">{{ peripheral.id }}</v-text-field>
-                                            </td>
-                                            <td>{{ peripheral.description }}</td>
-                                            <!-- <td><v-text-field clearable density="compact" variant="plain"
+                                <!-- Overlay box for Equipment Peripherals -->
+                                <div class="d-flex justify-content-center">
+                                    <v-btn color="primary" size="medium" flat class="text-none mt-3 p-2">
+                                        <v-icon class="mr-3">mdi-database-cog</v-icon>
+                                        Select Equipment & Peripherals
+                                    </v-btn>
+                                    <v-overlay v-model="overlayMasterData" max-width="400" activator="parent"
+                                        location-strategy="connected" scroll-strategy="none">
+                                        <v-card class="pa-2" min-height="600" min-width="600">
+                                            <v-row>
+                                                <v-col cols="4">
+                                                    <v-text-field v-model="params.searchEquipment" clearable
+                                                        density="compact" label="Search all fields"
+                                                        variant="outlined"></v-text-field>
+                                                </v-col>
+                                            </v-row>
+                                            <vue3-datatable ref="datatable" :rows="rows" :columns="cols"
+                                                :loading="loading" :selectRowOnClick="true" :sortable="true"
+                                                :search="params.searchEquipment" :isServerMode="true"
+                                                :totalRows="total_rows" :pageSize="params.pagesize" :hide="true"
+                                                :filter="true" skin="bh-table-compact bh-table-bordered" class=""
+                                                @rowClick="rowClickEquipment" @change="changeServer"></vue3-datatable>
+                                            <p><b>List of Selected Row</b><br>
+                                                <span v-for="itemRow in selectedEquipment" :key="itemRow.id">
+                                                    [ {{ itemRow.item_code }} - <v-icon
+                                                        @click="removeSelectedEquipment(index)"
+                                                        class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
+                                                </span>
+                                            </p>
+                                        </v-card>
+                                    </v-overlay>
+                                </div>
+                            </v-col>
+
+                        </v-row>
+                    </v-card>
+
+                    <!-- Additional Peripherals -->
+                    <v-card class="mt-3 p-3" elevation="0" style="border: .5px dashed #191970;">
+
+                        <v-row>
+                            <h5 class="p-3 mt-2" style="font-weight: 700;color: #191970;">ADDITIONAL PERIPHERALS <span
+                                    style="font-size: .8em;font-weight: 100;color: #777;"><i> (Serial number to be
+                                        filled by
+                                        the IT
+                                        Department)</i></span></h5>
+                            <v-col cols="12">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered table-responsive">
+                                        <thead style="background: #afafaf2e;">
+                                            <tr>
+                                                <th scope="col">Item Code</th>
+                                                <th scope="col">Item Description</th>
+                                                <!-- <th scope="col">Serial Number</th> -->
+                                                <th scope="col">Remarks</th>
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody v-if="selectedPeripherals.length > 0">
+                                            <tr v-for="(peripheral, index) in selectedPeripherals" :key="index">
+                                                <td>
+                                                    {{ peripheral.item_code }}
+                                                    <v-text-field class="hideID">{{ peripheral.id }}</v-text-field>
+                                                </td>
+                                                <td>{{ peripheral.description }}</td>
+                                                <!-- <td><v-text-field clearable density="compact" variant="plain"
                                                     :rules="rule.rulePeripheralSerial" placeholder="Serial number ...."
                                                     w-100 v-model="peripheral.peripheralSerial"></v-text-field>
                                             </td> -->
-                                            <td><v-text-field clearable density="compact" variant="plain"
-                                                    placeholder="Remarks..." w-100
-                                                    v-model="peripheral.peripheralRemark"></v-text-field>
-                                            </td>
-                                            <td><v-icon @click="removeSelectedPeripherals(index)"
-                                                    class="text-danger">mdi-trash-can-outline</v-icon>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tbody v-else>
-                                        <tr>
-                                            <td colspan="5" class="text-center p-3" style="opacity: .3;">
-                                                <v-icon class="mb-3"
-                                                    style="font-size: 50px">mdi-file-document-alert-outline</v-icon><br>
-                                                No records found
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                                <td><v-text-field clearable density="compact" variant="plain"
+                                                        placeholder="Remarks..." w-100
+                                                        v-model="peripheral.peripheralRemark"></v-text-field>
+                                                </td>
+                                                <td><v-icon @click="removeSelectedPeripherals(index)"
+                                                        class="text-danger">mdi-trash-can-outline</v-icon>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tbody v-else>
+                                            <tr>
+                                                <td colspan="5" class="text-center p-3" style="opacity: .3;">
+                                                    <v-icon class="mb-3"
+                                                        style="font-size: 50px">mdi-file-document-alert-outline</v-icon><br>
+                                                    No records found
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                            <!-- Overlay box for Equipment Peripherals -->
-                            <div class="d-flex justify-content-center">
-                                <v-btn color="primary" size="medium" flat class="text-none mt-3 p-2">
-                                    <v-icon class="mr-3">mdi-database-plus</v-icon>
-                                    Select Additional Peripherals
-                                </v-btn>
-                                <v-overlay v-model="overlayMasterDataPeripherals" activator="parent"
-                                    location-strategy="connected" class="p-5" scroll-strategy="reposition" localtop>
-                                    <v-card class="pa-2" min-height="600" min-width="600">
-                                        <v-row>
-                                            <v-col cols="4">
-                                                <v-text-field v-model="params.searchPeripheral" clearable
-                                                    density="compact" label="Search all fields"
-                                                    variant="outlined"></v-text-field>
-                                            </v-col>
-                                        </v-row>
-                                        <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading"
-                                            :selectRowOnClick="true" :sortable="true" :hide="true"
-                                            :search="params.searchPeripheral" :filter="true"
-                                            skin="bh-table-compact bh-table-bordered" class=""
-                                            @rowClick="rowClickPeripherals"></vue3-datatable>
-                                        <p><b>List of Selected Row</b><br>
-                                            <span v-for="itemRow in selectedPeripherals" :key="itemRow.id">
-                                                [ {{ itemRow.item_code }} - <v-icon
-                                                    @click="removeSelectedPeripherals(index)"
-                                                    class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
-                                            </span>
-                                        </p>
-                                    </v-card>
-                                </v-overlay>
-                            </div>
-                        </v-col>
+                                <!-- Overlay box for Equipment Peripherals -->
+                                <div class="d-flex justify-content-center">
+                                    <v-btn color="primary" size="medium" flat class="text-none mt-3 p-2">
+                                        <v-icon class="mr-3">mdi-database-plus</v-icon>
+                                        Select Additional Peripherals
+                                    </v-btn>
+                                    <v-overlay v-model="overlayMasterDataPeripherals" activator="parent"
+                                        location-strategy="connected" class="p-5" scroll-strategy="reposition" localtop>
+                                        <v-card class="pa-2" min-height="600" min-width="600">
+                                            <v-row>
+                                                <v-col cols="4">
+                                                    <v-text-field v-model="params.searchPeripheral" clearable
+                                                        density="compact" label="Search all fields"
+                                                        variant="outlined"></v-text-field>
+                                                </v-col>
+                                            </v-row>
+                                            <vue3-datatable ref="datatable" :rows="rows" :columns="cols"
+                                                :loading="loading" :selectRowOnClick="true" :sortable="true"
+                                                :hide="true" :search="params.searchPeripheral" :filter="true"
+                                                skin="bh-table-compact bh-table-bordered" class=""
+                                                @rowClick="rowClickPeripherals"></vue3-datatable>
+                                            <p><b>List of Selected Row</b><br>
+                                                <span v-for="itemRow in selectedPeripherals" :key="itemRow.id">
+                                                    [ {{ itemRow.item_code }} - <v-icon
+                                                        @click="removeSelectedPeripherals(index)"
+                                                        class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
+                                                </span>
+                                            </p>
+                                        </v-card>
+                                    </v-overlay>
+                                </div>
+                            </v-col>
 
-                    </v-row>
-                </v-card>
-                <v-snackbar color="warning" v-model="snackbarErrorGeneral" location="right bottom" :timeout="3000">
-                    <v-icon>mdi-information-box</v-icon> Please ensure that required fields are not left blank
-                </v-snackbar>
-                <v-snackbar color="success" v-model="snackbarSuccess" location="right bottom" :timeout="5000">
-                    <v-icon>mdi-check-circle-outline</v-icon> Successfully created.
-                </v-snackbar>
-                <v-snackbar color="error" v-model="snackbarError" location="right bottom" :timeout="5000">
-                    <v-icon>mdi-alert-circle-outline</v-icon> Something went wrong.
-                </v-snackbar>
-            </v-container>
-        </v-form>
-    </div>
+                        </v-row>
+                    </v-card>
+                    <v-snackbar color="warning" v-model="snackbarErrorGeneral" location="right bottom" :timeout="3000">
+                        <v-icon>mdi-information-box</v-icon> Please ensure that required fields are not left blank
+                    </v-snackbar>
+                    <v-snackbar color="success" v-model="snackbarSuccess" location="right bottom" :timeout="5000">
+                        <v-icon>mdi-check-circle-outline</v-icon> Successfully created.
+                    </v-snackbar>
+                    <v-snackbar color="error" v-model="snackbarError" location="right bottom" :timeout="5000">
+                        <v-icon>mdi-alert-circle-outline</v-icon> Something went wrong.
+                    </v-snackbar>
+                </v-container>
+        </template>
+    </LayoutSinglePage>
+</v-form>
 </template>
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
@@ -314,6 +317,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment';
 import { useRouter } from 'vue-router';
+import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
@@ -342,6 +346,12 @@ const deliveryDateError = ref('')
 const snackbarErrorGeneral = ref(false)
 const snackbarSuccess = ref(false)
 const snackbarError = ref(false)
+
+const breadcrumbItems = [
+    { title: 'Back', disabled: false, href: '/equipment-handling' },
+    { title: 'Equipment Handling', disabled: true, href: '' },
+    { title: 'Work Order', disabled: true, href: '' },
+]
 
 
 // 1st
@@ -398,7 +408,7 @@ watch(internalRequest, (val) => {
         attached_gate.value = ''
         with_contract.value = ''
         bypass.value = ''
-    }else{
+    } else {
         disableExternalCheckbox.value = false
     }
 })
@@ -578,13 +588,14 @@ const getUsers = async () => {
         })
 
         rows.value = data
-        total_rows.value = data?.meta?.total;
+        // total_rows.value = data.meta.total;
     } catch (error) {
         console.log(error)
     }
 
     loading.value = false;
 };
+
 const changeServer = (data) => {
     params.current_page = data.current_page;
     params.pagesize = data.pagesize;
@@ -595,6 +606,7 @@ const changeServer = (data) => {
 
 onMounted(() => {
     getUsers();
+    // console.log(total_rows)
 });
 </script>
 
@@ -610,9 +622,9 @@ onMounted(() => {
 
 
 <style scoped>
-.dp--menu-wrapper {
+/* .dp--menu-wrapper {
     position: absolute !important;
-}
+} */
 
 .hideID {
     visibility: hidden;
@@ -623,33 +635,7 @@ onMounted(() => {
     position: absolute !important;
 }
 
-.vCheckbox {
+/* .vCheckbox {
     height: 40px !important;
-}
-</style>
-
-<style>
-.container-form {
-    padding: 10px 10em !important;
-}
-
-.topActions {
-    /* position: fixed;
-    padding: 7px 2em;
-    z-index: 9999;
-    left: 255px;
-    right: 0;
-    top: 73px; */
-
-    width: calc(100% - 240px);
-    height: 60px;
-    padding: 0;
-    position: fixed;
-    right: 0;
-    left: 252px;
-    top: 72px;
-    background: #fff;
-    border-bottom: 1px solid #3333331c;
-    z-index: 999;
-}
+} */
 </style>

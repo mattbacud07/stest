@@ -49,11 +49,11 @@
   --bs-black-rgb: 0, 0, 0;
   --bs-body-color-rgb: 0, 0, 0;
   --bs-body-bg-rgb: 249, 250, 251;
-  --bs-font-sans-serif: "Roboto", Helvetica, sans-serif;
+  --bs-font-sans-serif: "Satoshi", Helvetica, sans-serif;
   --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
   --bs-body-font-family: var(--bs-font-sans-serif);
-  --bs-body-font-size: 0.875rem;
+  --bs-body-font-size: .8rem;
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
   --bs-body-color: #191970;
@@ -85,6 +85,52 @@
     scroll-behavior: smooth;
   }
 }
+
+
+
+/* =========================== ADDED STYLE BY PROGRAMMER ============================ */
+
+/* added styles to override vue3Table */
+.bh-text-sm { 
+  font-size: 12.3px !important;
+  line-height: 1rem !important;
+  font-weight: 500 !important;
+}
+.v-btn--size-default{
+  font-size: 12px!important;
+}
+.v-btn--size-small{
+  font-size: 12px!important;
+}
+input, optgroup, select, textarea{
+  font-size: var(--bs-body-font-size)!important;
+}
+.v-input{
+  font-size: .7rem !important;
+}
+.bh-table-responsive input[type=checkbox], .bh-table-responsive input[type=checkbox]+div{
+  height: 1rem!important;
+  width: 1rem!important;
+}
+
+/* TopActions Sub Header */
+.topActions {
+  width: calc(100% - 240px);
+  height: 60px;
+  padding: 0;
+  position: fixed;
+  right: 0;
+  left: 252px;
+  top: 72px;
+  background: #fff;
+  border-bottom: 1px solid #3333331c;
+  z-index: 99;
+}
+
+
+
+
+
 
 body {
   margin: 0;
@@ -19573,6 +19619,13 @@ body {
   .navbar .sidebar-toggler {
     display: flex;
   }
+  .topActions {
+    width: calc(100%);
+    left: 20px;
+  }
+  /* .container-form{
+    padding: 10px 1em !important;
+  } */
 }
 .navbar .search-form {
   width: 100%;
@@ -19867,7 +19920,7 @@ body {
 }
 .sidebar .sidebar-body .nav .nav-item .nav-link .link-title {
   margin-left: 30px;
-  font-size: 14px;
+  font-size: 12px;
   transition: all 0.2s ease-in-out;
 }
 .sidebar .sidebar-body .nav .nav-item .nav-link .link-arrow {

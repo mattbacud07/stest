@@ -1,38 +1,30 @@
 <template>
-    <div class="main-wrapper">
-        <Sidebar />
-        <div class="page-wrapper">
-            <Header />
-            <div class="page-content">
-                <v-form ref="form"> <!--@submit.prevent="submitWorkOrder" ref="form" -->
-                    <v-container class="container-form mt-10">
-                        <v-row justify="space-between" class="topActions">
-                            <div>
-                                <nav class="mt-5 ml-3">
-                                    <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="#">
-                                                <router-link to="/equipment-handling">
-                                                    <v-icon>mdi-menu-left</v-icon> back
-                                                </router-link></a></li>
-                                        <li class="breadcrumb-item"><a href="#">Equipment Handling</a></li>
-                                        <li class="breadcrumb-item active" aria-current="page">Work Order</li>
-                                    </ol>
-                                </nav>
-                            </div>
-                            <div class="mt-3 mr-4">
-                            </div>
-                        </v-row>
-
-                        <RequestDetails :service_id="parseInt(service_id)" @set-status="getStatus"/>
-
-                        <RequestedEquipments :service_id="parseInt(service_id)" :status="status" :editSerial="false"/>
-
-                        <ApproverHistoryLog :service_id="parseInt(service_id)" :status="status"/>
-                    </v-container>
-                </v-form>
+    <LayoutSinglePage>
+        <template #topBarFixed>
+            <div>
+                <v-breadcrumbs  class="pt-7"> 
+                    <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index" :class="{'custom-pointer': !item.disabled}" @click="navigateTo(item)"
+                        :disabled="item.disabled" >
+                        {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
+                    </v-breadcrumbs-item>
+                </v-breadcrumbs>
             </div>
-        </div>
-    </div>
+            <v-spacer></v-spacer>
+            <!-- <v-btn color="primary">Approve</v-btn> -->
+        </template>
+        <template #default>
+            <v-form ref="form"> <!--@submit.prevent="submitWorkOrder" ref="form" -->
+            <v-container class="mt-10">
+
+                <RequestDetails :service_id="parseInt(service_id)" @set-status="getStatus" />
+
+                <RequestedEquipments :service_id="parseInt(service_id)" :status="status" :editSerial="false" />
+
+                <ApproverHistoryLog :service_id="parseInt(service_id)" :status="status" />
+            </v-container>
+        </v-form>
+        </template>
+    </LayoutSinglePage>
 </template>
 <script setup>
 import { ref } from 'vue';
@@ -48,6 +40,23 @@ import RequestDetails from '@/components/Approver/EH/RequestDetails.vue'
 import Header from '@/components/layout/Header.vue'
 import Sidebar from '@/components/layout/Sidebars/Sidebar.vue';
 import SubmitWorkOrder from '@/components/EquipmentHandling/SubmitWorkOrder.vue'
+import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
+import { useDisplay } from 'vuetify'
+
+const router = useRouter()
+
+const breadcrumbItems = [
+    { title: 'Back', disabled: false, href: '/equipment-handling' },
+    { title: 'Equipment Handling', disabled: true, href: '' },
+    { title: 'Work Order', disabled: true, href: '' },
+]
+const navigateTo = (item) => {
+    if (!item.disabled && item.href) {
+        router.push(item.href);
+    }
+};
+
+
 
 /** data declarations */
 // const uri = BASE_URL
@@ -94,31 +103,5 @@ const getStatus = (data) => {
 
 .vCheckbox {
     height: 40px !important;
-}
-</style>
-
-<style>
-.container-form {
-    padding: 10px 10em !important;
-}
-
-.topActions {
-    /* position: fixed;
-    padding: 7px 2em;
-    z-index: 9999;
-    left: 255px;
-    right: 0;
-    top: 73px; */
-
-    width: calc(100% - 240px);
-    height: 60px;
-    padding: 0;
-    position: fixed;
-    right: 0;
-    left: 252px;
-    top: 72px;
-    background: #fff;
-    border-bottom: 1px solid #3333331c;
-    z-index: 99;
 }
 </style>

@@ -110,22 +110,6 @@ const rowSelect = () => {
     status.value = statusId[0]
 }
 
-/** getStatus Text */
-// const getStatusText = (status) => {
-//     if(pub_var.DISAPPROVED == status){
-//         return { text: 'Disapproved', color : 'red' }
-//     }
-//     if(pub_var.ONGOING == status){
-//         return { text: 'Ongoing', color : '#0249ff' }
-//     }
-//     if(pub_var.COMPLETE == status){
-//         return { text: 'Completed', color : 'green' }
-//     }
-//     if(pub_var.PARTIAL_COMPLETE == status){
-//         return { text: 'Ongoing', color : '#0249ff' }
-//     }
-// }
-
 
 const getRequestToAssign = async () => {
     try {

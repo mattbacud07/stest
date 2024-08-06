@@ -12,7 +12,7 @@ class InternalExternalName extends Model
 
 
     protected $table = 'internal_external_requests';
-
+    public $timestamps = true;
     protected $fillable = [
         'name',
         'created_at',

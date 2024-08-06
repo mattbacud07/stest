@@ -20,7 +20,7 @@
                                     style="color: #999;font-weight: 100;font-size: .8em;">as Requestor</span></span>
                         </a>
                     </li>
-                    <v-divider></v-divider>
+                    <!-- <v-divider></v-divider> -->
                 </router-link>
                 <li class="nav-item nav-category ml-3">Main Admin</li>
 
@@ -39,23 +39,23 @@
                         <a class="nav-link" data-bs-toggle="collapse" href="#accntMgt" role="button">
                             <v-icon>mdi-account-multiple-outline</v-icon>
                             <span class="link-title">Account Management</span>
-                            <v-icon class="link-arrow">mdi-menu-down</v-icon>
+                            <v-icon class="link-arrow mr-3">mdi-chevron-down</v-icon>
                         </a>
                         <div class="collapse" id="accntMgt">
                             <ul class="nav sub-menu">
-                                <router-link to="/aprroval-config">
-                                    <li class="nav-item">
-                                        <a class="nav-link">
-                                            <v-icon class="myIcon">mdi-tag-check</v-icon>
-                                            <span class="link-title">Approver Config</span>
-                                        </a>
-                                    </li>
-                                </router-link>
                                 <router-link to="/roles">
                                     <li class="nav-item">
                                         <a class="nav-link">
                                             <v-icon class="myIcon">mdi-account-badge</v-icon>
                                             <span class="link-title">Roles</span>
+                                        </a>
+                                    </li>
+                                </router-link>
+                                <router-link to="/aprroval-config">
+                                    <li class="nav-item">
+                                        <a class="nav-link">
+                                            <v-icon class="myIcon">mdi-tag-check</v-icon>
+                                            <span class="link-title">Approver Config</span>
                                         </a>
                                     </li>
                                 </router-link>
@@ -70,7 +70,7 @@
                         <a class="nav-link" data-bs-toggle="collapse" href="#maintenance" role="button">
                             <v-icon>mdi-cogs</v-icon>
                             <span class="link-title">Maintenance Settings</span>
-                            <v-icon class="link-arrow">mdi-menu-down</v-icon>
+                            <v-icon class="link-arrow mr-3">mdi-chevron-down</v-icon>
                         </a>
                         <div class="collapse" id="maintenance">
                             <ul class="nav sub-menu">
@@ -117,7 +117,7 @@
 const toggleSidebar = () => {
     $('.sidebar-header .sidebar-toggler').toggleClass('active not-active');
     if (window.matchMedia('(min-width: 992px)').matches) {
-        $('body').toggleClass('sidebar-folded');
+        // $('body').toggleClass('sidebar-folded');
     } else if (window.matchMedia('(max-width: 991px)').matches) {
         $('body').toggleClass('sidebar-open');
     }
@@ -154,19 +154,19 @@ const hoverNavLeave = () => {
 .sidebar a {
     font-weight: 600 !important;
     color: #191970 !important;
-    padding: 5px 0 3px 10px !important;
+    padding: 2px 0 2px 10px !important;
 }
 
 .sidebar .link-title {
     margin-left: 15px !important;
 }
 
-.sidebar .myIcon {
+/* .sidebar .myIcon {
     font-size: 1.8em !important;
-}
+} */
 
 .sidebar .router-link-exact-active {
-    /* background: #eeeeee !important; */
-    border-left: 7px solid #191970;
+    background: #eeeeee !important;
+    /* border-left: 7px solid #191970; */
 }
 </style>

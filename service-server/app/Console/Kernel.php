@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+//         Locate your php.ini file. This is typically located in your PHP installation directory.
+//          Set the date.timezone:
+        // $schedule->command('app:PMUpdateStatus')->twiceDaily(8, 13);
+        // $schedule->command('app:PMUpdateStatus')->dailyAt('08:00');
+        $schedule->command('app:PMUpdateStatus')->everyFiveSeconds();
     }
 
     /**

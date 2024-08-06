@@ -21,7 +21,7 @@
                                     style="color: #999;font-weight: 100;font-size: .8em;">as Requestor</span></span>
                         </a>
                     </li>
-                <v-divider></v-divider>
+                <!-- <v-divider></v-divider> -->
                 </router-link>
                 <router-link to="/approver-dashboard" class="router-link-active">
                     <li class="nav-item">
@@ -93,19 +93,19 @@ user.getrUserData
 .sidebar a {
     font-weight: 600 !important;
     color: #191970 !important;
-    padding: 5px 0 3px 10px !important;
+    padding: 2px 0 2px 10px !important;
 }
 
 .sidebar .link-title {
     margin-left: 15px !important;
 }
 
-.sidebar .myIcon {
+/* .sidebar .myIcon {
     font-size: 1.8em !important;
-}
+} */
 
 .sidebar .router-link-exact-active {
-    /* background: #eeeeee !important; */
-    border-left: 7px solid #191970;
+    background: #eeeeee !important;
+    /* border-left: 2px solid #191970; */
 }
 </style>

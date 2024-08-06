@@ -21,8 +21,8 @@
                             </div>
                             <div class="mt-3 mr-4">
                                 <!-- Assign Engineer -->
-                                <v-btn type="button" density="compact" :disabled="btnDisable" color="primary"
-                                    class="text-none btnSubmit" @installed="machineInstalled"><v-icon class="mr-2">mdi-package-check</v-icon>
+                                <v-btn type="button" :disabled="btnDisable" :loading="btnLoading" color="primary"
+                                    class="text-none btnSubmit" @click="machineInstalled"><v-icon class="mr-2">mdi-package-check</v-icon>
                                     Installed</v-btn>
                             </div>
                         </v-row>
@@ -35,7 +35,7 @@
                         <!-- <ApproverHistoryLog :service_id="service_id"/> -->
 
                         <v-snackbar color="success" v-model="snackbarSuccess" location="right bottom" :timeout="5000">
-                            <v-icon>mdi-check-circle-outline</v-icon> Successfully assigned.
+                            <v-icon>mdi-check-circle-outline</v-icon> Successfully installed.
                         </v-snackbar>
                     </v-container>
                 </div>
@@ -85,7 +85,7 @@ const remark = ref('')
  */
 const machineInstalled = async () => {
     btnLoading.value = true
-
+    btnDisable.value = true
     try {
         const response = await apiRequest.post('approve-request',
             {
@@ -99,10 +99,11 @@ const machineInstalled = async () => {
             dialogApprove.value = false
             setTimeout(() => {
                 router.push('/equipment-installation')
-            }, 4000)
+            }, 3000)
         }
     } catch (error) {
         alert(error)
+        btnDisable.value = false
     } finally {
         btnLoading.value = false
     }

@@ -16,65 +16,69 @@
                         </nav>
                     </div>
                     <div class="mt-3 mr-4">
-                        <v-dialog v-model="dialog" max-width="400" persistent>
-                            <template v-slot:activator="{ props: activatorProps }">
-                                <v-btn :disabled="btnDisable" v-bind="activatorProps" size="small" color="error"
-                                    elevation="1" class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
-                                    Disapprove</v-btn>
-                            </template>
-                            <v-card text="" title="Disapprove">
-                                <v-col cols="12">
-                                    <v-textarea class="mr-2 ml-2" v-model="disApproveRemark" clearable
-                                        label="Reason of Disapproval" color="primary" variant="outlined"></v-textarea>
-                                    <p class="text-danger ml-3">{{ disApproveRemarkError }}</p>
-                                </v-col>
-                                <template v-slot:actions>
-                                    <v-row justify="end">
-                                        <v-btn elevation="2" @click="dialog = false" background-color="red" size="small"
-                                            color="#191970" class="text-none mr-2"><v-icon>mdi-close</v-icon>
-                                            Cancel</v-btn>
-                                        <v-btn @click="disapproveRequest" color="primary" elevation="2" size="small"
-                                            class="text-none mr-3"
-                                            style="background-color: #191970;color: #fff!important;"><v-icon
-                                                class="mr-1">mdi-text-box-remove-outline</v-icon> Disapprove</v-btn>
-                                    </v-row>
+                        <div v-if="exist_service_id === false">
+                            <v-dialog v-model="dialog" max-width="400" persistent>
+                                <template v-slot:activator="{ props: activatorProps }">
+                                    <v-btn :disabled="btnDisable" v-bind="activatorProps" size="small" color="error"
+                                        elevation="1" class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
+                                        Disapprove</v-btn>
                                 </template>
-                            </v-card>
-                        </v-dialog>
+                                <v-card text="" title="Disapprove">
+                                    <v-col cols="12">
+                                        <v-textarea class="mr-2 ml-2" v-model="disApproveRemark" clearable
+                                            label="Reason of Disapproval" color="primary"
+                                            variant="outlined"></v-textarea>
+                                        <p class="text-danger ml-3">{{ disApproveRemarkError }}</p>
+                                    </v-col>
+                                    <template v-slot:actions>
+                                        <v-row justify="end">
+                                            <v-btn elevation="2" @click="dialog = false" background-color="red"
+                                                size="small" color="#191970"
+                                                class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                                Cancel</v-btn>
+                                            <v-btn @click="disapproveRequest" color="primary" elevation="2" size="small"
+                                                class="text-none mr-3"
+                                                style="background-color: #191970;color: #fff!important;"><v-icon
+                                                    class="mr-1">mdi-text-box-remove-outline</v-icon> Disapprove</v-btn>
+                                        </v-row>
+                                    </template>
+                                </v-card>
+                            </v-dialog>
 
-                        <!-- Approve Button -->
-                        <v-dialog v-model="dialogApprove" max-width="400" persistent>
-                            <template v-slot:activator="{ props: activatorProps }">
-                                <v-btn type="button" size="small" v-bind="activatorProps" :disabled="btnDisable"
-                                    color="primary" class="text-none btnSubmit"><v-icon class="mr-2">mdi-check</v-icon>
-                                    Approve</v-btn>
-                            </template>
-                            <v-card text="" title="Approve">
-                                <v-col cols="12">
-                                    <v-textarea class="mr-2 ml-2" v-model="remark" clearable label="Remarks (optional)"
-                                        color="primary" variant="outlined"></v-textarea>
-                                </v-col>
-                                <template v-slot:actions>
-                                    <v-row justify="end">
-                                        <v-btn elevation="2" @click="dialogApprove = false" background-color="red"
-                                            size="small" color="#191970"
-                                            class="text-none mr-2"><v-icon>mdi-close</v-icon>
-                                            Cancel</v-btn>
-                                        <v-btn type="button" size="small" :loading="btnLoading" :disabled="btnDisable"
-                                            color="#191970" class="text-none bg-primary mr-5"
-                                            @click="approveRequest"><v-icon class="mr-2">mdi-check</v-icon>
-                                            Approve</v-btn>
-                                    </v-row>
+                            <!-- Approve Button -->
+                            <v-dialog v-model="dialogApprove" max-width="400" persistent>
+                                <template v-slot:activator="{ props: activatorProps }">
+                                    <v-btn type="button" size="small" v-bind="activatorProps" :disabled="btnDisable"
+                                        color="primary" class="text-none btnSubmit"><v-icon
+                                            class="mr-2">mdi-check</v-icon>
+                                        Approve</v-btn>
                                 </template>
-                            </v-card>
-                        </v-dialog>
+                                <v-card text="" title="Approve">
+                                    <v-col cols="12">
+                                        <v-textarea class="mr-2 ml-2" v-model="remark" clearable
+                                            label="Remarks (optional)" color="primary" variant="outlined"></v-textarea>
+                                    </v-col>
+                                    <template v-slot:actions>
+                                        <v-row justify="end">
+                                            <v-btn elevation="2" @click="dialogApprove = false" background-color="red"
+                                                size="small" color="#191970"
+                                                class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                                Cancel</v-btn>
+                                            <v-btn type="button" size="small" :loading="btnLoading"
+                                                :disabled="btnDisable" color="#191970" class="text-none bg-primary mr-5"
+                                                @click="approveRequest"><v-icon class="mr-2">mdi-check</v-icon>
+                                                Approve</v-btn>
+                                        </v-row>
+                                    </template>
+                                </v-card>
+                            </v-dialog>
+                        </div>
+                        <div v-if="exist_service_id === true"><p style="color: red;">* Internal Processing in Progress</p></div>
                     </div>
                 </v-row>
-                
-                <RequestDetails 
-                :service_id="parseInt(service_id)" 
-                :showInternalRequest="user.user.approval_level === pub_var.SERVICE_TL ? true : false"
-                />
+
+                <RequestDetails :service_id="parseInt(service_id)"
+                    :showInternalRequest="user.user.approval_level === pub_var.SERVICE_TL ? true : false" />
 
                 <RequestedEquipments :service_id="parseInt(service_id)" @set-serial="getSerialNumber"
                     :editSerial="true" />
@@ -88,7 +92,8 @@
                 <v-snackbar color="success" v-model="snackbarSuccess" location="right bottom" :timeout="5000">
                     <v-icon>mdi-check-circle-outline</v-icon> Approved successfully.
                 </v-snackbar>
-                <v-snackbar color="warning" v-model="snackbarSuccessDisapproved" location="right bottom" :timeout="5000">
+                <v-snackbar color="warning" v-model="snackbarSuccessDisapproved" location="right bottom"
+                    :timeout="5000">
                     <v-icon>mdi-check-circle-outline</v-icon> Disapproved successfully.
                 </v-snackbar>
                 <v-snackbar color="error" v-model="snackbarError" location="right bottom" :timeout="5000">
@@ -136,6 +141,7 @@ const service_id = ref(id)
 const serialNumber = ref([])
 const submmitApproveStatus = ref(false)
 const remark = ref('')
+const exist_service_id = ref(null)
 
 
 /** Data functions */
@@ -210,17 +216,34 @@ const disapproveRequest = async () => {
 
         if (response.data && response.data.success) {
             snackbarSuccessDisapproved.value = true
-            setTimeout(()=>{
+            setTimeout(() => {
                 router.push('/approver-equipment-handling')
             }, 2000)
         }
     } catch (error) {
         alert(error)
     }
-    finally{
+    finally {
         snackbarSuccessDisapproved.value = false
     }
 }
+
+/** Check Status of Request if Delegated to an Engineer */
+const CheckDelegateInternalServicing = async () => {
+    try {
+        const response = await apiRequest.get('check_service_id_exist_internal', {
+            params : { service_id: id, }
+        })
+        if(response.data && response.data.exist_service_id){
+            exist_service_id.value = true
+        }else{
+            exist_service_id.value = false
+        }
+    } catch (error) {
+        alert(error)
+    }
+}
+
 
 /**
  * Get Serial Number Input from Additional Peripheral Table
@@ -242,6 +265,7 @@ onMounted(() => {
     if (user.user.approval_level !== 1) {
         btnDisable.value = false
     }
+    CheckDelegateInternalServicing()
 })
 </script>
 
@@ -269,31 +293,5 @@ onMounted(() => {
 
 .vCheckbox {
     height: 40px !important;
-}
-</style>
-
-<style>
-.container-form {
-    padding: 10px 10em !important;
-}
-
-.topActions {
-    /* position: fixed;
-    padding: 7px 2em;
-    z-index: 9999;
-    left: 255px;
-    right: 0;
-    top: 73px; */
-
-    width: calc(100% - 240px);
-    height: 60px;
-    padding: 0;
-    position: fixed;
-    right: 0;
-    left: 252px;
-    top: 72px;
-    background: #fff;
-    border-bottom: 1px solid #3333331c;
-    z-index: 9;
 }
 </style>

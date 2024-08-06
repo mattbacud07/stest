@@ -4,13 +4,22 @@ namespace App\Http\Controllers\Engineer;
 
 use App\Http\Controllers\Controller;
 use App\Models\EhServicesModel;
+use App\Services\Engineer\PMTask;
 use App\Traits\GlobalVariables;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class Engineer extends Controller
 {
     use GlobalVariables;
+
+    protected $pmTask;
+    public function __construct(PMTask $pmTask)
+    {
+        $this->pmTask = $pmTask;
+    }
+
     public function get_assigned_request(Request $request){
         $user_id = $request->id;
         try {
@@ -25,6 +34,26 @@ class Engineer extends Controller
             return response()->json([ 'assigned_data' => $data ]);
         } catch (\Throwable $th) {
             return response()->json([ 'error' => $th->getMessage() ]);
+        }
+    }
+
+    public function accept_pm_task(Request $request, Guard $guard){
+
+        $id = $request->id;
+        $user_id = $guard->user()->id;
+        DB::beginTransaction();
+        try {
+            $this->pmTask->accept_pm_task($id, $user_id);
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'error' => $th->getMessage(),
+            ]);
         }
     }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\ehController\EhMainController;
 use App\Http\Controllers\ehController\InternalRequest;
 use App\Http\Controllers\ehController\WorkOrder;
 use App\Http\Controllers\Engineer\Engineer;
+use App\Http\Controllers\EquipmentHandling\EquipmentHandlingController;
 use App\Http\Controllers\PreventiveMaintenance\PreventiveMaintenance;
 use App\Http\Controllers\TeamLeader\TeamLeader;
 use GuzzleHttp\Middleware;
@@ -34,15 +35,22 @@ Route::post('/authentication', [authController::class, 'dashboardLogin']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
+        Route::get('/get-equipment-handling', [EquipmentHandlingController::class, 'showBasedOnCondition']);
+        Route::get('/get-specific-equipment-handling', [EquipmentHandlingController::class, 'getEquipmentHandlingById']);
+
     /* Equipment Handling */
-    Route::get('/get-equipment-handling-data', [EhMainController::class, 'index']);
+    // Route::get('/get-equipment-handling-data', [EhMainController::class, 'show']);
         // Internal Request
         Route::get('/get-engineers-data', [InternalRequest::class, 'get_engineers_data']);
         Route::get('/get-internal-request-details', [InternalRequest::class, 'get_internal_request_details']);
         Route::post('/internal-process', [InternalRequest::class, 'add_internal_process']);
-        Route::get('/internal-request', [InternalRequest::class, 'getInternalRequest']);
+        Route::get('/checkIfDelegated', [InternalRequest::class, 'checkIfDelegated']);
+        Route::get('/getInternalRequest', [InternalRequest::class, 'getInternalRequest']);
+        // Route::get('/detailed-internal-request', [InternalRequest::class, 'getDetailedInternalRequest']);
         Route::post('/accept-internal-request', [InternalRequest::class, 'accept_internal_request']);
         Route::post('/internal-servicing-completed', [InternalRequest::class, 'internal_servicing_completed']);
+        Route::post('/markPackedEndorsedToWarehouse', [InternalRequest::class, 'markPackedEndorsedToWarehouse']);
+        Route::get('/internal-servicing-get-status', [InternalRequest::class, 'internal_servicing_get_status']);
 
 
 
@@ -56,7 +64,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     /** Master Data and Submit Work Order*/
-    Route::get('/master-data-equipments', [EhMainController::class, 'master_data_equipments']); // List of Equipments and Institution
+    Route::get('/master-data-equipments', [EhMainController::class, 'master_data_equipments']); // List of Equipments and 
+    Route::get('/get_institution', [EhMainController::class, 'get_institution']); // List of  and Institution
     Route::post('/submit-work-order', [WorkOrder::class, 'submit_work_order']); // Submit Work Order
 
 
@@ -72,6 +81,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
         // Assign Role
+        Route::get('/get_role_name', [Roles::class, 'get_role_name']);
+        Route::get('/get_permissions', [Roles::class, 'get_permissions']);
+        Route::put('/set_permissions', [Roles::class, 'set_permissions']);
+        Route::post('/add_role_name', [Roles::class, 'add_role_name']);
+        Route::delete('/delete_role_name', [Roles::class, 'delete_role_name']);
         Route::post('/assign-role', [Roles::class, 'assign_role']);
         Route::delete('/delete-role', [Roles::class, 'delete_role']);
         Route::get('/assigned-user-role', [Roles::class, 'get_assigned_roles']);
@@ -84,6 +98,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     /** Engineer */
     Route::get('/get-assigned-request', [Engineer::class, 'get_assigned_request']);
+    Route::post('/accept-pm-task', [Engineer::class, '
+    ']);
 
 
     /** Preventive Maintenance */

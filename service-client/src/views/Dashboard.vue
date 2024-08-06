@@ -1,5 +1,5 @@
 <template>
-<div class="main-wrapper">
+<!-- <div class="main-wrapper">
   <Sidebar />
     <div class="page-wrapper">
       <Header />
@@ -7,14 +7,18 @@
           <Welcome />
       </div>
     </div>
-  </div>
+  </div> -->
+  <BaseLayout>
+        <Welcome />
+    </BaseLayout>
+    
 </template>
 
 <script setup>
-import Header from '@/components/layout/Header.vue'
-import Sidebar from '@/components/layout/Sidebars/Sidebar.vue';
-// import SideMain from '@/components/layout/SideMain.vue'
-import Footer from '@/components/layout/Footer.vue'
+import Header from '@/components/layout/Header.vue'  
+import ApproverSidebar from '@/components/layout/Sidebars/ApproverSidebar.vue';
 import Welcome from '@/components/dashboard-content/Welcome.vue'
+
+import BaseLayout from '@/components/layout/MainLayout/BaseLayout.vue';
 
 </script>

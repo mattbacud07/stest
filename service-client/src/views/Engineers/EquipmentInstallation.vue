@@ -89,7 +89,7 @@ const cols =
         { field: 'internal_name', title: 'Internal Request' },
         { field: 'proposed_delivery_date', title: 'Proposed Delivery Date', type: 'date' },
         { field: 'created_at', title: 'Date Requested', type: 'date' },
-        { field: 'approver_name', title: 'Pending Approval'}, //minWidth : '300px' 
+        { field: 'approver_name', title: 'Pending Approval', hide : true,}, //minWidth : '300px' 
         { field: 'main_status', title: 'Status', type : 'number'}, //  minWidth : '200px',
     ]) || [];
 

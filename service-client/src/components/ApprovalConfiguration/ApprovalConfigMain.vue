@@ -1,9 +1,9 @@
 <template>
     <div>
         <v-card>
-        <v-tabs v-model="tab" bg-color="#e3e3e382" density="compact" >
-            <v-tab value="one" class="text-none" color="primary">Set Approvers</v-tab>
-            <v-tab value="two" class="text-none" color="primary">View Approvers</v-tab>
+        <v-tabs v-model="tab" density="compact" class="border-b-sm">
+            <v-tab value="one" class="text-none" color="primary">Set Approver</v-tab>
+            <v-tab value="two" class="text-none" color="primary">View</v-tab>
         </v-tabs>
 
         <v-card-text>

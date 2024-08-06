@@ -130,11 +130,11 @@
                     <div>
                         <strong>SERVICE DEPARTMENT TEAM LEADER <i>(Delegate installation)</i></strong>
                         <div class="text-caption">
-                            <span>{{ tl_assigned_fname }} {{ tl_assigned_lname }}</span>
+                            <span class="text-success">{{ tl_assigned_fname }} {{ tl_assigned_lname }}</span>
                         </div>
                     </div>
                     <span v-if="assigned_date !== ''" class="d-flex flex-column text-right timeRemarks">
-                        <span class="me-4 text-disabled">{{ assigned_date }}</span>
+                        <span class="me-4 text-disabled">{{ pub_var.formatDate(assigned_date) }}</span>
                     </span>
                     <span v-else>
                         <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
@@ -146,11 +146,11 @@
                     <div>
                         <strong>Completed <i>(Installed)</i></strong>
                         <div class="text-caption">
-                            <span>{{ fname }} {{ lname }} <span v-if="date_installed !== ''">(Assigned Engineer)</span></span>
+                            <span class="text-success">{{ fname }} {{ lname }} <span v-if="date_installed !== ''">(Assigned Engineer)</span></span>
                         </div>
                     </div>
                     <span v-if="date_installed !== ''" class="d-flex flex-column text-right timeRemarks">
-                        <span class="me-4 text-disabled">{{ date_installed }}</span>
+                        <span class="me-4 text-disabled">{{ pub_var.formatDate(date_installed) }}</span>
                         <!-- <span :class="['me-4',getLatest(pub_var.INSTALLATION_ENGINEER).checkIfApproved ? 'text-danger' : 'text-primary']">{{ getLatest(6).remarks }}</span> -->
                     </span>
                     <span v-else>
@@ -176,6 +176,7 @@ const get_approval_history = ref([])
 const uri = BASE_URL
 const user = user_data()
 user.getUserData
+const apiRequest = user.apiRequest()
 
 const tl_assigned = ref('')
 const tl_assigned_fname = ref('')
@@ -236,12 +237,7 @@ const getLatest = (approval_level) => {
 //Get Approvers
 const getUsers = async () => {
     try {
-        const response = await axios.get(uri + 'api/get-approver', {
-            headers: {
-                'Authorization': `Bearer ${user.tokenData}`
-            }
-        }
-        );
+        const response = await apiRequest.get('get-approver');
         const data = response.data.users
 
         approvers.value = data
@@ -253,20 +249,16 @@ const getUsers = async () => {
 //Get Approval History
 const getApprovalHistory = async () => {
     try {
-        const response = await axios.get(uri + 'api/get-approval-history', {
+        const response = await apiRequest.get('get-approval-history', {
             params: {
                 service_id: props.service_id,
-            },
-            headers: {
-                'Authorization': `Bearer ${user.tokenData}`
             }
-        }
-        );
+        });
         const data = response.data.approval_history
 
         get_approval_history.value = Array.from(data)
     } catch (error) {
-        alert(response.data.error ?? error)
+        alert(error)
     }
 };
 
@@ -274,23 +266,19 @@ const getApprovalHistory = async () => {
 /** Get Job Order Details (installer, date installed) */
 const getDetails = async () => {
     try {
-        const response = await axios.get(uri + 'api/approver-get-equipment-handling-data', {
+        const response = await apiRequest.get('get-specific-equipment-handling', {
             params: {
                 service_id: props.service_id,
-            },
-            headers: {
-                'Authorization': `Bearer ${user.tokenData}`
             }
-        }
-        );
-        if (response.data && response.data.serviceData) {
-            const data = response.data.serviceData 
+        });
+        if (response.data && response.data.equipment_handling) {
+            const data = response.data.equipment_handling 
 
             const field = data[0]
 
             tl_assigned.value = field.tl_assigned
-            tl_assigned_fname.value = field.tl_assigned_fname
-            tl_assigned_lname.value = field.tl_assigned_lname
+            tl_assigned_fname.value = field.assigned_tl_fname
+            tl_assigned_lname.value = field.assigned_tl_lname
             assigned_date.value = field.assigned_date
             installer.value = field.installer
             fname.value = field.fname

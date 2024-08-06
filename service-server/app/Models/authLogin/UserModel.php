@@ -13,10 +13,18 @@ class UserModel extends Authenticatable
     use HasApiTokens;
     use HasFactory;
     use Notifiable;
+    
     protected $connection = 'mysqlSecond';
 
     protected $table = 'users';
-    protected $fillable = ['email', 'password'];
+    public $timestamps = true;
+    protected $fillable = ['email', 'password', 'first_name', 'last_name'];
+
+
+    // Get fullname
+    public function getFullName(){
+        return "{$this->first_name} {$this->last_name}";
+    }
 
         /**
      * The attributes that should be hidden for serialization.

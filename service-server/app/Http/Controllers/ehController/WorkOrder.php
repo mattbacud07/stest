@@ -38,8 +38,10 @@ class WorkOrder extends Controller
             'ship' => $request->ship,
             'bypass' => $request->bypass,
             'occular' => $request->ocular,
-            'external_request' => $request->externalRequest,
-            'internal_request' => $request->internalRequest,
+            'request_type' => $request->request_type,
+            'other' => $request->other,
+            // 'external_request' => $request->externalRequest,
+            // 'internal_request' => $request->internalRequest,
             'endorsement' => $request->endorsement,
             'status' => $status,
             'main_status' => self::ONGOING,
@@ -62,6 +64,7 @@ class WorkOrder extends Controller
                         'serial_number' => $equipments['equipmentSerial'],
                         'remarks' => $equipments['equipmentRemark'],
                         'category' => 'Equipment',
+                        'status' => 'Active',
                     ];
                 })->all();
                 $insert_equipment = DB::table('equipment_peripherals')->insert($data_equipments);
@@ -75,6 +78,7 @@ class WorkOrder extends Controller
                         'serial_number' => '',
                         'remarks' => $peripherals['peripheralRemark'],
                         'category' => 'Peripheral',
+                        'status' => 'Active',
                     ];
                 })->all();
                 $insert_peripheral = DB::table('equipment_peripherals')->insert($data_peripheral);

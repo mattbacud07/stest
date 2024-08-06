@@ -20,7 +20,7 @@
                                     {{ equipment.item_code }}
                                     <!-- <v-text-field class="hideID">{{ equipment.id }}</v-text-field> -->
                                 </td>
-                                <td>{{ equipment.description }}</td>
+                                <td style="min-width: 250px;">{{ equipment.description }}</td>
                                 <td>{{ equipment.serial_number }}</td>
                                 <td>{{ equipment.remarks }}</td>
                             </tr>
@@ -66,7 +66,7 @@
                                     {{ peripheral.item_code }}
                                     <!-- <v-text-field class="hideID">{{ peripheral.id }}</v-text-field> -->
                                 </td>
-                                <td>{{ peripheral.description }}</td>
+                                <td style="min-width: 250px;">{{ peripheral.description }}</td>
                                 <td>
                                     <v-form ref="form" @prevent.submit="submitSerial" v-if="user.user.approval_level === 1 && editSerial === true">
                                         <v-text-field clearable density="compact" variant="plain"
@@ -96,11 +96,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, getCurrentInstance } from 'vue';
+import { ref, onMounted, watch, getCurrentInstance, provide } from 'vue';
 import { BASE_URL } from '@/api';
 import { user_data } from '@/stores/auth/userData';
 import axios from 'axios'
 
+defineEmits(['set-serial', 'get-serials', 'get-serial-numbers','get-equipments-data'])
+const instance = getCurrentInstance()
 
 const uri = BASE_URL
 const user = user_data()
@@ -144,14 +146,15 @@ const getDetailsEquipment = async () => {
         const allEquipments = response.data.equipments
         equipments.value = allEquipments.filter(equipment => equipment.category === 'Equipment')
         peripherals.value = allEquipments.filter(equipment => equipment.category === 'Peripheral')
+
+        instance.emit('get-serials', equipments.value)
     } else {
         alert('Something went wrong')
     }
 }
 
+
 /** Get instance of parent to pass data from child to parent */
-defineEmits(['set-serial'])
-const instance = getCurrentInstance()
 const setSerialNumber = () => {
     watch(() => peripherals.value.map(peripheral => ({ id: peripheral.equipment_id, serial: peripheral.peripheralSerial })), (newValue) => {
             instance.emit('set-serial', newValue)
@@ -163,4 +166,4 @@ onMounted(() => {
     getDetailsEquipment()
 })
 
-</script>
+</script> 

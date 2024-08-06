@@ -15,7 +15,7 @@ class ApprovalConfiguration extends Controller
         // $users = DB::connection('mysqlSecond')->select('SELECT * FROM users');
 
         $approvers = DB::select('
-            SELECT a.*, u.first_name, u.last_name, p.position_name, d.name
+            SELECT a.*, u.first_name, u.last_name, u.email, p.position_name, d.name
             FROM approval_configuration a
             JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.users u ON a.user_id = u.id
             JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.positions p ON u.position = p.id
@@ -24,7 +24,7 @@ class ApprovalConfiguration extends Controller
         ');
 
         $users = DB::select('
-            SELECT u.id, concat(u.first_name , u.last_name) as user_name, p.position_name, d.name
+            SELECT u.id, u.first_name, u.last_name, concat(u.first_name , u.last_name) as user_name, u.email, p.position_name, d.name
             FROM '.DB::connection('mysqlSecond')->getDatabaseName().'.users u
             JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.positions p ON u.position = p.id
             JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.departments d ON u.department = d.id
@@ -68,7 +68,7 @@ class ApprovalConfiguration extends Controller
             'updated_at' => Carbon::now(),
         ];
 
-        $check_approver_exist = DB::table('approval_configuration')->where(['user_id' => $request->input('user_id'), 'approval_level' => $request->input('approver_level')])->select('*')->get();
+        $check_approver_exist = DB::table('approval_configuration')->where(['user_id' => $request->input('user_id')])->select('*')->get(); //, 'approval_level' => $request->input('approver_level')
 
         if (!$check_approver_exist->isEmpty()) {
             return response()->json(['error' => 'Already exist as an approver'], 200);

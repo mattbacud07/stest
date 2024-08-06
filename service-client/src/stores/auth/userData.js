@@ -16,7 +16,7 @@ export const user_data = defineStore('users',{
             const token = JSON.parse(localStorage.getItem('token'))
              return axios.create({
                 baseURL : BASE_URL + "api/",
-                timeout : 15000,
+                timeout : 90000,
                 headers : {
                     "Authorization" : `Bearer ${token}`,
                     "Content-Type" : "application/json",

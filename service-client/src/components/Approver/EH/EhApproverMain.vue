@@ -1,13 +1,9 @@
 <template>
     <div>
-        <v-row justify="space-between" class="topActions">
+        <!-- <v-row justify="space-between" class="topActions">
             <div>
                 <nav class="mt-5 ml-3">
                     <ol class="breadcrumb">
-                        <!-- <li class="breadcrumb-item"><a href="#">
-                                <router-link to="/approver-equipment-handling">
-                                    <v-icon>mdi-menu-left</v-icon> back
-                                </router-link></a></li> -->
                         <li class="breadcrumb-item"><a href="#">Equipment Handling</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Work Order</li>
                     </ol>
@@ -21,9 +17,9 @@
                     View Request</v-btn>
                 </router-link>
             </div>
-        </v-row>
-        <v-card class="mx-auto p-4 mt-10">
-            <v-row>
+        </v-row> -->
+        <v-card class="mx-auto p-2 border" flat>
+            <!-- <v-row>
                 <v-col cols="9" style="text-align: left;">
                     <h6 class="text-primary"><b>For Approval</b></h6>
                 <span class="text-red" style="font-size: 12px;"><i>{{ selectJustOneMessage }}</i></span>
@@ -32,8 +28,8 @@
                     <v-text-field v-model="params.search" clearable density="compact" label="Search all fields"
                         variant="outlined"></v-text-field>
                 </v-col>
-            </v-row>
-            <vue3-datatable ref="datatable" :rows="rows" :sort="true" :columns="cols" :loading="loading" :search="params.search" :sortable="true" :sortColumn="params.sort_column" :sortDirection="params.sort_direction" 
+            </v-row> -->
+            <vue3-datatable ref="datatable"  class="tableLimitText" :rows="rows" :sort="true" :columns="cols" :loading="loading" :search="params.search" :sortable="true" :sortColumn="params.sort_column" :sortDirection="params.sort_direction" 
                 skin="bh-table-hover bh-table-compact" :hasCheckbox="true" :selectRowOnClick="true" @rowSelect="rowSelect">
                 <template #requested_by="data">
                     <span>{{ data.value.first_name }} {{ data.value.last_name }}</span>
@@ -51,7 +47,7 @@
     </div>
 </template>
 <script setup>
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, provide } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import { BASE_URL } from '@/api/index'
 import axios from 'axios'
@@ -84,6 +80,11 @@ const rowSelect = (data) => {
     })
     selectedId.value = mapSelected.value[0] //SelectedId to pass in other routes for work order approval
 }
+
+// provide ID adn routes
+provide('selectedId', selectedId)
+provide('btnDisabled', btnDisabled)
+provide('routeView', 'WorkOrderApprover')
 
 /** Declaration of User Data */
 const user = user_data();

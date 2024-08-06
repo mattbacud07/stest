@@ -6,10 +6,6 @@
                     <v-text-field v-model="params.search" clearable density="compact" label="Search all fields"
                         variant="outlined"></v-text-field>
                 </v-col>
-                <!-- <v-col cols="4">
-                    <v-checkbox v-model="enableFilter" color="primary" density="compact" label="Enable Filter"
-                        value="primary"></v-checkbox>
-                </v-col> -->
                 <v-col cols="8" style="text-align: right;">
                     <!-- <router-link :to="{name : 'WorkOrderApprover', params : {id : selectedId ?? 0}}"> -->
                     <router-link :to="{name: 'ViewWorkOrder', params : {id : selectedId ?? 0}}">
@@ -25,7 +21,7 @@
                 </v-col>
             </v-row>
 
-            <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading" :search="params.search" @rowSelect="rowSelect"
+            <vue3-datatable ref="datatable" class="tableLimitText" :rows="rows" :columns="cols" :loading="loading" :search="params.search" @rowSelect="rowSelect"
                 :columnFilter="false" :sortColumn="params.sortColumn" :sortDirection="params.sortDirection" :sortable="true" skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true" :selectRowOnClick="true">
                 <template #id="data">
                     <span>{{ pub_var.setReportNumber(data.value.id,data.value.created_at) }}</span> 
@@ -72,7 +68,7 @@ const enableFilter = ref(false)
 const loading = ref(true);
 const total_rows = ref('');
 
-const params = reactive({ current_page: 1, pagesize: 10, sortColumn : 'id', sortDirection : 'desc' });
+const params = reactive({ current_page: 1, pagesize: 10, sortColumn : 'created_at', sortDirection : 'desc' });
 const rows = ref(null);
 
 const cols =

@@ -2,16 +2,26 @@
 
 namespace App\Traits;
 
-trait Maintenance{
+trait Maintenance
+{
     /** 
- * Preventive Maintenance
- */
-/** Work Type */
-public const pm = 1;
-public const cm = 2;
+     * PREVENTIVE MAINTENANCE
+     */
 
-/** Status */
-public const waiting_engineer = 1;
-public const backlog = 2;
-public const backjob = 3;
+    /** Work Type */
+    public const pm = 'PM';
+    public const cm = 'CM';
+
+
+    /** PM Frequency */
+    public const monthly = 'Monthly';
+    public const quarterly = 'Quarterly';
+    public const semiAnnually = 'Semi-Annually';
+    public const annually = 'Annually';
+
+
+
+    /*************************  End of Preventive Maintenance ********************************/
+
+
 }

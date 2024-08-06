@@ -29,24 +29,18 @@ class authController extends Controller
                         ->join(DB::connection('mysqlSecond')->getDatabaseName().'.positions as p','u.position','=','p.id')
                         ->join(DB::connection('mysqlSecond')->getDatabaseName().'.departments as d','u.department','=','d.id')
                         ->where('u.id',$user->id)->get();
-                    //     select('
-                    //     SELECT u.id, u.first_name , u.last_name, p.position_name, d.name as department_name
-                    //     FROM '.DB::connection('mysqlSecond')->getDatabaseName().'.users u
-                    //     JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.positions p ON u.position = p.id
-                    //     JOIN '.DB::connection('mysqlSecond')->getDatabaseName().'.departments d ON u.department = d.id
-                    //     WHERE u.id = '.$user->id.'
-                    // ');
 
                     
                     /** Get Approval Config details */
                     $getApprovalConfig = DB::table('approval_configuration')->select('approval_level')->where('user_id',$user->id)->get();
-                    // , a.approval_level
-                    // JOIN '.DB::connection('mysql')->getDatabaseName().'.approval_configuration a ON a.user_id = u.id
 
                     /** Get user role */
-                    $getRole = DB::table('roles')->select('role_name')->where('user_id', $user->id)->pluck('role_name')->toArray();
-                    // , r.role_name
-                    // JOIN '.DB::connection('mysql')->getDatabaseName().'.roles r ON u.id = r.user_id
+                    $getRole = DB::table('role_user as rU')
+                    ->select('role_id', 'r.role_name')
+                    ->join('roles as r','rU.role_id' ,'=', 'r.id')
+                    ->where('user_id', $user->id)->get();
+                    // ->pluck('r.role_id')
+                    // ->toArray();
 
                     $userData = [];
                     /** Approval Config */
@@ -62,11 +56,6 @@ class authController extends Controller
                     }else{
                         $getUserRole = [];
                     }
-                    // if(isset($getRole[0]) && !empty($getRole[0])){
-                    //     $getUserRole = (array)$getRole[0];
-                    // }else{
-                    //     $getUserRole = [];
-                    // }
                     
                     // $userData = $userInformation;
                     $userData = array_merge($user->toArray(), (array)$userInformation[0], $userApprovalConfig);
