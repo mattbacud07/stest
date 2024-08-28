@@ -1,3 +1,5 @@
+import * as pub_var from '@/global/global'
+
 export const sidebarConfig = {
     
     /**
@@ -27,6 +29,7 @@ export const sidebarConfig = {
             icon: 'mdi-cogs',
             children: [
                 { name: 'PM Settings', route: '/pm-settings', icon: 'mdi-file-cog' },
+                { name: 'Set Standard Actions', route: '/set-standard', icon: 'mdi-account-details' },
                 { name: 'CM Settings', route: '/pm-settings', icon: 'mdi-file-edit' },
             ],
         },
@@ -57,13 +60,14 @@ export const sidebarConfig = {
      */
     'WIM Personnel': [
         { name: 'Dashboard', route: '/', icon: 'mdi-shield-home-outline' },
-        {
-            name: 'Equipment Handling',
-            icon: 'mdi-folder-wrench',
-            children: [
-                { name: 'Internal Servicing', route: '/internal-servicing', icon: 'mdi-file-document-edit' },
-            ],
-        },
+        { name: 'Internal Servicing', route: '/internal-servicing', icon: 'mdi-file-document-edit' },
+        // {
+        //     name: 'Equipment Handling',
+        //     icon: 'mdi-folder-wrench',
+        //     children: [
+        //         { name: 'Internal Servicing', route: '/internal-servicing', icon: 'mdi-file-document-edit' },
+        //     ],
+        // },
     ],
 
     
@@ -72,22 +76,10 @@ export const sidebarConfig = {
      */
     Engineer: [
         { name: 'Dashboard', route: '/', icon: 'mdi-shield-home-outline' },
-        {
-            name: 'Equipment Handling',
-            icon: 'mdi-folder-wrench',
-            children: [
-                { name: 'Internal Servicing', route: '/internal-servicing', icon: 'mdi-file-document-edit' },
-                { name: 'Equipment Installation', route: '/equipment-installation', icon: 'mdi-wrench-cog-outline' },
-            ],
-        },
-        {
-            name: 'Preventive Maintenance',
-            icon: 'mdi-file-cog',
-            children: [
-                { name: 'PM Schedule', route: '/pm-sched-engineer', icon: 'mdi-wrench-clock' },
-            ],
-        },
         
+        { name: 'Internal Servicing', route: '/internal-servicing', icon: 'mdi-playlist-edit' },
+        { name: 'Equipment Handling', route: '/equipment-handling', icon: 'mdi-wrench-cog-outline' },
+        { name: 'PM Schedule', route: '/preventive-maintenance', icon: 'mdi-calendar-clock-outline' },
     ],
     
     
@@ -97,21 +89,24 @@ export const sidebarConfig = {
      */
     'Team Leader': [
         { name: 'Dashboard', route: '/', icon: 'mdi-shield-home-outline' },
-        {
-            name: 'Equipment Handling',
-            icon: 'mdi-folder-wrench',
-            children: [
-                { name: 'Equipment Installation', route: '/equipment-handling', icon: 'mdi-file-document-edit' },
-                // { name: 'Equipment Installation', route: '/set-schedule-equipment-installation', icon: 'mdi-wrench-cog-outline' },
-            ],
-        },
-        {
-            name: 'Preventive Maintenance',
-            icon: 'mdi-file-cog',
-            children: [
-                { name: 'PM Schedule', route: '/pm-sched', icon: 'mdi-wrench-clock' },
-            ],
-        },
+        { name: 'Equipment Handling', route: '/equipment-handling', icon: 'mdi-file-document-edit' },
+        { name: 'PM Schedule', route: '/preventive-maintenance', icon: 'mdi-calendar-clock-outline' },
+        { name: 'CM Schedule', route: '/', icon: 'mdi-calendar-edit-outline' },
+        // {
+        //     name: 'Equipment Handling',
+        //     icon: 'mdi-folder-wrench',
+        //     children: [
+        //         { name: 'Equipment Installation', route: '/equipment-handling', icon: 'mdi-file-document-edit' },
+        //         // { name: 'Equipment Installation', route: '/set-schedule-equipment-installation', icon: 'mdi-wrench-cog-outline' },
+        //     ],
+        // },
+        // {
+        //     name: 'Preventive Maintenance',
+        //     icon: 'mdi-file-cog',
+        //     children: [
+        //         { name: 'PM Schedule', route: '/preventive-maintenance', icon: 'mdi-calendar-clock-outline' },
+        //     ],
+        // },
         
     ],
 };
@@ -119,7 +114,9 @@ export const sidebarConfig = {
 
 
 
-export const sideBarConfig = [
-    { name: 'Dashboard', route: '/', icon: 'mdi-shield-home-outline' },
-    { name: 'Equipment Handling', route: '/equipment-handling', icon: 'mdi-file-document-edit' },
-]
+// export const sideBarConfig = [
+//     { name: 'Dashboard', route: '/', icon: 'mdi-shield-home-outline' },
+//     { name: 'Equipment Handling', route: '/equipment-handling', icon: 'mdi-file-document-edit', access_module: pub_var.eh_module, module_type : 'EH' },
+//     { name: 'Internal Servicing', route: '/internal-servicing', icon: 'mdi-file-document-edit', access_module: pub_var.is_module, module_type : 'EH' },
+//     { name: 'PM Schedule', route: '/pm-sched', icon: 'mdi-wrench-clock', access_module: pub_var.pm_module, module_type : 'PM' },
+// ]

@@ -1,107 +1,100 @@
 <template>
-    <div class="main-wrapper">
-        <Sidebar />
-        <div class="page-wrapper">
-            <Header />
-            <div class="page-content">
-                <div>
-                    <v-card class="mx-auto p-4">
-                        <v-row>
-                            <v-col cols="4">
-                                <v-text-field clearable density="compact" label="Search all fields"
-                                    variant="outlined"></v-text-field>
-                            </v-col>
-                            <v-col cols="8" style="text-align: right;">
-                                <!-- <router-link :to="{ name: 'ViewWorkOrder', params: { id: selectedId ?? 0 } }">
-                                    <v-btn :disabled="btnDisable" type="button" color="primary" class="text-none mr-2">
-                                        <v-icon class="mr-2">mdi-eye-arrow-right</v-icon> View Request
-                                    </v-btn>
-                                </router-link> -->
-                                <!-- <router-link to="/create-preventive-maintenance">
-                                    <v-btn type="button" color="primary" class="text-none">
-                                        <v-icon class="mr-2">mdi-file-edit-outline</v-icon> Create
-                                    </v-btn>
-                                </router-link> -->
-
-                                <!-- Create PM request Button -->
-                                    <v-dialog v-model="dialogCreatePM" max-width="400" persistent>
-                                        <template v-slot:activator="{ props: activatorProps }">
-                                            <v-btn type="button" size="small" v-bind="activatorProps"
-                                                :disabled="btnDisable" color="primary" class="text-none btnSubmit">
-                                                <v-icon class="mr-2">mdi-file-edit-outline</v-icon> Create
-                                            </v-btn>
-                                        </template>
-                                <v-form @submit.prevent="createPM" ref="form"> 
-                                        <v-card text="" title="Preventive Maintenance">
-                                            <v-col cols="12">
-                                                <v-text-field clearable density="compact" v-model="serial_number"
-                                                    :rules="rules.serial_number" label="Serial Number"
-                                                    variant="outlined"></v-text-field>
-                                            </v-col>
-                                            <template v-slot:actions>
-                                                <v-row justify="end" class="mb-3">
-                                                <v-divider></v-divider>
-                                                    <v-btn elevation="2" @click="dialogCreatePM = false"
-                                                        background-color="red" size="small" color="#191970"
-                                                        class="text-none mr-2"><v-icon>mdi-close</v-icon>
-                                                        Cancel</v-btn>
-                                                    <v-btn type="submit" size="small" :loading="btnLoading"
-                                                        :disabled="btnDisable" color="#191970"
-                                                        class="text-none bg-primary mr-5">
-                                                        <v-icon class="mr-2">mdi-file-edit-outline</v-icon> Create
-                                                    </v-btn>
-                                                </v-row>
-                                            </template>
-                                        </v-card>
-                                </v-form>
-                                    </v-dialog>
-                            </v-col>
-                        </v-row>
-                        <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading"
-                            :search="params.search" @rowSelect="rowSelect" :columnFilter="false"
-                            :sortColumn="params.sortColumn" :sortDirection="params.sortDirection" :sortable="true"
-                            skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover"
-                            :hasCheckbox="true" :selectRowOnClick="true">
-                            <!-- <template #id="data">
-                                <span>{{ pub_var.setReportNumber(data.value.id, data.value.created_at) }}</span>
-                            </template> -->
-                            <!-- <template #approver_name="data">
-                                <span>{{ parseInt(data.value.main_status) === pub_var.DISAPPROVED ? '' :
-                                    data.value.approver_name }}</span>
-                            </template> -->
-                            <template #status="data">
-                                <span :style="{ color: maintenance.status_pm(data.value.status).color }">{{
-                                    maintenance.status_pm(data.value.status).text }}</span>
+    <LayoutWithActions @searchText="getSearchText">
+        <template #default="{ searchText }">
+            <v-card class="mx-auto p-4">
+            <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading" :search="params.search"
+                :isServerMode="true" :totalRows="total_rows" :pageSize="params.pagesize" @change="changeServer"
+                @rowSelect="rowSelect" :columnFilter="false" :sortColumn="params.sortColumn"
+                :sortDirection="params.sortDirection" :sortable="true"
+                skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true"
+                :selectRowOnClick="true">
+                <template #scheduled_at="data">
+                    <div>
+                        <v-dialog v-model="viewScheduledDialog[data.value.item_id]" max-width="400" persistent>
+                            <template v-slot:activator="{ props: activatorProps }">
+                                <a href="#" v-bind="activatorProps"><v-icon v-if="data.value.scheduled_at !== null"
+                                        color="primary">mdi-calendar-range</v-icon>
+                                    <b>{{ pub_var.formatDateNoTime(data.value.scheduled_at) }}</b></a>
                             </template>
-                            <!-- <template #created_at="data">
-                                <span>{{ moment(data.value.created_at).format('MM/DD/YYYY') }}</span>
-                            </template> -->
-                        </vue3-datatable>
-                    </v-card>
-                    <alertMessage v-if="messageDetails.show" :details="messageDetails" />
-                </div>
-            </div>
-        </div>
-    </div>
+                            <v-card>
+                                <p class="ml-3 mt-3 mb-0"><b>Scheduled Dates</b></p><v-divider></v-divider>
+                                <v-list lines="one">
+                                    <!-- <span v-for="list in data.value.list_scheduled.split(',')">{{  list }}</span> -->
+                                    <!-- Iterate through serialNumbers and show matching serials -->
+                                        <v-list-item v-for="list in data.value.list_scheduled.split(',').map(dateString => moment(dateString.trim()).format('MMMM DD, YYYY'))">
+                                            <template v-slot:prepend>
+                                                <v-icon>mdi-calendar-outline</v-icon>
+                                            </template>
+                                            <v-list-item-title color="primary">{{ list}}</v-list-item-title>
+                                        </v-list-item>
+
+                                </v-list>
+                                <span class="mt-5 ml-4">End of the Year : <b>{{
+                        moment().endOf('year').format('YYYY-MM-DD') }}</b> </span>
+                                <template v-slot:actions>
+                                    <v-row justify="end" class="mb-3">
+                                        <v-divider></v-divider>
+                                        <v-btn elevation="2" @click="viewScheduledDialog[data.value.item_id] = false"
+                                            background-color="red" size="small" color="#191970"
+                                            class="text-none mr-5"><v-icon>mdi-close</v-icon>
+                                            Close</v-btn>
+                                    </v-row>
+                                </template>
+                            </v-card>
+                        </v-dialog>
+                    </div>
+                </template>
+                <template #service_id="data">
+                    <span color="primary">{{ pub_var.setReportNumber(data.value.service_id) }}</span>
+                </template>
+                <template #status="data">
+                    <span :style="{ color : m_var.status_pm(data.value.status).color }"><b>{{ m_var.status_pm(data.value.status).text  }}</b></span><br/>
+                    <span class="small" v-if="data.value.status === 'Not Set'">Contact the admin to configure the frequency</span>
+                </template>
+                <template #engineer="data">
+                    {{ data.value.first_name }} {{ data.value.last_name }}
+                </template>
+            </vue3-datatable>
+        </v-card>
+        </template>
+    </LayoutWithActions>
 </template>
 
 <script setup>
-import Header from '@/components/layout/Header.vue'
-import Sidebar from '@/components/layout/Sidebars/Sidebar.vue';
-// import EHMain from '@/components/EquipmentHandling/EHMain.vue'
-import alertMessage from '@/components/PopupMessage/alertMessage.vue';
-
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, provide, watch, getCurrentInstance } from 'vue';
 import { user_data } from '@/stores/auth/userData'
+import { getRole } from '@/stores/getRole'
 import { useRouter } from 'vue-router';
 import * as pub_var from '@/global/global'
-import * as maintenance from '@/global/maintenance.js'
+import * as m_var from '@/global/maintenance.js'
 import moment from 'moment';
+import debounce from 'lodash/debounce'
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
+import LayoutWithActions from '@/components/layout/MainLayout/LayoutWithActions.vue'
+
+const role = getRole()
+const currentUserRole = role.currentUserRole
+
+const datatable = ref(null)
+
+/** Sent to Topbar */  // Subject to Change [Set Roles and Permission Dynamically]
+const category = ref('')
+const routeView = ref('PMView')
+const service_id = ref(null)
+const btnDisable = ref(true)
+const selectedId = ref(null)
+
+const actions = {
+    selectedId: selectedId,
+    btnDisable: btnDisable,
+    routeView: routeView,
+}
+
+provide('data', actions)
 
 /** User_data Store */
 const user = user_data()
@@ -113,10 +106,13 @@ const form = ref(false)
 
 /** Declaration */
 const dialogCreatePM = ref(false)
-const btnDisable = ref(false)
+const viewSerialDialog = ref([])
+const viewScheduledDialog = ref([])
 const btnLoading = ref(false)
 const serial_number = ref('')
 const messageDetails = ref({})
+const serialNumbers = ref([])
+const list_scheduled = ref([])
 
 const rules = ref({
     serial_number: [
@@ -124,38 +120,12 @@ const rules = ref({
     ],
 })
 
-/** Enable Filter */
-const enableFilter = ref(false)
-
-const loading = ref(true);
-const total_rows = ref('');
-
-const params = reactive({ current_page: 1, pagesize: 10, sortColumn: 'id', sortDirection: 'desc' });
-const rows = ref(null);
-
-const cols =
-    ref([
-        { field: 'id', title: 'id', isUnique: true, type: 'number', hide: false },
-        // { field: 'first_name', title: 'Requested by' },
-        { field: 'name', title: 'Institution' },
-        // { field: 'address', title: 'Address'},
-        // { field: 'address', title: 'Contact Details'},
-        { field: 'equipment_model', title: 'Equipment Model' },
-        { field: 'serial_number', title: 'Serial #' },
-        // { field: 'customer_complaint', title: 'Customer Complaint' },
-        // { field: 'data_received', title: 'Date & Time Received'},
-        // { field: 'work_type', title: 'Work Type'},
-        // { field: 'cs_actions', title: 'CS Action'},
-        // { field: 'engineer', title: 'Engineer'},
-        // { field: 'departed_date', title: 'Departed Date'},
-        // { field: 'start_date', title: 'Start Date'},
-        { field: 'status', title: 'Status' },
-    ]) || [];
 
 /**
  * @ Row Select Table Event
  */
-const rowSelect = () => async () => {
+const multiSelected = ref([])
+const rowSelect = () => {
     const selectedRows = datatable.value.getSelectedRows()
     if (selectedRows && selectedRows.length === 1) {
         btnDisable.value = false
@@ -165,7 +135,11 @@ const rowSelect = () => async () => {
 
     const extractId = selectedRows.map((data) => { return data.id })
     selectedId.value = extractId[0]
+    multiSelected.value = extractId
 }
+
+
+
 
 /** Create PM service */
 const createPM = async () => {
@@ -196,16 +170,57 @@ const createPM = async () => {
     }
 }
 
+
+
+
 /** Get specific PM  */
+const getSearchText = (data) =>{
+    params.search = data
+}
+const loading = ref(true);
+const total_rows = ref(0);
+const params = reactive({ current_page: 1, pagesize: 10, sortColumn: 'scheduled_at', sortDirection: 'desc', search : '' });
+const rows = ref(null);
+
+const cols =
+    ref([
+        { field: 'id', title: 'ID #', isUnique: true, type: 'number', hide: true },
+        { field: 'service_id', title: 'Service #', hide: true, },
+        { field: 'item_id', title: 'Item #', hide: true },
+        { field: 'item_code', title: 'Item Code' },
+        { field: 'description', title: 'Item Description', hide : true,},
+        { field: 'serial_number', title: 'Serial #' },
+        { field: 'institution_name', title: 'Institution' },
+        { field: 'institution_address', title: 'Address', hide : true, },
+        { field: 'date_installed', title: 'Date Installed', hide : true, },
+        { field: 'scheduled_at', title: 'Scheduled_at' },
+        { field: 'schedule', title: 'Frequency' },
+        { field: 'ssu', title: 'SSU' },
+        { field: 'engineer', title: 'Delegated to' },
+        { field: 'status_after_service', title: 'Status After Service' },
+        { field: 'status', title: 'Status' },
+    ]) || [];
+
+// const searchColumnMap = cols.value.map(v => v.field);
+// const searchColumn = searchColumnMap.filter(v => v !== 'id')
+    provide('column', cols)
+
 const getPM = async () => {
+    if (currentUserRole === pub_var.TLRole) category.value = pub_var.TLRole
+    if (currentUserRole === pub_var.engineerRole) category.value = pub_var.engineerRole
     try {
         loading.value = true;
-        const response = await apiRequest.get('get-preventive-maintenance', {
-            params: { user_id: user.user.id }
+        const response = await apiRequest.get('get-preventive-maintenance',{
+            params : {...params, category : category.value }
         });
         if (response.data && response.data.pm_data) {
-            const data = response.data.pm_data
-            rows.value = data
+            const result = response.data.pm_data
+            rows.value = result.data
+            total_rows.value = result.total
+            // list_scheduled.value = data.map((data) => { return data.list_scheduled.split(',').map(dateString => moment(dateString.trim()).format('MMMM DD, YYYY')) })
+            viewSerialDialog.value = result.data.map((data) => { return data.item_id })
+            viewScheduledDialog.value = result.data.map((data) => { return data.item_id })
+            // console.log(list_scheduled.value)
         }
     } catch (error) {
         console.log(error)
@@ -213,10 +228,25 @@ const getPM = async () => {
 
     loading.value = false;
 };
+provide('refresh', getPM)
+// ChangeServer for Servre Mode
+const debounceSearch = debounce(getPM, 300)
+const changeServer = (data) =>{
+    params.current_page = data.current_page
+    params.pagesize = data.pagesize
+    params.sort_column = data.sort_column
+    params.sort_direction = data.sort_direction
+
+    if(data.change_type === 'search'){
+        debounceSearch()
+    }else getPM()
+}
+
 
 
 onMounted(() => {
     getPM()
+    // getPMSerials()
 })
 
 </script>

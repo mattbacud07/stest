@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\ehController;
 
 use App\Http\Controllers\Controller;
+use App\Models\EhServicesModel as EH;
 use App\Traits\GlobalVariables;
 use Carbon\Carbon;
 use Exception;
@@ -24,9 +25,9 @@ class WorkOrder extends Controller
         $peripherals = $request->peripherals;
         $equipments = $request->equipments;
         if (!empty($peripherals) && is_array($peripherals)) {
-            $status = self::IT_DEPARTMENT;
+            $status = EH::IT_DEPARTMENT;
         } else {
-            $status = self::APM_NSM_SM;
+            $status = EH::APM_NSM_SM;
         }
         $data =  [
             'requested_by' => $request->requested_by,
@@ -44,7 +45,7 @@ class WorkOrder extends Controller
             // 'internal_request' => $request->internalRequest,
             'endorsement' => $request->endorsement,
             'status' => $status,
-            'main_status' => self::ONGOING,
+            'main_status' => EH::ONGOING,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

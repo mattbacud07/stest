@@ -11,41 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class EhMainController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $data = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address','i.area', 'u.first_name', 'u.last_name', 'iE.name as request_name','a.approver_level', 'a.approver_name')
-    //     ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.users as u', 'equipment_handling.requested_by', '=', 'u.id')
-    //     ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
-    //     ->leftjoin('internal_external_requests as iE', 'equipment_handling.request_type', '=', 'iE.id')
-    //     ->leftjoin('approver_designation as a', 'equipment_handling.status', '=', 'a.approver_level')
-    //     ->get();
-
-    //     return response()->json([
-    //         'equipment_handling' => $data,
-    //     ], 200);
-    // }
-
-    // /** Get Data Based on Specific User */
-    // public function show(Request $request){
-    //     $query = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address','i.area', 'u.first_name', 'u.last_name', 'iE.name as request_name','a.approver_level', 'a.approver_name')
-    //     ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.users as u', 'equipment_handling.requested_by', '=', 'u.id')
-    //     ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
-    //     ->leftjoin('internal_external_requests as iE', 'equipment_handling.request_type', '=', 'iE.id')
-    //     ->leftjoin('approver_designation as a', 'equipment_handling.status', '=', 'a.approver_level');
-
-    //     if($request->has('user_id')){
-    //         $query->where(['requested_by' => $request->input('user_id')]);
-    //     }
-
-    //     $data = $query->get();
-
-    //     return response()->json([
-    //         'equipment_handling' => $data,
-    //     ], 200);
-    // }
-
-
-    /** Get Data Based on Specific Equipment Handling ID */
 
     /**
      * Master Data of Equipments.
@@ -58,14 +23,23 @@ class EhMainController extends Controller
         $searchColumn = $request->searchColumn ?? [];
 
         // $category = [3,4,1]; ->whereIn('item_category', $category)
-        $query = MasterData::where('status', 1);
+        $query = MasterData::select('master_data.id','master_data.item_category','master_data.item_code','master_data.description','master_data.status as item_status','category.name')
+        ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName().'.mt_item_categories as category', 'category.id','=','master_data.item_category')
+        ->where('master_data.status', 1);
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search, $searchColumn) {
                 foreach ($searchColumn as $column) {
-                    $q->orWhere($column, 'like', "%{$search}%");
+                    if($column === 'name'){
+                        $q->orWhere('category.'.$column, 'like', "%{$search}%");
+                    }
+                    else $q->orWhere('master_data.'.$column, 'like', "%{$search}%");
                 }
             });
+        }
+        if($request->has('item_category') && $request->filled('item_category')){
+            $item_category = $request->item_category;
+            $query->whereIn('master_data.item_category', $item_category);
         }
         $equipments = $query->paginate(
             $pageSize,
@@ -78,8 +52,6 @@ class EhMainController extends Controller
 
         return response()->json([
             'equipments' => $equipments,
-            // 'institutions' => $institutions,
-            'sarrcg' => $search,
         ]);
     }
 

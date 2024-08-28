@@ -24,7 +24,7 @@ class Engineer extends Controller
         $user_id = $request->id;
         try {
             $data = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address','i.area', 'u.first_name', 'u.last_name', 'e.name as request_name','iR.name as internal_name','a.approver_level', 'a.approver_name')
-            ->where(['equipment_handling.status' => self::INSTALLATION_ENGINEER, 'equipment_handling.installer' => $user_id])
+            ->where(['equipment_handling.status' => EhServicesModel::INSTALLATION_ENGINEER, 'equipment_handling.installer' => $user_id])
             ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.users as u', 'equipment_handling.requested_by', '=', 'u.id')
             ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName().'.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
             ->leftjoin('internal_external_requests as e', 'equipment_handling.external_request', '=', 'e.id')

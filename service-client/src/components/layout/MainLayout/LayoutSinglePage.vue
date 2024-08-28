@@ -13,13 +13,14 @@
         </v-navigation-drawer>
 
         <v-main>
-            <v-toolbar class="fixed-toolbar border-b-sm pr-3" dense color="primary" :style="{width : width < 1280 || drawer === false ? '100%' : 'calc(100% - 256px)'}">
+            <v-toolbar class="fixed-toolbar border-b-sm pr-3" dense
+                :style="{ width: width < 1280 || drawer === false ? '100%' : 'calc(100% - 256px)' }">
                 <slot name="topBarFixed"></slot>
             </v-toolbar>
 
 
             <!-- Main content slot -->
-            <div class="mainWrapper" :style="{ padding : width < 2560 && width > 980 ? '5% 10%' : '7% 1%'}">
+            <div class="mainWrapper" :style="{ padding: width < 2560 && width > 980 ? '5% 10%' : '7% 1%' }">
                 <slot></slot>
             </div>
         </v-main>
@@ -29,7 +30,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-import {useDisplay} from 'vuetify'
+import { useDisplay } from 'vuetify'
 import BaseSidebar from '../Sidebars/BaseSidebar.vue';
 import topBarUserProfile from './LayoutParts/topBarUserProfile.vue';
 

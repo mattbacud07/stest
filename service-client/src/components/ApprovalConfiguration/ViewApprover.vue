@@ -1,11 +1,11 @@
 <template>
     <div>
         <v-row>
-            <v-col cols="4">
+            <v-col cols="8" xl="5" md="5" sm="5">
                 <v-text-field color="primary" v-model="params.search" clearable density="compact" label="Search all fields"
                     variant="outlined"></v-text-field>
             </v-col>
-            <v-col cols="8" style="text-align: right;">
+            <v-col cols="4" xl="7" md="7" sm="7"  style="text-align: right;">
                 <v-btn color="error" align-self="end" :disabled="disableDelete"
                     :loading="deleteLoading" class="text-none" @click="deleteApprover">
                     <v-icon>mdi-trash-can-outline</v-icon> Delete</v-btn>
@@ -24,10 +24,8 @@
 </template>
 <script setup>
 import { onMounted, ref, reactive } from 'vue';
-import axios from 'axios'
 
 import { user_data } from '@/stores/auth/userData'
-import { BASE_URL } from '@/api/index'
 import { alertStore } from '@/stores/alert-popup'
 // import * as designation from '@/global/global'
 
@@ -36,14 +34,12 @@ import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 const datatable = ref(null)
 
-axios.defaults.withCredentials = true
 const alert = alertStore()
 
 /** Declaration of User Data */
 const user = user_data();
 user.getUserData
-
-const uri = BASE_URL
+const apiRequest = user.apiRequest()
 
 /** Button Delete */
 const disableDelete = ref(true)
@@ -86,12 +82,9 @@ const deleteApprover = async () => {
     try {
         const selectedIds = datatable.value.getSelectedRows().map(row => row.id)
         // console.log(selectedIds)
-        const response = await axios.delete(uri + 'api/delete-approver', {
+        const response = await apiRequest.delete('delete-approver', {
             params: {
                 ids: selectedIds
-            },
-            headers: {
-                'Authorization': `Bearer ${user.tokenData}`
             }
         })
         if (response.data && response.data.isDeleted) {
@@ -116,12 +109,7 @@ const deleteApprover = async () => {
 const getUsers = async () => {
     try {
         loading.value = true;
-        const response = await axios.get(uri + 'api/get-approver', {
-            headers: {
-                'Authorization': `Bearer ${user.tokenData}`
-            }
-        }
-        );
+        const response = await apiRequest.get('get-approver');
         const data = response.data.users
 
         rows.value = data

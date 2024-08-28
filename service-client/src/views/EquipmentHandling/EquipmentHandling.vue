@@ -18,9 +18,11 @@
                             }}</span>
                     </template>
                     <template #approver_name="data">
-                        <span>{{ parseInt(data.value.main_status) === pub_var.DISAPPROVED ? '' :
-            data.value.approver_name
-                            }}</span>
+                        <span class="text-danger" v-if="parseInt(data.value.main_status) === pub_var.DISAPPROVED">Disapproved</span>
+                        <span class="text-success" v-if="parseInt(data.value.main_status) === pub_var.COMPLETE">Completed</span>
+                        <span>{{ pub_var.pending_approval_status(data.value.status) }} 
+                            {{ pub_var.INSTALLATION_TL === data.value.status || pub_var.INSTALLATION_ENGINEER === data.value.status ? data.value.ssu : '' }}
+                        </span>
                     </template>
                     <template #main_status="data">
                         <span :style="{ color: pub_var.setJOStatus(data.value.main_status).color }">{{
@@ -120,7 +122,7 @@ const enableCreate = ref(false)
 
 
 
-if (currentUserRole === 'guest') {
+if (currentUserRole === 'Requestor') {
     routeView.value = 'ViewWorkOrder'
     addView.value = 'WorkOrder'
     enableCreate.value = true
@@ -129,14 +131,20 @@ if (currentUserRole === pub_var.approverRole) {
     routeView.value = 'WorkOrderApprover'
     // actions.service_id = service_id
 }
-if (currentUserRole === pub_var.serviceTLRole) {
-    routeView.value = 'AssignEquipmentInstallation'
+if (currentUserRole === pub_var.TLRole) {
+    routeView.value = 'WorkOrderApprover'
+}
+if (currentUserRole === pub_var.outboundPersonnel) {
+    routeView.value = 'WorkOrderApprover'
+}
+if (currentUserRole === pub_var.engineerRole) {
+    routeView.value = 'WorkOrderApprover'
 }
 
 const actions = {
     selectedId: selectedId,
     // service_id : service_id,
-    status: status,
+    // status: status,
     btnDisable: btnDisable,
     enableCreate: enableCreate,
     routeView: routeView,
@@ -147,9 +155,10 @@ provide('data', actions)
 
 
 const getRequest = async () => {
-    if (currentUserRole === pub_var.approverRole) {
-        category.value = pub_var.approverRole
-    }
+    if (currentUserRole === pub_var.approverRole) category.value = pub_var.approverRole
+    if (currentUserRole === pub_var.TLRole) category.value = pub_var.TLRole
+    // if (currentUserRole === pub_var.outboundPersonnel) category.value = pub_var.outboundPersonnel
+    if (currentUserRole === pub_var.engineerRole) category.value = pub_var.engineerRole
     try {
         loading.value = true;
         const response = await apiRequest.get('get-equipment-handling', {
@@ -183,3 +192,55 @@ onMounted(() => {
     getRequest();
 });
 </script>
+
+
+<style scoped>
+table tbody tr td span:empty::before{
+  content: '' !important;
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- IT Department
+Miguel Alog
+Ardison Pagulayan
+James Rynne Pakino
+Kenedy Kinahingan
+08/25/2024 07:58 am
+
+APM/NSM/SM
+Valerie Yves Avila
+00-00-00 00-00 00 0
+
+Warehouse & Inventory Management
+Perseveranda Ibea
+Claudine Castaneda
+00-00-00 00-00 00 0
+
+Service Dept Team Leader
+John Robert Besenio
+Jess Rey Umadhay
+Jefferson Villapando
+Aljon Kim Rey
+00-00-00 00-00 00 0
+
+Service Dept Head / Service Engineer
+Erick Lloyd Cerda
+00-00-00 00-00 00 0
+
+Billing & Invoicing Staff / WIM Personnel
+John Elvin Elmedulan
+Raul Balleta
+
+Outbound
+Abril Reyes -->

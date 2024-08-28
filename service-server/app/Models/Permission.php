@@ -16,7 +16,7 @@ class Permission extends Model
     protected $fillable = [
         'role_id',
         'access_type',
-        'access_module',
+        // 'access_module',
         'status'
     ];
 
@@ -25,12 +25,12 @@ class Permission extends Model
         'viewRequest',
         'viewMainRequest',
         'approveRequest',
-        'equipmentHandlingRequest',
-        'internalServicingRequest',
+        // 'equipmentHandlingRequest',
+        // 'internalServicingRequest',
     ];
 
     public function roles()
     {
-        return $this->belongsTo(Roles::class, 'role_id', 'id');
+        return $this->belongsTo(Roles::class, 'role_id', 'roleID');
     }
 }

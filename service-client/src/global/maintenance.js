@@ -7,25 +7,39 @@ export const pm = 1
 export const cm = 2
 
 /** Status */
-export const waiting_engineer = 1
-export const backlog = 2
-export const backjob = 3
+/** Status */
+export const Scheduled = 'Scheduled';
+export const NotSet = 'Not Set';
+export const Delegated = 'Delegated';
+// export const PendingAcceptance = 'Pending Acceptance';
+export const Accepted = 'Accepted';
+export const InTransit = 'In Transit';
+export const InProgress = 'In Progress';
+// export const Backlog = 'Backlog';
+// export const Backjob = 'Backjob';
+export const Completed = 'Completed';
+export const Closed = 'Closed';
 export const status_pm = (data) => {
-    // data = parseInt(value)
-    switch(data){
-        case 1:
-            return {color: 'blue!important', text : 'Waiting for Engineer'}
-        break;
-        case 2:
-            return {color: 'orange!important', text : 'Back Log'}
-        break;
-        case 3:
-            return {color: 'red!important', text : 'Back Job'}
-        break;
+    switch (data) {
+        case 'Scheduled':
+            return { color: 'blue!important', text: 'Pending Assignment' }
+        case 'Delegated':
+            return { color: 'orange!important', text: 'Waiting for Acceptance' }
+        case 'Accepted':
+            return { color: 'yellow!important', text: 'Job Accepted' }
+        case 'In Transit':
+            return { color: 'lightblue!important', text: 'On the Way' }
+        case 'In Progress':
+            return { color: 'teal!important', text: 'In Progress' }
+        case 'Completed':
+            return { color: 'green!important', text: 'Job Completed' }
+        case 'Back Job':
+            return { color: 'red!important', text: 'Back Job' }
         default:
-            return {color: 'purple!important', text : 'N'}
+            return { color: 'gray!important', text: 'Unknown Status' }
     }
 }
+
 
 
 
@@ -34,6 +48,6 @@ export const monthly = 'Monthly'
 export const quarterly = 'Quarterly'
 export const semiAnnually = 'Semi-Annually'
 export const annually = 'Annually'
-export const pmSchedule = [monthly, quarterly, semiAnnually, annually]
+export const pmFrequency = [monthly, quarterly, semiAnnually, annually]
 
 

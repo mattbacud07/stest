@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Approvals;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -89,7 +90,7 @@ class ApprovalConfiguration extends Controller
      */
     public function approval_history(Request $request){
         try {
-            $approvalHistory = DB::table('approvals')->where('service_id', $request->service_id)->select('*')->get();
+            $approvalHistory = Approvals::where('service_id', $request->service_id)->with('users')->get();
            return response()->json([
                 'approval_history' => $approvalHistory,
            ]);

@@ -11,7 +11,8 @@ class EquipmentHandlingController extends Controller
 {
     protected $EHBasicOperation;
     protected $EHTaskOperation;
-    public function __construct(EHBasicOperation $EHBasicOperation, EHTaskOperation $EHTaskOperation){
+    public function __construct(EHBasicOperation $EHBasicOperation, EHTaskOperation $EHTaskOperation)
+    {
         $this->EHBasicOperation = $EHBasicOperation;
         $this->EHTaskOperation = $EHTaskOperation;
     }
@@ -63,10 +64,20 @@ class EquipmentHandlingController extends Controller
     public function showBasedOnCondition(Request $request)
     {
         $user_id = $request->user_id;
-        $what_to_get = $request->category ?? '';
-        $data = $this->EHTaskOperation->getEquipmentHandlingByUserId($user_id,$what_to_get);
+        $category = $request->category ?? '';
+        $result = $this->EHTaskOperation->getEquipmentHandlingByUserId($user_id, $category);
 
-        return response()->json(['equipment_handling' => $data], 200);
+        // return response()->json(['equipment_handling' => $data], 200);
+
+        // Access data and count
+        $data = $result['data'];
+        $count = $result['count'];
+
+        // Return JSON response
+        return response()->json([
+            'equipment_handling' => $data,
+            'count' => $count
+        ]);
     }
 
     /**

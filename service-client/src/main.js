@@ -25,6 +25,10 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import "vuetify/styles";
 
+/** ToastPlugin Notification */
+import ToastPlugin from 'vue-toast-notification'
+import 'vue-toast-notification/dist/theme-bootstrap.css'
+
 
 const icons = {
     defaultSet: 'mdi',
@@ -57,7 +61,9 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(vuetify)
+app.use(ToastPlugin)
 app.use(router)
+
 
 app.mount('#app')
 

@@ -1,45 +1,43 @@
 <template>
-    <v-form @submit.prevent="loginProcess" ref="form" cols="12">
-        <v-row class="d-flex mb-3">
-            <v-col cols="12">
-                <!-- <v-label class="font-weight-bold mb-1">email</v-label> -->
-                <v-text-field v-model="auth.email" :rules="rules.emailRules" density="compact" label="Email"
-                    variant="outlined" hide-details="auto" color="primary" required></v-text-field>
-            </v-col>
-            <v-col cols="12">
-                <!-- <v-label class="font-weight-bold mb-1">Password</v-label> -->
+    <v-row>
+        <v-col cols="12" xl="4" lg="4" md="4" sm="6" style="margin-left: 50%;transform: translateX(-50%);">
+
+            <p class="small">Hi! Welcome back.</p>
+            <v-form @submit.prevent="loginProcess" ref="form">
+                <v-text-field v-model="auth.email" :rules="rules.emailRules" single-line density="compact" label="Email"
+                    variant="outlined" color="primary" class="mt-7" hide-details
+                    prepend-inner-icon="mdi-email-outline"></v-text-field>
+
+
                 <v-text-field v-model="auth.password" :rules="rules.passwordRules" label="Password" density="compact"
-                    variant="outlined" type="password" hide-details="auto" color="primary"></v-text-field>
-            </v-col>
-            <v-col cols="12" class="mt-5">
-                <v-btn type="submit" density="compact" color="primary" size="large" block rounded="0"
-                    class="text-none" :loading="loading">Sign in</v-btn>
-            </v-col>
-        </v-row>
-        <v-row>
-            <v-col cols="12">
-                <v-alert v-if="alert.alertMessage" :type="alert.type" transition="fade-transition" variant="outlined" closable>
-                    {{ alert.alertMessage }}
-                </v-alert>
-            </v-col>
-        </v-row>
-    </v-form>
+                    variant="outlined" type="password" color="primary" hide-details single-line class="mt-7"
+                    prepend-inner-icon="mdi-lock"></v-text-field>
+
+
+                <v-btn type="submit" density="default" color="primary" class="mt-7 pa-5" block :loading="loading">Sign
+                    in</v-btn>
+            </v-form>
+        </v-col>
+    </v-row>
+
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { alertStore } from '@/stores/alert-popup'
 import { user_data } from '@/stores/auth/userData'
 import { BASE_URL } from '@/api/index';
+
+/** Toast Notification */
+import { useToast } from 'vue-toast-notification'
+const toast = useToast()
 
 axios.defaults.withCredentials = true
 // axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 // axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
 const router = useRouter();
-const alert = alertStore()
 const userData = user_data()
 const uri = BASE_URL
 const form = ref(null)
@@ -74,11 +72,11 @@ const loginProcess = async () => {
             email: auth.value.email,
             password: auth.value.password,
         },
-        {
-            headers : {
-                'Accept' : 'application/json'
+            {
+                headers: {
+                    'Accept': 'application/json'
+                }
             }
-        }
         )
 
         if (response.data && response.data.isLogin) {
@@ -89,15 +87,15 @@ const loginProcess = async () => {
             localStorage.setItem('token', JSON.stringify(response.data.accessToken))
             localStorage.setItem('isAuthenticated', 'true')
 
-        }else if(response.data.status === 'inactive'){
+        } else if (response.data.status === 'inactive') {
             /** If User is Inactive */
-            alert.showAlertMessage('Inactive account', 'warning')
-        }else{
+            toast.warning('Inactive Account')
+        } else {
             /** If User Incorrect Credentails */
-            alert.showAlertMessage('Incorrect username or password', 'error')
+            toast.error('Incorrect username or password')
         }
     } catch (error) {
-        alert.showAlertMessage('Something went wrong', 'error')
+        toast.error('Something went wrong')
         console.log(error)
     }
     loading.value = false

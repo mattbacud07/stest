@@ -1,14 +1,17 @@
 <template>
-   
     <v-card flat class="mb-3">
         <v-row>
-
-            <!-- Internal Request -->   <!--- Optional || (showInternalRequest && internalRequest === null && !bypass) -->
-            <v-col cols="12"
-                v-if="(showInternalRequest && !bypass)">
-                <InternalRequest :service_id="props.service_id"
-                    :getSelectedRequest="selectedRequestType >= 7 ? selectedRequestType : 0" :other="other ?? ''"/>
-            </v-col>
+            <v-skeleton-loader  v-if="loadingSkeleton" type="list-item" class="mb-2">
+            </v-skeleton-loader>
+                <!-- Internal Request -->
+                <!--- Optional || (showInternalRequest && internalRequest === null && !bypass) -->
+                <template v-else>
+                    <v-col cols="12" v-if="showInternalRequest && !bypass && ehStatus === user.user.approval_level">
+                        <InternalRequest :service_id="props.service_id"
+                            :getSelectedRequest="selectedRequestType >= 7 ? selectedRequestType : 0"
+                            :other="other ?? ''" />
+                    </v-col>
+                </template>
 
         </v-row>
     </v-card>
@@ -16,21 +19,21 @@
         class="mb-2"></v-skeleton-loader>
     <v-card v-else style="padding: 3em 1em;" elevation="1">
         <v-row>
-            <v-col cols="6">
+            <v-col :cols="column">
                 <v-text-field color="primary" density="compact" label="Institution" placeholder="Institution"
                     variant="outlined" readonly v-model="institution"></v-text-field>
             </v-col>
-            <v-col cols="6">
+            <v-col :cols="column">
                 <v-text-field color="primary" density="compact" label="Requested by" placeholder="Requested by"
                     variant="outlined" readonly v-model="requested_by"></v-text-field>
             </v-col>
         </v-row>
         <v-row>
-            <v-col cols="6">
+            <v-col :cols="column">
                 <v-text-field color="primary" v-model="address" label="Address" density="compact" variant="outlined"
                     readonly></v-text-field>
             </v-col>
-            <v-col cols="6">
+            <v-col :cols="column">
                 <v-text-field color="primary" v-model="proposed_delivery_date" label="Propose Delivery Date"
                     density="compact" variant="outlined" readonly></v-text-field>
             </v-col>
@@ -39,7 +42,7 @@
 
         <!-- OTHER REQUEST DETAILS -->
         <v-row>
-            <v-col cols="6">
+            <v-col :cols="column">
                 <h5 class="mb-1" style="font-weight: 700;color: #191970;">Other Request Details</h5>
                 <v-checkbox v-model="ocular" color="primary" label="Request for Ocular" class="vCheckbox"
                     readonly></v-checkbox>
@@ -48,7 +51,7 @@
                 <v-checkbox v-model="ship" color="primary" label="Ship & Deliver direct to customer immediately"
                     class="vCheckbox" readonly></v-checkbox>
             </v-col>
-            <v-col cols="6">
+            <v-col :cols="column">
                 <v-textarea color="primary" label="Endorsement" v-model="endorsement" row-height="25" rows="3"
                     variant="outlined" readonly auto-grow shaped>
                 </v-textarea>
@@ -58,7 +61,7 @@
         <v-divider class="mb-3"></v-divider>
         <!-- Internal External Request -->
         <v-row class="mt-3">
-            <v-col cols="6"> <!--v-if="externalRequest !== null"-->
+            <v-col cols="12" md="6" sm="6"> <!--v-if="externalRequest !== null"-->
                 <h5 class="mb-2" style="font-weight: 700;color: #191970;">External Request</h5>
                 <v-row>
                     <v-col cols="6">
@@ -79,11 +82,12 @@
                     </v-col>
                 </v-row>
                 <v-row>
-                    <v-text-field v-if="request_type === '6'" readonly color="primary" density="compact" variant="outlined"
-                    placeholder="Other External Request" v-model="other" class="ml-5"></v-text-field>
+                    <v-text-field v-if="request_type === '6'" readonly color="primary" density="compact"
+                        variant="outlined" placeholder="Other External Request" v-model="other"
+                        class="ml-5"></v-text-field>
                 </v-row>
             </v-col>
-            <v-col cols="6"> <!-- v-if="internalRequest !== null" -->
+            <v-col cols="12" md="6" sm="6"> <!-- v-if="internalRequest !== null" -->
                 <h5 class="mb-2" style="font-weight: 700;color: #191970;">Internal Request</h5>
                 <v-radio-group v-model="request_type" column readonly>
                     <v-radio color="primary" label="For Corrective" value="7"></v-radio>
@@ -106,20 +110,23 @@
 
 
 <script setup>
-import { ref, onMounted, getCurrentInstance, defineEmits, watch } from 'vue';
-import { BASE_URL } from '@/api';
+import { ref, onMounted, getCurrentInstance, defineEmits, watch, provide, inject } from 'vue';
 import { user_data } from '@/stores/auth/userData';
-import axios from 'axios';
+import * as pub_var from '@/global/global'
 import InternalRequest from './InternalRequest.vue'
+import { useDisplay } from 'vuetify'
+const { width } = useDisplay()
+
 
 /** data declarations */
-const uri = BASE_URL
 const user = user_data()
 user.getUserData
 const apiRequest = user.apiRequest()
 const institutionData = ref([])
 const instance = getCurrentInstance()
 const loadingSkeleton = ref(false)
+// const internalStatus = ref(inject('getInternalStatus'), null)
+const ehStatus = ref('')
 
 // 1st
 const requested_by = ref('')
@@ -150,8 +157,18 @@ const props = defineProps({
     }
 })
 
+const column = ref(6)
+watch(width, (val) => {
+    if (val < 550) {
+        column.value = 12
+    }
+    else {
+        column.value = 6
+    }
+})
+
 // Functions
-defineEmits(['set-status'])
+defineEmits(['set-status', 'set-updated-ssu', 'get-installation-engineer'])
 
 const getDetails = async () => {
     try {
@@ -181,10 +198,10 @@ const getDetails = async () => {
             // externalRequest.value = field.external_request
             attached_gate.value = field.attach_gate === 1 ? true : false
             with_contract.value = field.with_contract === 1 ? true : false
-
+            ehStatus.value = field.status
             instance.emit('set-status', field.status)
-
-            // console.log(field)
+            instance.emit('set-updated-ssu', field.ssu)
+            instance.emit('get-installation-engineer', field.installer)
         } else {
             alert('Something went wrong')
         }
@@ -198,15 +215,19 @@ const getDetails = async () => {
         loadingSkeleton.value = false
     }
 };
+// provide('getDetails', getDetails)
 
 const selectedRequestType = ref(null);
 watch(request_type, (newValue) => {
-  selectedRequestType.value = parseInt(newValue);
+    selectedRequestType.value = parseInt(newValue);
 });
 
-
+const setSizeScreen = () => {
+    column.value = width.value < 550 ? 12 : 6;
+};
 onMounted(() => {
     getDetails();
+    setSizeScreen()
 });
 
 </script>

@@ -18,8 +18,9 @@
         <v-dialog v-model="dialogInternalRequest" max-width="500" persistent>
             <template v-slot:activator="{ props: activatorProps }">
                 <v-btn type="button" elevation="0" size="small" v-bind="activatorProps"
-                    :disabled="getInternalStatus !== null || getInternalStatus !== pub_var.internalStat.Declined ? true : false"
+                    
                     color="primary" class="text-none btnSubmit mt-3 rounded-0">
+                    <!-- :disabled="getInternalStatus !== null || getInternalStatus !== pub_var.internalStat.Declined ? true : false" -->
                     <v-icon class="mr-2">mdi-check</v-icon>
                     Start</v-btn>
             </template>
@@ -79,6 +80,10 @@ import { ref, onMounted, watch, inject } from 'vue'
 import { user_data } from '@/stores/auth/userData'
 import * as pub_var from '@/global/global'
 
+/** Toast Notification */
+import {useToast} from 'vue-toast-notification'
+const toast = useToast()
+
 const dialogInternalRequest = ref(false)
 // const loadingSkeletonInternalServicing = ref(true)
 const type_of_activity = ref(null)
@@ -87,19 +92,12 @@ const engineersData = ref([])
 const form = ref(false)
 const btnLoading = ref(false)
 const btnDisable = ref(false)
-const infoSuccess = ref(false)
-const exist_service_id = ref(false)
 const showOther = ref(false)
 const other = ref('')
 const disable_type_of_activity = ref(false)
 const getInternalStatus = inject('getInternalStatus', null)
+const disableButton = inject('disableButton', null)
 const CurrentlyDelegatedTo = inject('CurrentlyDelegatedTo', null)
-// console.log(getInternalStatus.value)
-// watch(getInternalStatus, (newVal)=>{
-//     if(newVal !== null){
-//         loadingSkeletonInternalServicing.value = false
-//     }
-// })
 
 const auth = user_data()
 auth.getUserData
@@ -158,12 +156,13 @@ const delegateInternalServicing = async () => {
             delegated_to: Engineers.value.value
         })
         if (response.data && response.data.success) {
-            infoSuccess.value = true
+            toast.success('Successfully delegated')
+            if(typeof(disableButton) === 'function') disableButton()
             setTimeout(() => {
                 window.location.reload()
             }, 1000)
         } else if (response.data && response.data.exist_service_id) {
-            exist_service_id.value = true
+            toast.warning('Request currently delegated')
         }
     } catch (error) {
         alert(error)
@@ -183,7 +182,7 @@ const getEngineeresData = async () => {
         if (response.data && response.data.engineers) {
             const engineersValue = response.data.engineers.map(data => {
                 return {
-                    key: data.first_name + ' ' + data.last_name,
+                    key: data.users.first_name + ' ' + data.users.last_name,
                     value: data.user_id
                 }
             })

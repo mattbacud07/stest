@@ -52,6 +52,8 @@ class GeneratePMSched
             }
         }
 
+        array_shift($scheduled_dates);
+
         $scheduledDates = implode(', ', array_map(function ($date) {
             return $date->format('Y-m-d');
         }, $scheduled_dates));
@@ -60,18 +62,19 @@ class GeneratePMSched
     }
     public function calculateSchedFrequency($date_installed, $frequency)
     {
+        $currentDate = $date_installed->copy();
         switch ($frequency) {
             case self::monthly:
-                return $date_installed->addMonth();
+                return $currentDate->addMonth();
                 break;
             case self::quarterly:
-                return $date_installed->addMonths(3);
+                return $currentDate->addMonths(3);
                 break;
             case self::semiAnnually:
-                return $date_installed->addMonths(6);
+                return $currentDate->addMonths(6);
                 break;
             case self::annually:
-                return $date_installed->addYear();
+                return $currentDate->addYear();
                 break;
             default:
                 return null;
@@ -84,33 +87,29 @@ class GeneratePMSched
     {
         $expiration_date = Carbon::now()->endOfYear();
         $dateInstalled = Carbon::parse($date_installed);
+        $date= [];
         foreach ($equipments as $equipment) {
             $frequency = $equipment['schedule'] ?? null;
             $scheduled_at = $this->calculateSchedFrequency($dateInstalled, $frequency);
             $allSched = $this->calculateAllSchedFrequency($dateInstalled, $frequency, $expiration_date);
+            $date[] = [$dateInstalled];
             PM::create([
+                'equipment_peripheral_id' => $equipment['id'],
                 'service_id' => $equipment['service_id'],
                 'list_scheduled' => $allSched,
                 'scheduled_at' => $scheduled_at,
                 'item_id' => $equipment['item_id'],
-                // 'serial_number' => $equipment['serial_number'],
+                'date_installed' => $date_installed,
                 'status' => is_null($frequency) ? PM::NotSet : PM::Scheduled,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
         }
+
+        // dd($date_installed, $dateInstalled, $scheduled_at, $allSched);
     }
 
-    /** Generate PM Sched */
-    public function generatePMSchedule($service_id)
-    {
-        $get_equipments  = EquipmentPeripherals::select('equipment_peripherals.*', 'm.category')
-            ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.master_data as m', 'equipment_peripherals.item_id', '=', 'm.id')
-            ->leftJoin('equipment_handling as e', 'equipment_peripherals.service_id', '=', 'e.id')
-            ->where([
-                'equipment_peripherals.service_id' => $service_id,
-                'equipment_peripherals.category' => 'Equipment',
-            ])
-            ->get();
-    }
+
+
+
 }

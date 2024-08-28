@@ -18,7 +18,6 @@
                             <tr v-for="(equipment, index) in equipments" :key="index">
                                 <td>
                                     {{ equipment.item_code }}
-                                    <!-- <v-text-field class="hideID">{{ equipment.id }}</v-text-field> -->
                                 </td>
                                 <td style="min-width: 250px;">{{ equipment.description }}</td>
                                 <td>{{ equipment.serial_number }}</td>
@@ -27,9 +26,9 @@
                         </tbody>
                         <tbody v-else>
                             <tr>
-                                <td colspan="5" class="text-center p-1" style="opacity: .3;">
+                                <td colspan="5" class="text-center p-3" style="opacity: .3;">
                                     <v-icon class="mb-3"
-                                        style="font-size: 30px">mdi-file-document-alert-outline</v-icon><br>
+                                        style="font-size: 50px">mdi-file-document-alert-outline</v-icon><br>
                                     No records found
                                 </td>
                             </tr>

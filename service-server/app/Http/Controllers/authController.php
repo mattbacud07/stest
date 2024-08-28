@@ -36,8 +36,8 @@ class authController extends Controller
 
                     /** Get user role */
                     $getRole = DB::table('role_user as rU')
-                    ->select('role_id', 'r.role_name')
-                    ->join('roles as r','rU.role_id' ,'=', 'r.id')
+                    ->select('role_id', 'r.role_name', 'SSU')
+                    ->join('roles as r','rU.role_id' ,'=', 'r.roleID')
                     ->where('user_id', $user->id)->get();
                     // ->pluck('r.role_id')
                     // ->toArray();

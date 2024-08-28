@@ -18,7 +18,7 @@
             <v-toolbar class="fixed-toolbar border-b-sm" dense color="white" :style="{width : width < 1280 || drawer === false ? '100%' : 'calc(100% - 256px)'}">
                 
                 
-                <v-spacer></v-spacer>
+                <v-spacer v-if="width > 550"></v-spacer>
 
                 <!-- Column Chooser  -->
                 <v-menu v-model="columnChooser" :close-on-content-click="false" location="bottom">
@@ -32,20 +32,20 @@
                 </v-menu>
                 
                 <!-- Search Master Data -->
-                <div class="col-md-2"><v-text-field v-model="searchInput" density="compact"  class="ml-3" variant="plain" prepend-inner-icon="mdi-magnify" color="primary" placeholder="Search data" ></v-text-field></div>
+                <v-text-field v-model="searchInput" @input="searching" order-sm="1" density="compact"  class="ml-3" variant="plain" prepend-inner-icon="mdi-magnify" color="primary" placeholder="Search data" ></v-text-field>
                
 
                 
-                <v-btn @click="handleRefresh" icon color="primary" size="small" variant="text" class="mr-2 ml-2"><v-icon>mdi-refresh</v-icon></v-btn>
+                <v-btn @click="handleRefresh" icon color="primary" size="small" variant="text" class="mr-1"><v-icon>mdi-refresh</v-icon></v-btn>
                
-                <v-btn @click="handleView" prepend-icon="mdi-file-eye" variant="tonal" :disabled="btnDisable" color="primary" class="text-none">
-                    View
+                <v-btn @click="handleView" variant="tonal" :disabled="btnDisable" color="primary" class="text-none mr-1">
+                    <v-icon>mdi-file-eye</v-icon> {{ width < 768 ? '' : 'View' }}
                 </v-btn>
-                <v-btn color="primary" variant="tonal" prepend-icon="mdi-pencil" class="text-none mr-2 ml-2" :disabled="btnDisable">
-                    Edit
+                <v-btn @click="handleEdit" color="primary" variant="tonal" class="text-none mr-1" :disabled="btnDisable">
+                    <v-icon>mdi-pencil</v-icon> {{ width < 768 ?  '' : ' Edit' }}
                 </v-btn>
-                <v-btn @click="handleCreate" v-if="enableCreate" color="primary" variant="flat" prepend-icon="mdi-plus" class="text-none"> <!--- v-if="enableCreate"-->
-                    Create
+                <v-btn @click="handleCreate" v-if="currentUserRole === 'Requestor'" color="primary" variant="flat" class="text-none"> <!--- v-if="enableCreate"-->
+                    <v-icon>mdi-plus</v-icon> {{ width < 768 ? '' : 'Create' }}
                 </v-btn>
             </v-toolbar>
 
@@ -62,17 +62,20 @@
 </template>
 
 <script setup>
-import { ref, inject, provide, watch, onMounted } from 'vue'
+import { ref, inject, provide, watch, onMounted, defineEmits } from 'vue'
 import BaseSidebar from '../Sidebars/BaseSidebar.vue';
 import topBarUserProfile from './LayoutParts/topBarUserProfile.vue'
 import { useRouter, useRoute } from 'vue-router';
 import {useDisplay} from 'vuetify'
+import { getRole } from '@/stores/getRole'
 
 const router = useRouter()
 const route = useRoute()
 const drawer = ref(null)
-const {width} = useDisplay()
+const {width, mobile} = useDisplay()
 const columnChooser = ref(null)
+const role = getRole()
+const currentUserRole = role.currentUserRole
 
 const details = inject('data') //this is from equipmenthandling.vue table
 const refresh = inject('refresh', null)
@@ -80,6 +83,10 @@ const column = inject('column', null)
 const btnDisable = ref(details.btnDisable ?? true)
 const enableCreate = ref(false)
 const searchInput = ref('')
+const emits = defineEmits(['searchText'])
+const searching  = (e) =>{
+    emits('searchText', e.target.value)
+}
 const service_id = 'service_id' in details ? details.service_id : null 
 // const status = 'status' in details && details.status !== null ? details.status : null 
 // console.log(service_id.value)
@@ -89,6 +96,7 @@ const enableCreateFunction = () => {
     }
 }
 
+/** Handle Table Refresh */
 const handleRefresh = () =>{
     if (typeof refresh === 'function') {
         refresh()
@@ -96,6 +104,7 @@ const handleRefresh = () =>{
 }
 
 
+/** Handle View Redirection */
 const handleView = () => {
     const params = {
         id : details.selectedId.value
@@ -103,18 +112,26 @@ const handleView = () => {
     if(service_id !== null){
         params.service_id = service_id.value;
     }
-    if(details.status.value !== null){
-        params.status = details.status.value;
-    }
-   
-    console.log(params)
     
     router.push({ name: details.routeView.value, params });
 }
 
 
+/** Hnadle Create Redirection */
 const handleCreate = () =>{
-    router.push({name : details.addView.value})
+    router.push({name : 'WorkOrder'})
+}
+
+
+/**Handle Edit Redirection */
+const handleEdit = () => {
+    const EditView = ref(details?.EditView, null)
+    const params = {
+        id : details.selectedId.value
+    }
+    if(EditView !== null){
+        router.push({name : EditView.value, params})
+    }
 }
 
 

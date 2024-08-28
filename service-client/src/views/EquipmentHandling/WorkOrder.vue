@@ -2,62 +2,68 @@
     <v-form @submit.prevent="submitWorkOrder" ref="form"> <!--@submit.prevent="submitWorkOrder" ref="form" -->
         <LayoutSinglePage>
             <template #topBarFixed>
-                <v-breadcrumbs class="pt-7">
-                    <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
-                        :class="{ 'custom-pointer': !item.disabled }" @click="navigateTo(item)"
-                        :disabled="item.disabled">
-                        {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
-                    </v-breadcrumbs-item>
-                </v-breadcrumbs>
-                <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="400" persistent>
-                    <template v-slot:activator="{ props: activatorProps }">
-                        <v-btn :disabled="btnLoading" v-bind="activatorProps" color="white" variant="tonal"
-                            class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
-                            Cancel</v-btn>
-                    </template>
-                    <v-card text="Discard Changes?" title="Discard">
-                        <template v-slot:actions>
-                            <v-row justify="end">
-                                <v-btn @click="discard" elevation="2" background-color="red"
-                                        size="small" color="#191970" class="text-none mr-2">Yes,
-                                        Discard</v-btn>
-                                <v-btn @click="dialog = false" color="primary" elevation="2" size="small"
-                                    class="text-none mr-3" style="background-color: #191970;color: #fff!important;">Keep
-                                    Editing</v-btn>
-                            </v-row>
-                        </template>
-                    </v-card>
-                </v-dialog>
-                <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="white" variant="outlined"
-                    class="text-none btnSubmit"><v-icon class="mr-2">mdi-note-plus-outline</v-icon>
-                    Create</v-btn>
+                    <v-col lg="6" md="6" sm="8" cols="8">
+                        <v-breadcrumbs class="pt-7">
+                            <v-breadcrumbs-item v-if="width > 550" v-for="(item, index) in breadcrumbItems" :key="index"
+                                :class="{ 'custom-pointer': !item.disabled }" @click="navigateTo(item)"
+                                :disabled="item.disabled">
+                                {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
+                            </v-breadcrumbs-item>
+                        </v-breadcrumbs>
+                    </v-col>
+                    <v-spacer></v-spacer>
+                    <v-col lg="6" md="6" sm="4" cols="4" align-self="center" class="d-flex justify-end">
+                        <v-dialog v-model="dialog" max-width="400" persistent>
+                            <template v-slot:activator="{ props: activatorProps }">
+                                <v-btn :disabled="btnLoading" v-bind="activatorProps" color="primary" variant="tonal"
+                                    class="text-none mr-2">
+                                    Cancel
+                                </v-btn>
+                            </template>
+                            <v-card text="Discard Changes?" title="Discard">
+                                <template v-slot:actions>
+                                    <v-row justify="end">
+                                        <v-btn @click="discard" elevation="2" background-color="red" size="small"
+                                            color="#191970" class="text-none mr-2">Yes,
+                                            Discard</v-btn>
+                                        <v-btn @click="dialog = false" color="primary" elevation="2" size="small"
+                                            class="text-none mr-3"
+                                            style="background-color: #191970;color: #fff!important;">Keep
+                                            Editing</v-btn>
+                                    </v-row>
+                                </template>
+                            </v-card>
+                        </v-dialog>
+                        <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary" variant="flat" class="text-none btnSubmit">
+                                <v-icon class="mr-2">mdi-note-plus-outline</v-icon> Create
+                            </v-btn>
+                    </v-col>
             </template>
 
             <template #default>
                 <v-container class="container-form">
                     <v-card class="p-2 border-sm pt-7 border-dashed" elevation="0">
                         <v-row>
-                            <v-col cols="6">
+                            <v-col :cols="column">
                                 <v-combobox color="primary" v-model="institutionValue" clearable label="Institution"
                                     density="compact" :items="institutionData" variant="outlined" itemValue="value"
                                     itemTitle="key" :rules="rule.ruleInstitution"
-                                    :close-on-content-click="false"></v-combobox>
+                                    :close-on-content-click="false" hide-details></v-combobox>
                             </v-col>
-                            <v-col cols="6">
+                            <v-col :cols="column">
                                 <v-text-field color="primary" density="compact" label="Requested by"
                                     placeholder="Requested by" variant="outlined" readonly v-model="requested_by"
-                                    :rules="rule.ruleRequestedBy"></v-text-field>
+                                    :rules="rule.ruleRequestedBy" hide-details></v-text-field>
                             </v-col>
                         </v-row>
                         <v-row>
-                            <v-col cols="6">
+                            <v-col :cols="column">
                                 <v-text-field color="primary" v-model="address" label="Address" density="compact"
                                     variant="outlined" readonly
                                     onUpdate:Item="(newVal) => { address.value = newVal.key }"
-                                    :rules="rule.ruleAddress"></v-text-field>
+                                    :rules="rule.ruleAddress" hide-details></v-text-field>
                             </v-col>
-                            <v-col cols="6">
+                            <v-col :cols="column">
                                 <VueDatePicker v-model="proposed_delivery_date" auto-apply :min-date="new Date()"
                                     :enable-time-picker="false" placeholder="Propose Delivery Date" />
                                 <!-- <input type="date" class="form-control" v-model="proposed_delivery_date" placeholder="Propose Delivery Date"> -->
@@ -68,7 +74,7 @@
 
                         <!-- OTHER REQUEST DETAILS -->
                         <v-row>
-                            <v-col cols="6">
+                            <v-col :cols="column">
                                 <h5 class="mb-1" style="font-weight: 700;color: #191970;">Other Request Details</h5>
                                 <v-checkbox v-model="ocular" color="primary" label="Request for Ocular" value="1"
                                     class="vCheckbox"></v-checkbox>
@@ -79,7 +85,7 @@
                                     label="Ship & Deliver direct to customer immediately" class="vCheckbox"
                                     value="1"></v-checkbox>
                             </v-col>
-                            <v-col cols="6">
+                            <v-col :cols="column">
                                 <v-textarea color="primary" label="Endorsement" v-model="endorsement" row-height="25"
                                     rows="3" variant="outlined" auto-grow shaped>
                                 </v-textarea>
@@ -166,14 +172,9 @@
                                         </tbody>
                                         <tbody v-else>
                                             <tr>
-                                                <td colspan="5" class="text-center p-3" style="color: red;">
-                                                    <h6 v-if="errorMessage !== ''"> {{ errorMessage }}</h6>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="5" class="text-center p-1" style="opacity: .3;">
+                                                <td colspan="5" class="text-center p-1" style="opacity: .2;">
                                                     <v-icon class="mb-3"
-                                                        style="font-size: 30px">mdi-file-document-alert-outline</v-icon><br>
+                                                        style="font-size: 50px">mdi-file-document-alert-outline</v-icon><br>
                                                     No records found
                                                 </td>
                                             </tr>
@@ -191,25 +192,34 @@
                                     <v-overlay v-model="overlayMasterData"
                                         class="d-flex align-items-center justify-content-center"
                                         location-strategy="connected">
-                                        <v-card class="pa-7" min-height="600" min-width="600">
+                                        <v-card class="pa-7" min-height="500">
                                             <v-row>
                                                 <v-col cols="4">
                                                     <v-text-field v-model="params.search" clearable density="compact"
-                                                        label="Search all fields" variant="outlined"></v-text-field>
+                                                        label="Search all fields" variant="outlined"
+                                                        color="primary"></v-text-field>
                                                 </v-col>
+                                                <v-spacer></v-spacer>
+                                                <v-btn @click="overlayMasterData = false" icon variant="plain"
+                                                    color="primary"><v-icon>mdi-close</v-icon></v-btn>
                                             </v-row>
                                             <vue3-datatable ref="datatable" :rows="rows" :columns="cols"
                                                 :loading="loading" :selectRowOnClick="true" :sortable="true"
                                                 :search="params.search" :isServerMode="true" :totalRows="total_rows"
                                                 :pageSize="params.pagesize" :hide="true" :filter="true"
-                                                skin="bh-table-compact bh-table-bordered" class=""
+                                                skin="bh-table-compact bh-table-bordered bh-table-responsive" class=""
                                                 @rowClick="rowClickEquipment" @change="changeServer"></vue3-datatable>
-                                            <p><b>List of Selected Row</b><br>
-                                                <span v-for="itemRow in selectedEquipment" :key="itemRow.id">
-                                                    [ {{ itemRow.item_code }} - <v-icon
-                                                        @click="removeSelectedEquipment(index)"
-                                                        class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
+                                            <v-divider></v-divider>
+                                            <p class="text-danger"><b>List of Selected Row</b><br>
+                                                <span v-if="selectedEquipment.length > 0">
+                                                    <span v-for="(itemRow, index) in selectedEquipment"
+                                                        :key="itemRow.id">
+                                                        [ {{ itemRow.item_code }} - <v-icon
+                                                            @click="removeSelectedEquipment(index)"
+                                                            class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
+                                                    </span>
                                                 </span>
+                                                <span v-else class="small">No data selected</span>
                                             </p>
                                         </v-card>
                                     </v-overlay>
@@ -282,12 +292,16 @@
                                     <v-overlay v-model="overlayMasterDataPeripherals" location-strategy="connected"
                                         class="d-flex align-items-center justify-content-center"
                                         :location-strategy="static" scroll-strategy="reposition" scrollable>
-                                        <v-card class="pa-7" min-height="600" min-width="600">
+                                        <v-card class="pa-7" min-height="600" width="800">
                                             <v-row>
                                                 <v-col cols="4">
                                                     <v-text-field v-model="params.search" clearable density="compact"
-                                                        label="Search all fields" variant="outlined"></v-text-field>
+                                                        label="Search all fields" variant="outlined"
+                                                        color="primary"></v-text-field>
                                                 </v-col>
+                                                <v-spacer></v-spacer>
+                                                <v-btn @click="overlayMasterDataPeripherals = false" icon
+                                                    variant="plain" color="primary"><v-icon>mdi-close</v-icon></v-btn>
                                             </v-row>
                                             <vue3-datatable ref="datatable" :rows="rows" :columns="cols"
                                                 :loading="loading" :selectRowOnClick="true" :sortable="true"
@@ -295,12 +309,17 @@
                                                 :totalRows="total_rows" :pageSize="params.pagesize" :filter="true"
                                                 skin="bh-table-compact bh-table-bordered" class=""
                                                 @rowClick="rowClickPeripherals" @change="changeServer"></vue3-datatable>
-                                            <p><b>List of Selected Row</b><br>
-                                                <span v-for="itemRow in selectedPeripherals" :key="itemRow.id">
-                                                    [ {{ itemRow.item_code }} - <v-icon
-                                                        @click="removeSelectedPeripherals(index)"
-                                                        class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
+                                            <v-divider></v-divider>
+                                            <p class="text-danger"><b>List of Selected Row</b><br>
+                                                <span v-if="selectedPeripherals.length > 0">
+                                                    <span v-for="(itemRow, index) in selectedPeripherals"
+                                                        :key="itemRow.id">
+                                                        [ {{ itemRow.item_code }} - <v-icon
+                                                            @click="removeSelectedPeripherals(index)"
+                                                            class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
+                                                    </span>
                                                 </span>
+                                                <span v-else class="small">No data selected</span>
                                             </p>
                                         </v-card>
                                     </v-overlay>
@@ -309,22 +328,13 @@
 
                         </v-row>
                     </v-card>
-                    <v-snackbar color="warning" v-model="snackbarErrorGeneral" location="right bottom" :timeout="3000">
-                        <v-icon>mdi-information-box</v-icon> Please ensure that required fields are not left blank
-                    </v-snackbar>
-                    <v-snackbar color="success" v-model="snackbarSuccess" location="right bottom" :timeout="5000">
-                        <v-icon>mdi-check-circle-outline</v-icon> Successfully created.
-                    </v-snackbar>
-                    <v-snackbar color="error" v-model="snackbarError" location="right bottom" :timeout="5000">
-                        <v-icon>mdi-alert-circle-outline</v-icon> Something went wrong.
-                    </v-snackbar>
                 </v-container>
             </template>
         </LayoutSinglePage>
     </v-form>
 </template>
 <script setup>
-import { ref, reactive, onMounted, watch, onBeforeUnmount } from 'vue';
+import { ref, reactive, onMounted, watch, onBeforeUnmount, computed } from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment';
@@ -335,15 +345,22 @@ import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vu
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
-import debounce from 'lodash'
+/** Toast Notification */
+import {useToast} from 'vue-toast-notification'
+const toast = useToast()
 
+/** Lodash Debounce */
+import debounce from 'lodash/debounce'
 
-import { BASE_URL } from '@/api';
+/** Import vuetify UseDisplay */
+import { useDisplay } from 'vuetify'
+const { name, width } = useDisplay()
+
+// console.log(name.value)
+
 import { user_data } from '@/stores/auth/userData';
-import axios from 'axios';
 
 /** data declarations */
-const uri = BASE_URL
 const router = useRouter()
 const user = user_data()
 user.getUserData
@@ -359,9 +376,6 @@ const btnLoading = ref(false)
 const institutionData = ref([])
 const errorMessage = ref('')
 const deliveryDateError = ref('')
-const snackbarErrorGeneral = ref(false)
-const snackbarSuccess = ref(false)
-const snackbarError = ref(false)
 
 const breadcrumbItems = [
     { title: 'Back', disabled: false, href: '/equipment-handling' },
@@ -374,6 +388,26 @@ const navigateTo = (item) => {
     }
 };
 
+const column = ref(6)
+watch(width, (val) => {
+    if (val < 550) {
+        column.value = 12
+    } else if (val < 768) {
+        cols.value.forEach((col) => {
+            if (col.field === 'description') {
+                col.hide = true
+            }
+        })
+    }
+    else {
+        column.value = 6
+        cols.value.forEach((col) => {
+            if (col.field === 'description') {
+                col.hide = false
+            }
+        })
+    }
+})
 
 
 // 1st
@@ -416,9 +450,6 @@ const rule = ref({
         v => !!v || 'Field is required',
     ],
 
-    // rulePeripheralSerial: [
-    //     v => !!v || 'Required'
-    // ],
     ruleEquipmentSerial: [
         v => !!v || 'Required'
     ],
@@ -457,44 +488,43 @@ watch(externalRequest, (val) => {
 
 requested_by.value = user.user.first_name + ' ' + user.user.last_name
 
-// Institution
+/** Auto Populate Addresss base on Institution */
 watch(institutionValue, (newVal) => {
     address.value = newVal ? newVal.value : ''
 })
 
 
 
-/** Data functions */
+/** Submit Equipment Hnadling Job Order */
+const countDown = ref(5)
 const submitWorkOrder = async () => {
     const peripheral = Array.from(selectedPeripherals.value)
     const equipment = Array.from(selectedEquipment.value)
     const formatted_delivery_date = moment(proposed_delivery_date.value).format('YYYY-MM-DD')
-    // console.log(formatted_delivery_date)
     btnLoading.value = true
     const { valid } = await form.value.validate()
     if (!valid) {
-        snackbarErrorGeneral.value = true
+        toast.error('Please ensure that required fields are not left blank')
         btnLoading.value = false
         return
     }
 
-    if (!selectedEquipment.value || selectedEquipment.value.length === 0) {
-        snackbarErrorGeneral.value = true
-        errorMessage.value = 'Please select at least one record to proceed'
-        btnLoading.value = false
-    }
-    else if (!proposed_delivery_date.value) {
+    
+    if (!proposed_delivery_date.value) {
         deliveryDateError.value = 'Required field'
         setTimeout(() => {
             deliveryDateError.value = ''
         }, 3000)
-        snackbarErrorGeneral.value = true
+        toast.error('Please enter the proposed delivery date')
+        btnLoading.value = false
+    }
+    else if (!selectedEquipment.value || selectedEquipment.value.length === 0) {
+        toast.error('Please select at least one record to proceed')
         btnLoading.value = false
     }
     else {
         try {
-            const response = await axios.post(
-                uri + 'api/submit-work-order',
+            const response = await apiRequest.post('submit-work-order',
                 {
                     requested_by: user.user.id,
                     institution: institutionValue.value.institutionId,
@@ -506,26 +536,22 @@ const submitWorkOrder = async () => {
                     ocular: ocular.value,
                     request_type: externalRequest.value ?? internalRequest.value,
                     other: other.value,
-                    // externalRequest: externalRequest.value,
-                    // internalRequest: internalRequest.value,
                     endorsement: endorsement.value,
                     equipments: equipment,
                     peripherals: peripheral,
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${user.tokenData}`
-                    }
-                }
-            )
+                })
             if (response.data && response.data.success) {
-                snackbarSuccess.value = true
+                toast.success('Successfully created')
                 btnDisable.value = true
-                setTimeout(() => {
-                    router.push('/equipment-handling')
-                }, 4000)
+                router.push('/equipment-handling')
+                // const countDownInterval = setInterval(() => {
+                //     countDown.value--
+                //     if (countDown.value === 0) {
+                //         router.push('/equipment-handling')
+                //     }
+                // }, 1000);
             } else {
-                snackbarError.value = true
+                toast.error('Something went wrong')
             }
         } catch (error) {
             console.log(error)
@@ -534,21 +560,7 @@ const submitWorkOrder = async () => {
             btnLoading.value = false
         }
     }
-    // console.log(selectedEquipment.value)
 }
-
-
-
-
-
-
-
-
-
-/** Returns */
-
-
-
 
 
 
@@ -558,15 +570,12 @@ const submitWorkOrder = async () => {
 /** Get Users table MASTER DATA */
 const loading = ref(true);
 const total_rows = ref(0);
-
-
-
-
 const cols =
     ref([
-        { field: 'id', title: 'ID', isUnique: true, type: 'number' },
+        { field: 'id', title: 'ID', isUnique: true, type: 'number', hide: true },
         { field: 'item_code', title: 'Item Code' },
         { field: 'description', title: 'Item Description' },
+        { field: 'name', title: 'Category' },
     ]) || [];
 
 const searchColumn = cols.value.map(f => f.field)
@@ -588,7 +597,6 @@ const rowClickEquipment = (data) => {
         equipmentSerial: '',
         equipmentRemark: ''
     })
-    // console.log(selectedEquipment.value = Object.keys(datatable.value.getSelectedRows()))
 }
 
 /*** Row Click Selection pf Peripherals and get Data */
@@ -611,12 +619,17 @@ const removeSelectedPeripherals = (index) => {
 
 
 
-// Functions
+/** Methods Declared */
+const item_category = ref([]) //Additional Peripheral - IT Dept Approver
+watch(overlayMasterDataPeripherals, async (val) => {
+    val === true ? item_category.value = [1, 5, 7] : item_category.value = []
+    await getMasterData()
+})
 const getMasterData = async () => {
     try {
         loading.value = true;
         const response = await apiRequest.get('master-data-equipments', {
-            params: { ...params, searchColumn: searchColumn },
+            params: { ...params, searchColumn: searchColumn, item_category: item_category.value },
         });
         const data = response.data.equipments
 
@@ -649,21 +662,23 @@ const get_institution = async () => {
     loading.value = false;
 };
 
+// debounce initialization
+const debounceSearch = debounce(getMasterData, 300)
 
+/** Server Mode */
 const changeServer = (data) => {
     params.current_page = data.current_page;
     params.pagesize = data.pagesize;
     params.search = data.search
 
-    if(data.change_type === 'search'){
-        // getMasterData();
-        _.debounce(getMasterData, 500)
-    }else{
+    if (data.change_type === 'search') {
+        debounceSearch()
+    } else {
         getMasterData();
     }
 };
 
-
+/** Discard button */
 const discard = () => {
     router.push('/equipment-handling')
 }
@@ -684,9 +699,32 @@ const discard = () => {
 //   router.beforeEach(originalBeforeEach);
 // });
 
+
+/** Set Size Screeen */
+const sizeScreen = () => {
+    if (width < 550) {
+        column.value = 12
+    } else if (width < 768) {
+        cols.value.forEach((col) => {
+            if (col.field === 'description') {
+                col.hide = true
+            }
+        })
+    }
+    else {
+        column.value = 6
+        cols.value.forEach((col) => {
+            if (col.field === 'description') {
+                col.hide = false
+            }
+        })
+    }
+}
+
 onMounted(() => {
     getMasterData();
     get_institution()
+    sizeScreen()
     // console.log(total_rows)
 });
 </script>
@@ -714,6 +752,9 @@ onMounted(() => {
 
 .myInputText {
     position: absolute !important;
+}
+.v-label{
+    color : #222;
 }
 
 /* .vCheckbox {

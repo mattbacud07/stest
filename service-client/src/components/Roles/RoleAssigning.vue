@@ -2,7 +2,7 @@
     <v-row>
         <v-col cols="12">
             <v-row>
-                <v-col>
+                <v-col lg="8" md="8" sm="6" cols="4">
                     <v-dialog width="400" scrollable v-model="isActive">
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn color="primary" :disabled="btnDisable" prepend-icon="mdi-clipboard-account-outline"
@@ -16,7 +16,7 @@
                                     <v-divider class="mt-1"></v-divider>
                                     <v-card-text class="px-4">
                                         <v-select color="primary" v-model="selectedRole" :rules="rule.role"
-                                            :items="get_role_name" item-title="role_name" item-value="role_id"  density="compact" variant="outlined"
+                                            :items="get_role_name" item-title="role_name" item-value="roleID"  density="compact" variant="outlined"
                                             label="Roles" hint="Assign roles to the selected users"
                                             persistent-hint></v-select>
                                         <v-select v-if="showSSU" color="primary" v-model="SSU" :rules="rule.SSU"
@@ -41,7 +41,7 @@
                     </v-dialog>
                 </v-col>
                 <v-spacer></v-spacer>
-                <v-col>
+                <v-col lg="4" md="4" sm="6" cols="8">
                     <v-text-field color="primary" v-model="params.search" clearable density="compact"
                         label="Search all fields" variant="outlined"></v-text-field>
                 </v-col>
@@ -117,8 +117,8 @@ const convertSSUToArray = (obj) => {
     return Object.keys(obj).map(data => ({ text: 'SSU' + obj[data], value: 'SSU' + obj[data] }))
 }
 watch(selectedRole, (val) => {
-    selectedRoleText.value = get_role_name.value.find(v => v.role_id === val)
-    if (selectedRoleText.value.role_name === pub_var.engineerRole || selectedRoleText.value.role_name === pub_var.serviceTLRole) {
+    selectedRoleText.value = get_role_name.value.find(v => v.roleID === val)
+    if (selectedRoleText.value?.role_name === pub_var.engineerRole || selectedRoleText.value?.role_name === pub_var.TLRole) {
         showSSU.value = true
     } else {
         showSSU.value = false
@@ -149,13 +149,14 @@ const saveRole = async () => {
         const response = await apiRequest.post('assign-role', {
             user: selectedUser,
             role_id: selectedRole.value,
-            role_name: selectedRoleText.value.role_name,
+            // role_name: selectedRoleText.value.role_name,
             ssu: SSU.value
         })
         if (response.data && response.data.success) {
             userExist.value = response.data.userExist
             userSucceed.value = response.data.succeed
             userExistDisplay.value = true
+            form.value.reset()
             // success.value= true
             datatable.value.clearSelectedRows()
             setTimeout(() => {
@@ -227,7 +228,7 @@ const getRoleName = async () => {
         const response = await apiRequest.get('get_role_name');
         const data = response.data.role_name
 
-        get_role_name.value = data.map(v => ({ role_id : v.id, role_name : v.role_name}))
+        get_role_name.value = data.map(v => ({ roleID : v.roleID, role_name : v.role_name}))
         
     } catch (error) {
         console.log(error)

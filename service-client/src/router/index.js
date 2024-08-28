@@ -1,14 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import Login from '../views/Login.vue'
-// import EquipmentHandling from '../views/EquipmentHandling/EquipmentHandling.vue'
-// import WorkOrder from '../views/EquipmentHandling/WorkOrder.vue'
-// import ApprovalConfiguration from '../views/Admin/ApprovalConfiguration.vue'
-// import Roles from '../views/Admin/Roles.vue'
-// import DashboardApprover from '../views/Approver/DashboardApprover.vue'
-// import EquipmentHandlingApprover from '../views/Approver/EquipmentHandlingApprover.vue'
-// import WorkOrderApprover from '../views/Approver/WorkOrderApprover.vue'
-// import ViewWorkOrder from '../views/EquipmentHandling/ViewWorkOrder.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,36 +24,10 @@ const router = createRouter({
       }
     },
 
-    /** Equipment Handling */
-    {
-      path: '/equipment-handling',
-      name: 'EquipmentHandling',
-      component: () => import('../views/EquipmentHandling/EquipmentHandling.vue'),
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/work-order',
-      name: 'WorkOrder',
-      component: () => import('../views/EquipmentHandling/WorkOrder.vue'),
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/view-work-order/:id',
-      name: 'ViewWorkOrder',
-      component: () => import('../views/EquipmentHandling/ViewWorkOrder.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
 
 
-    /** Admin Routes */
-    {
+     /** ============================= Administrator Routes ===============================================================*/
+     {
       path: '/admin-dashboard',
       name: 'AdminDashboard',
       component: () => import('../views/Admin/AdminDashboard.vue'),
@@ -93,51 +59,48 @@ const router = createRouter({
         requiresAuth: true
       }
     },
-
-
-    /** Approver Routes */
     {
-      path: '/approver-dashboard',
-      name: 'DashboardApprover',
-      component: () => import('../views/Approver/DashboardApprover.vue'),
+      path: '/set-standard',
+      name: 'SetStandardActions',
+      component: () => import('../views/Admin/SetStandardActions.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+
+
+
+
+    /** Equipment Handling */
+    {
+      path: '/equipment-handling',
+      name: 'EquipmentHandling',
+      component: () => import('../views/EquipmentHandling/EquipmentHandling.vue'),
       meta: {
         requiresAuth: true
       }
     },
     {
-      path: '/approver-equipment-handling',
-      name: 'EquipmentHandlingApprover',
-      component: () => import('../views/Approver/EquipmentHandlingApprover.vue'),
+      path: '/work-order',
+      name: 'WorkOrder',
+      component: () => import('../views/EquipmentHandling/WorkOrder.vue'),
       meta: {
         requiresAuth: true
       }
     },
     {
-      path: '/approver-work-order/:id/:status',
+      path: '/view-work-order/:id',
+      name: 'ViewWorkOrder',
+      component: () => import('../views/EquipmentHandling/ViewWorkOrder.vue'),
+      props: true,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/approver-work-order/:id',
       name: 'WorkOrderApprover',
-      component: () => import('../views/Approver/WorkOrderApprover.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    
-    
-    
-    /** Outbound Routes */
-    {
-      path: '/outbound-dashboard',
-      name: 'OutboundDashboard',
-      component: () => import('../views/Outbound/OutboundDashboard.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/outbound-equipment-handling',
-      name: 'OutboundEquipmentHandling',
-      component: () => import('../views/Outbound/OutboundEquipmentHandling.vue'),
+      component: () => import('../views/EquipmentHandling/WorkOrderApprover.vue'),
       props: true,
       meta: {
         requiresAuth: true
@@ -145,7 +108,10 @@ const router = createRouter({
     },
 
 
-    /** Team Leader Routes */
+   
+
+
+    /** =======================================Team Leader Routes ========================================================*/
     {
       path: '/tl-dashboard',
       name: 'DashboardTL',
@@ -155,103 +121,33 @@ const router = createRouter({
         requiresAuth: true
       }
     },
-    {
-      path: '/set-schedule-equipment-installation',
-      name: 'SetScheduleEquipmentInstallation',
-      component: () => import('../views/TeamLeader/SetScheduleEquipmentInstallation.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/assign-equipment-installation/:id/:status',
-      name: 'AssignEquipmentInstallation',
-      component: () => import('../views/TeamLeader/AssignEquipmentInstallation.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    { //PM Sched
-      path: '/pm-sched',
-      name: 'PMSched',
-      component: () => import('../views/TeamLeader/PMSched.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
 
 
-    /** Engineer Routes */
-    {
-      path: '/engineer-dashboard',
-      name: 'DashboardEngineer',
-      component: () => import('../views/Engineers/DashboardEngineer.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
+    /** ========================================== Internal Servicing Routes =================================================== */
     {
       path: '/internal-servicing',
       name: 'InternalServicing',
-      component: () => import('../views/Engineers/InternalRequestMainData.vue'),
+      component: () => import('../views/InternalServicing/InternalRequestMainData.vue'),
       props: true,
       meta: {
         requiresAuth: true
       }
     },
-    {
-      path: '/equipment-installation',
-      name: 'EquipmentInstallation',
-      component: () => import('../views/Engineers/EquipmentInstallation.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/assigned-equipment-installation/:id/:status',
-      name: 'AssignedEquipmentInstallation',
-      component: () => import('../views/Engineers/AssignedEquipmentInstallation.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
+
     {
       path: '/internal-servicing-process/:id/:service_id',
       name: 'InternalServicingProcess',
-      component: () => import('../views/Engineers/InternalRequestProcess.vue'),
+      component: () => import('../views/InternalServicing/InternalRequestProcess.vue'),
       props: true,
       meta: {
         requiresAuth: true
       }
     },
-    {
-      path: '/pm-sched-engineer',
-      name: 'PMSchedEngineers',
-      component: () => import('../views/Engineers/PMSchedEngineers.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/pm-sched-accepted/:service_id',
-      name: 'PMSchedAccepted',
-      component: () => import('../views/Engineers/PMSchedAccepted.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
+
 
 
     /**
-     * Preventive Maintenance Routes
+     * ==================================== Preventive Maintenance Routes ========================================
      */
     {
       path: '/preventive-maintenance',
@@ -263,20 +159,11 @@ const router = createRouter({
       }
     },
 
-    {
-      path: '/preventive-maintenance-engineer',
-      name : 'PreventiveMaintenanceEngineer',
-      component : () => import('../views/PreventiveMaintenance/PMEngineer.vue'),
-      props : true,
-      meta: {
-        requiresAuth: true
-      }
-    },
 
     {
-      path: '/pm-details/:id',
-      name : 'PMDetails',
-      component : () => import('../views/PreventiveMaintenance/PMDetails.vue'),
+      path: '/pm-view/:id',
+      name : 'PMView',
+      component : () => import('../views/PreventiveMaintenance/PMView.vue'),
       props : true,
       meta: {
         requiresAuth: true

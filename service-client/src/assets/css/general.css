@@ -2,207 +2,6 @@
   background: linear-gradient(to right, #8e9eab, #eef2f3) !important;
 }
 
-#tracking {
-  background: #fff
-}
-
-.tracking-detail {
-  padding: 3rem 0;
-}
-
-#tracking {
-  /* margin-bottom: 1rem; */
-}
-
-[class*="tracking-status-"] p {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #fff;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-[class*="tracking-status-"] {
-  padding: 1.6rem 0;
-}
-
-.tracking-list {
-  /* border: 1px solid #e5e5e5; */
-}
-
-.tracking-item {
-  border-left: 2px solid #191970;
-  position: relative;
-  padding: 2rem 1.5rem 0.5rem 2.5rem;
-  font-size: 0.9rem;
-  margin-left: 3rem;
-  min-height: 5rem;
-}
-
-.tracking-item:last-child {
-  padding-bottom: 4rem;
-}
-
-.tracking-item .tracking-date {
-  margin-bottom: 0.5rem;
-}
-
-.tracking-item .tracking-date span {
-  color: #888;
-  font-size: 85%;
-  padding-left: 0.4rem;
-}
-
-.tracking-item .tracking-content {
-  padding: 0.5rem 0.8rem;
-  background-color: #f4f4f4;
-  border-radius: 0.5rem;
-}
-
-.tracking-item .tracking-content span {
-  display: block;
-  color: #767676;
-  font-size: 13px;
-}
-
-.tracking-item .tracking-icon {
-  position: absolute;
-  left: -0.5rem;
-  width: .8rem;
-  height: .8rem;
-  text-align: center;
-  border-radius: 50%;
-  font-size: 1.1rem;
-  background-color: #fff;
-  color: #fff;
-}
-
-.tracking-item-pending {
-  border-left: 2px solid #d6d6d6;
-  position: relative;
-  padding: 2rem 1.5rem 0.5rem 2.5rem;
-  font-size: 0.9rem;
-  margin-left: 3rem;
-  min-height: 5rem;
-}
-
-.tracking-item-pending:last-child {
-  padding-bottom: 4rem;
-}
-
-.tracking-item-pending .tracking-date {
-  margin-bottom: 0.5rem;
-}
-
-.tracking-item-pending .tracking-date span {
-  color: #888;
-  font-size: 85%;
-  padding-left: 0.4rem;
-}
-
-.tracking-item-pending .tracking-content {
-  padding: 0.5rem 0.8rem;
-  background-color: #f4f4f4;
-  border-radius: 0.5rem;
-}
-
-.tracking-item-pending .tracking-content span {
-  display: block;
-  color: #767676;
-  font-size: 13px;
-}
-
-.tracking-item-pending .tracking-icon {
-  line-height: 2.6rem;
-  position: absolute;
-  left: -0.5rem;
-  width: .8rem;
-  height: .8rem;
-  text-align: center;
-  border-radius: 50%;
-  font-size: 1.1rem;
-  color: #d6d6d6;
-}
-
-.tracking-item-pending .tracking-content {
-  font-weight: 600;
-  font-size: 17px;
-}
-
-.tracking-item .tracking-icon.status-current {
-  width: 1.9rem;
-  height: 1.9rem;
-  left: -1.1rem;
-}
-
-.tracking-item .tracking-icon.status-intransit {
-  color: #191970;
-  font-size: 0.6rem;
-}
-
-.tracking-item .tracking-icon.status-current {
-  color: #191970;
-  font-size: 0.6rem;
-}
-
-@media (min-width: 992px) {
-  .tracking-item {
-    margin-left: 10rem;
-  }
-
-  .tracking-item .tracking-date {
-    position: absolute;
-    left: -10rem;
-    width: 7.5rem;
-    text-align: right;
-  }
-
-  .tracking-item .tracking-date span {
-    display: block;
-  }
-
-  .tracking-item .tracking-content {
-    padding: 0;
-    background-color: transparent;
-  }
-
-  .tracking-item-pending {
-    margin-left: 10rem;
-  }
-
-  .tracking-item-pending .tracking-date {
-    position: absolute;
-    left: -10rem;
-    width: 7.5rem;
-    text-align: right;
-  }
-
-  .tracking-item-pending .tracking-date span {
-    display: block;
-  }
-
-  .tracking-item-pending .tracking-content {
-    padding: 0;
-    background-color: transparent;
-  }
-}
-
-.tracking-item .tracking-content {
-  font-weight: 600;
-  font-size: 17px;
-}
-
-.blinker {
-  border: 7px solid #e9f8ea;
-  animation: blink 1s;
-  animation-iteration-count: infinite;
-}
-
-@keyframes blink {
-  50% {
-    border-color: #fff;
-  }
-}
 
 
 /* Modal Positioning */
@@ -281,7 +80,7 @@ table.dataTable>tbody>tr.selected>* {
 /* Handle */
 ::-webkit-scrollbar-thumb {
   background: #c0c0c0;
-  border-radius: 50px;
+  /* border-radius: 50px; */
 }
 
 /* Handle on hover */
@@ -323,7 +122,8 @@ table.dataTable>tbody>tr.selected>* {
 
 /* **************************************************** Table Vue3 DataTable ******************************************** */
 .bh-table-responsive{
-  min-height: 300px!important;
+  min-height: 50vh!important;
+  /* min-height: 300px!important; */
 }
 
 .bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered thead tr th {
@@ -341,13 +141,19 @@ table.dataTable>tbody>tr.selected>* {
 .bh-table-responsive table.bh-table-bordered tbody tr, .bh-table-responsive table.bh-table-bordered tbody tr{
   background: rgb(255, 255, 255)!important;
 }
-.bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered tbody tr rd{
+.bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered tbody tr td{
   white-space: nowrap;
+}
+.bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered tbody tr td{
+ font-family: "Satoshi", sans-serif !important;
+ font-size: 12px!important;
+ font-weight: 500;
+ color: #191970;
 }
 
 /* ****************************************************End  Table Vue3 DataTable ******************************************** */
 
-/* Limit TExt to Show in table Data  */
+/* ========================= Limit TExt to Show in table Data ==============================  */
 .tableLimitText tbody td {
   white-space: nowrap;
   overflow: hidden;
@@ -363,3 +169,17 @@ table.dataTable>tbody>tr.selected>* {
 .custom-pointer {
   cursor: pointer;
 }
+
+
+/** Put value in EMpty table td*/
+table tbody tr td:empty::before{
+  content: '- - -';
+  color: #191970;
+  font-weight: bold;
+}
+table tbody tr td span:empty::before{
+  content: '- - -';
+  color: #191970;
+  font-weight: bold;
+}
+

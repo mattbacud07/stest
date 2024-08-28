@@ -11,7 +11,7 @@
                 <template v-slot:actions>
                     <v-spacer></v-spacer>
                     <v-btn class="text-none" variant="tonal" color="primary" text="Cancel" @click="dialog = false"></v-btn>
-                    <v-btn class="text-none" color="primary" min-width="150px" variant="flat" text="Yes" @click="logOut"></v-btn>
+                    <v-btn class="text-none" color="primary" min-width="150px" variant="flat" text="Yes" :loading="loading" @click="logOut"></v-btn>
                 </template>
             </v-card>
         </v-dialog>
@@ -35,6 +35,7 @@ const logOut = async () => {
     try {
         await logMeOut.log_me_out();
         window.location.href = '/'
+        loading.value = false
     } catch (error) {
         alert(error)
     } finally {

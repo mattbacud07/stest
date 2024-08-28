@@ -15,7 +15,7 @@ export default defineConfig({
   },
   //this settings is added by the programmer for testing
   // server:{
-  //   host: '0.0.0.0',
+  //   host: '192.168.0.105',
   //   port: 3000,
   //   open: true
   // }

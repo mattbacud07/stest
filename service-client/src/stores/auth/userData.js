@@ -8,10 +8,6 @@ export const user_data = defineStore('users',{
     }),
 
     actions : {
-        // getUserData(){
-        //     this.users = JSON.parse(localStorage.getItem('users'))
-        //     this.tokenDatas = JSON.parse(localStorage.getItem('token'))
-        // }
         apiRequest(){
             const token = JSON.parse(localStorage.getItem('token'))
              return axios.create({

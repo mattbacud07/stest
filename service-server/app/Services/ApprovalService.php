@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EhServicesModel as EH;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,6 @@ class ApprovalService
 
     /** Update Status for General Query */
     public function updateStatusGeneral($service_id, $dataArray, $next_approver, $main_status)
-    // public function updateStatusGeneral($service_id, $tl_assigned, $assigned_date, $installer, $date_installed, $next_approver, $main_status)
     {
         $status = [
             'status' => $next_approver,
@@ -78,14 +78,15 @@ class ApprovalService
     public function getNextApprovalLevel($current_level, $institution_area)
     {
         $levels = [
-            self::IT_DEPARTMENT => [self::APM_NSM_SM, self::ONGOING],
-            self::APM_NSM_SM => [self::WIM, self::ONGOING],
-            self::WIM => [self::SERVICE_TL, self::ONGOING],
-            self::SERVICE_TL => [self::SERVICE_HEAD_ENGINEER, self::ONGOING],
-            self::SERVICE_HEAD_ENGINEER => [self::BILLING_WIM, self::ONGOING],
-            self::BILLING_WIM => [self::INSTALLATION_TL, self::INSTALLING, $institution_area],
-            // self::INSTALLATION_TL => [self::INSTALLATION_ENGINEER, self::INSTALLING],
-            // self::INSTALLATION_ENGINEER => [self::INSTALLATION_ENGINEER + 1, self::COMPLETE]
+            EH::IT_DEPARTMENT => [EH::APM_NSM_SM, EH::ONGOING],
+            EH::APM_NSM_SM => [EH::WIM, EH::ONGOING],
+            EH::WIM => [EH::SERVICE_TL, EH::ONGOING],
+            EH::SERVICE_TL => [EH::SERVICE_HEAD_ENGINEER, EH::ONGOING],
+            EH::SERVICE_HEAD_ENGINEER => [EH::BILLING_WIM, EH::ONGOING],
+            EH::BILLING_WIM => [EH::OUTBOUND, EH::ONGOING, $institution_area],
+            EH::OUTBOUND => [EH::TL, EH::ONGOING, $institution_area],
+            EH::TL => [EH::INSTALLATION_ENGINEER, EH::INSTALLING, $institution_area],
+            EH::INSTALLATION_ENGINEER => [EH::INSTALLATION_ENGINEER + 1, EH::COMPLETE]
         ];
 
         return $levels[$current_level] ?? throw new Exception('Invalid approver');

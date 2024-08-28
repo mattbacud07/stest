@@ -15,7 +15,16 @@ class Roles extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'roleID',
         'role_name',
         'description'
     ];
+
+    /** Roles */
+    public const adminRole = 'Administrator';
+    public const approverRole = 'Approver';
+    public const TLRole = 'Team Leader';
+    public const engineerRole = 'Engineer';
+    public const OutboundRole = 'Outbound Personnel';
+    public const WIMRole = 'WIM Personnel';
 }

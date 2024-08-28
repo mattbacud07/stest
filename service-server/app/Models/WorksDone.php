@@ -17,6 +17,7 @@ class WorksDone extends Model
         'work_type_id',
         'equipment_id',
         'service_id',
+        'pm_id',
         'serial',
         'action',
         'work_type',

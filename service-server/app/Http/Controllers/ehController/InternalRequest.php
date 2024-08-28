@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ehController;
 
 use App\Http\Controllers\Controller;
 use App\Models\EhServicesModel;
+use App\Models\Roles;
 use App\Models\RoleUser;
 use App\Models\WorkOrder\InternalRequest as WOInternalRequest;
 use App\Services\ActionsDoneService;
@@ -30,9 +31,10 @@ class InternalRequest extends Controller
      */
     public function get_engineers_data()
     {
-        $role_name = self::engineerRole;
-        $engineers = RoleUser::with(['users' => function($q){
-            $q->select('first_name', 'last_name');
+        $role_name = Roles::engineerRole;
+        $engineers = RoleUser::
+        with(['users' => function($q){
+            $q->select('id','first_name','last_name');
         }])
         ->whereHas('roles', function($q) use($role_name){
             $q->where('role_name', $role_name);
@@ -130,13 +132,29 @@ class InternalRequest extends Controller
             } elseif ($request->has('category') && $request->category === 'specificService') {
                 $get_request->where('service_id', $request->service_id);
             }
-            //  elseif (($request->has('filterStatus') && !empty($request->filterStatus)) || ($request->has('filterInstitution') && !empty($request->filterInstitution))) {
-            //     !empty($request->filterStatus) ? $get_request->whereIn('status', $request->filterStatus) : '';
-            //     !empty($request->filterInstitution) ? $get_request->whereIn('type_of_activity', $request->filterInstitution) : '';
-            // }
 
+
+
+            /** Depends on Loggedin Roles */
+            if($request->has('category') && $request->category === 'delegated_to'){
+                $get_request->where('delegated_to', $user_id);
+            }
+            if($request->has('category') && $request->category === Roles::WIMRole){
+                $get_request->where('status', self::internalStat['Packed']);
+            }
+
+
+
+
+
+            /** Data Filtering  */
             if($request->filled('filterStatus')){
                 $get_request->whereIn('status', $request->filterStatus);
+            }
+            if($request->filled('delegation_date')){
+                $startDate = Carbon::parse($request->delegation_date[0])->startOfDay();
+                $endDate = Carbon::parse($request->delegation_date[1])->endOfDay();
+                $get_request->whereBetween('delegation_date', [$startDate, $endDate] );
             }
             if($request->filled('filterInstitution')){
                 $filterInstitution = array_map(function($data){
@@ -297,7 +315,7 @@ class InternalRequest extends Controller
 
                 $updateEH = EhServicesModel::where('id', $service_id)
                     ->update([
-                        'status' => self::SERVICE_HEAD_ENGINEER
+                        'status' => EhServicesModel::SERVICE_HEAD_ENGINEER
                     ]);
 
                 if (!$updateEH) {

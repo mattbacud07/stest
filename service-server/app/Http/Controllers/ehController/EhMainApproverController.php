@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\ehController;
 
 use App\Http\Controllers\Controller;
-use App\Models\EhServicesModel;
+use App\Mail\EHNotification;
+use App\Models\EhServicesModel as EH;
 use App\Models\InternalExternalRequest as IEModel;
 use App\Models\WorkOrder\EquipmentPeripherals;
 use App\Models\WorkOrder\InternalRequest;
+use App\Services\ActionsDoneService;
 use App\Services\ApprovalService;
 use App\Services\PM\GeneratePMSched;
 use App\Traits\GlobalVariables;
@@ -17,6 +19,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class EhMainApproverController extends Controller
 {
@@ -24,45 +27,14 @@ class EhMainApproverController extends Controller
 
     protected $approvalService;
     protected $generatePMSched;
-    public function __construct(ApprovalService $approvalService, GeneratePMSched $generatePMSched)
+    protected $action;
+    public function __construct(ApprovalService $approvalService, GeneratePMSched $generatePMSched, ActionsDoneService $actions)
     {
         $this->approvalService = $approvalService;
         $this->generatePMSched = $generatePMSched;
+        $this->action = $actions;
     }
 
-    // public function index(Request $request)
-    // {
-    //     $currentUserId = $request->user_id ?? 0;
-    //     $getApprovalLevel = DB::table('approval_configuration')->where('user_id', $currentUserId)->first();
-    //     $approval_level = $getApprovalLevel->approval_level ?? 0;
-
-    //     $getListWorOrder = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address', 'u.first_name', 'u.last_name', 'iE.name as request_name', 'a.approver_level', 'a.approver_name')
-    //         ->where(['equipment_handling.status' => $approval_level, 'main_status' => self::ONGOING])
-    //         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'equipment_handling.requested_by', '=', 'u.id')
-    //         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
-    //         ->leftjoin('internal_external_requests as iE', 'equipment_handling.request_type', '=', 'iE.id')
-    //         ->leftjoin('approver_designation as a', 'equipment_handling.status', '=', 'a.approver_level')
-    //         ->get();
-
-
-    //     $service_id = $request->service_id ?? 0;
-    //     $service_data = EhServicesModel::select('equipment_handling.*', 'i.name', 'i.address', 'i.area', 'u.first_name', 'u.last_name', 'ui.first_name as fname', 'ui.last_name as lname', 'ua.first_name as assigned_tl_fname', 'ua.last_name as assigned_tl_lname', 'iE.name as request_name', 'a.approver_level', 'a.approver_name')
-    //         ->where(['equipment_handling.id' => $service_id])
-    //         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'equipment_handling.requested_by', '=', 'u.id')
-    //         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as ui', 'equipment_handling.installer', '=', 'ui.id')
-    //         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as ua', 'equipment_handling.tl_assigned', '=', 'ua.id')
-    //         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
-    //         ->leftjoin('internal_external_requests as iE', 'equipment_handling.request_type', '=', 'iE.id')
-    //         ->leftjoin('approver_designation as a', 'equipment_handling.status', '=', 'a.approver_level')
-    //         ->get();
-
-    //     $service_datas = EhServicesModel::select('*')->where('id',$service_id)->get();
-
-    //     return response()->json([
-    //         'workOrder' => $getListWorOrder,
-    //         'serviceData' => $service_data,
-    //     ], 200);
-    // }
 
 
     /** 
@@ -92,6 +64,7 @@ class EhMainApproverController extends Controller
         $remark = $request->remark ?? '';
         $institution_area = $request->institution_area ?? null;
         $status = $request->status ?? 0;
+        $ssu = $request->ssu ?? '';
 
         $dataArray = [];
 
@@ -99,67 +72,85 @@ class EhMainApproverController extends Controller
         /** Approve Request */
         try {
             DB::beginTransaction();
-            if ($approval_level === self::IT_DEPARTMENT) {
+            if ($approval_level === EH::IT_DEPARTMENT) {
                 $this->approvalService->updateEquipmentPeripherals($request->item);
-                $this->approvalService->updateStatus($service_id, self::APM_NSM_SM);
-                $this->approvalService->logApproval($service_id, $user_id, $remark, self::IT_DEPARTMENT, self::ONGOING);
+                $this->approvalService->updateStatus($service_id, EH::APM_NSM_SM);
+                $this->approvalService->logApproval($service_id, $user_id, $remark, EH::IT_DEPARTMENT, EH::ONGOING);
             } else {
-                if ($status === self::INSTALLATION_TL) {
-                    $next_approver =  self::INSTALLATION_ENGINEER;
-                    $approval_level = self::INSTALLATION_TL;
-                    $main_status = self::INSTALLING;
+                if ($status === EH::SERVICE_HEAD_ENGINEER) {
+                    /** Set SSU */
+                    $dataArray = [
+                        'ssu' => $ssu,
+                    ];
+                } 
+                elseif ($status === EH::TL) {
+                    $approval_level = EH::TL;
 
-                    $tl_assigned = $request->tl_assigned ?? null;
-                    $installer = $request->installer ?? null;
+                    $engineer = $request->engineer ?? null;
                     $assigned_date = Carbon::now();
 
                     $dataArray = [
-                        'tl_assigned' => $tl_assigned,
+                        'tl_assigned' => $user_id,
                         'assigned_date' => $assigned_date,
-                        'installer' => $installer
+                        'installer' => $engineer
                     ];
-                }
-                elseif ($status === self::INSTALLATION_ENGINEER) {
-                    $next_approver =  self::INSTALLATION_ENGINEER + 1;
-                    $approval_level = self::INSTALLATION_ENGINEER + 1;
-                    $main_status = self::COMPLETE;
+                } elseif ($status === EH::INSTALLATION_ENGINEER) {
+                    $approval_level = EH::INSTALLATION_ENGINEER;
 
                     $date_installed = Carbon::now();
+                    $actions_done_data = [];
+                    foreach ($request->actionsDone as $action) {
+                        $actions_done_data[] = [
+                            'serial' => $action['serial'],
+                            'equipment_id' => $action['equipment_id'],
+                            'service_id' => $action['service_id'],
+                            'action' => $action['action'],
+                            'work_type' => $action['work_type'],
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ];
+                    }
+                    /** Submit Actions Done */
+                    $this->action->declare_actions_done($actions_done_data);
+
+
 
                     /** Get all the Equipments for automation of PM Sched */
-                    $equipments = EquipmentPeripherals::select('equipment_peripherals.*', 'p.equipment','p.schedule')
+                    $equipments = EquipmentPeripherals::select('equipment_peripherals.*', 'p.equipment', 'p.schedule')
                         ->leftJoin('pm_setting as p', 'equipment_peripherals.item_id', '=', 'p.equipment')
                         // ->leftJoin('equipment_handling as eh', 'equipment_peripherals.service_id', '=', 'eh.id')
                         ->where('equipment_peripherals.service_id', $service_id)
                         ->where('equipment_peripherals.category', 'Equipment')
-                        ->groupBy('equipment_peripherals.item_id')
+                        // ->groupBy('equipment_peripherals.item_id')
                         ->get();
 
+                    
+
                     /** Get External Request Option */
-                    $getExternalRequestOption = EhServicesModel::select('request_type')->where('id', $service_id)->first();
+                    $getExternalRequestOption = EH::select('request_type')->where('id', $service_id)->first();
                     $externalRequestOptionArray = [IEModel::ReagentTieup, IEModel::Purchased]; //remove 5, accrding to SDpt
 
-                    if($getExternalRequestOption && in_array($getExternalRequestOption->request_type, $externalRequestOptionArray)){
-                        //  return $this->generatePMSched->calculateSchedFrequency($date_installed, 'Quarterly', Carbon::now()->endOfYear());
+                    if ($getExternalRequestOption && in_array($getExternalRequestOption->request_type, $externalRequestOptionArray)) {
                         $this->generatePMSched->calculateNextPMSchedule($date_installed, $equipments);
                     }
-                    
+
                     /** Update for Equipment Installation */
                     $dataArray = [
-                        'date_installed' => $date_installed
+                        'date_installed' => $date_installed,
                     ];
-
-                    
-
-                } else {
-                    //Extract data from $nextApproval [nextApproval, main_status, area]
-                    $nextApproval = $this->approvalService->getNextApprovalLevel($approval_level, $institution_area);
-                    [$next_approver, $main_status, $area] = array_pad($nextApproval, 3, null);
-
-                    if ($area !== self::LUZON && $area !== null) {
-                        $next_approver = 28;
-                    }
                 }
+                // else {
+
+
+                // }
+
+                //Extract data from $nextApproval [nextApproval, main_status, area]
+                $nextApproval = $this->approvalService->getNextApprovalLevel($approval_level, $institution_area);
+                [$next_approver, $main_status, $area] = array_pad($nextApproval, 3, null);
+
+                // if ($area !== self::LUZON && $area !== null) {
+                //     $next_approver = 28;
+                // }
 
                 $this->approvalService->updateStatusGeneral(
                     $service_id,
@@ -168,6 +159,10 @@ class EhMainApproverController extends Controller
                     $main_status
                 );
                 $this->approvalService->logApproval($service_id, $user_id, $remark, $approval_level, $main_status);
+
+                $email = 'joshenpolen@gmail.com';
+                $name = $guard->user()->first_name .' '. $guard->user()->last_name;
+                Mail::to($email)->queue(new EHNotification($name));
             }
             DB::commit();
             return response()->json([
@@ -207,7 +202,7 @@ class EhMainApproverController extends Controller
                 'user_id' => $user_id,
                 'remarks' => $remark,
                 'level' => $approval_level,
-                'status' => self::DISAPPROVED,
+                'status' => EH::DISAPPROVED,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
@@ -219,7 +214,7 @@ class EhMainApproverController extends Controller
                 ->where('id', $service_id)
                 ->update([
                     'status' => $approval_track,
-                    'main_status' => self::DISAPPROVED,
+                    'main_status' => EH::DISAPPROVED,
                     'updated_at' => Carbon::now(),
                 ]);
             if (!$update_main_status) {
@@ -231,7 +226,7 @@ class EhMainApproverController extends Controller
             // $updateStatus = DB::table('approvals')
             //                 ->where('id', $service_id)
             //                 ->update([
-            //                     'status' => self::DISAPPROVED,
+            //                     'status' => EH::DISAPPROVED,
             //                     'updated_at' => Carbon::now(),
             //                 ]);
             // if(!$updateStatus){

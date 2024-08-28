@@ -2,7 +2,7 @@
     <v-col cols="12">
         <v-row>
             <v-col cols="2">
-                <v-select color="primary" v-model="role" :items="get_role_name"
+                <v-select color="primary" v-model="role" :items="get_role_name" clearable
                     item-title="role_name" item-value="role_id" density="compact" variant="plain" placeholder="Select Role"></v-select>
             </v-col>
             <v-col cols="7">
@@ -170,7 +170,6 @@ const getAssignedUserRole = async (role_id) => {
 
 watch(role, (val) =>{
     getAssignedUserRole(val)
-    console.log(val)
 })
 
 
@@ -182,7 +181,7 @@ const getRoleName = async () => {
         const response = await apiRequest.get('get_role_name');
         const data = response.data.role_name
 
-        get_role_name.value = data.map(v => ({ role_id: v.id, role_name: v.role_name }))
+        get_role_name.value = data.map(v => ({ role_id: v.roleID, role_name: v.role_name }))
 
     } catch (error) {
         console.log(error)

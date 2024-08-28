@@ -49,12 +49,13 @@
   --bs-black-rgb: 0, 0, 0;
   --bs-body-color-rgb: 0, 0, 0;
   --bs-body-bg-rgb: 249, 250, 251;
-  --bs-font-sans-serif: "Satoshi", Helvetica, sans-serif;
+  /* --bs-font-sans-serif: "Satoshi", Helvetica, sans-serif; */
+  --bs-font-sans-serif: "Satoshi", sans-serif;
   --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
   --bs-body-font-family: var(--bs-font-sans-serif);
   --bs-body-font-size: .8rem;
-  --bs-body-font-weight: 400;
+  --bs-body-font-weight: 500;
   --bs-body-line-height: 1.5;
   --bs-body-color: #191970;
   --bs-body-bg: #f9fafb;
@@ -104,6 +105,16 @@
 }
 input, optgroup, select, textarea{
   font-size: var(--bs-body-font-size)!important;
+  font-weight: 600!important;
+  color: #191970!important;
+}
+.v-label.v-field-label{
+  font-size: var(--bs-body-font-size)!important;
+}
+.v-combobox .v-combobox__selection-text{
+  font-size: var(--bs-body-font-size)!important;
+  font-weight: 600!important;
+  color: #191970!important;
 }
 .v-input{
   font-size: .7rem !important;

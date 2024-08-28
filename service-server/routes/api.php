@@ -78,12 +78,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/save-pm-sched', [PMSettings::class, 'pm_schedule']);
         Route::put('/edit-pm-sched', [PMSettings::class, 'edit_pm_schedule']);
         Route::get('/get-pm-sched', [PMSettings::class, 'get_pm_schedule']);
+        Route::get('/getStandardActions', [PMSettings::class, 'getStandardActions']);
+        Route::post('/saveAction', [PMSettings::class, 'saveAction']);
+        Route::delete('/deleteAction', [PMSettings::class, 'deleteAction']);
+        Route::put('/editActions', [PMSettings::class, 'editActions']);
 
 
-        // Assign Role
+        // Assign Role Permission and Modules
         Route::get('/get_role_name', [Roles::class, 'get_role_name']);
         Route::get('/get_permissions', [Roles::class, 'get_permissions']);
+        Route::get('/get_modules', [Roles::class, 'get_modules']);
         Route::put('/set_permissions', [Roles::class, 'set_permissions']);
+        Route::put('/set_modules', [Roles::class, 'set_modules']);
         Route::post('/add_role_name', [Roles::class, 'add_role_name']);
         Route::delete('/delete_role_name', [Roles::class, 'delete_role_name']);
         Route::post('/assign-role', [Roles::class, 'assign_role']);
@@ -98,15 +104,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     /** Engineer */
     Route::get('/get-assigned-request', [Engineer::class, 'get_assigned_request']);
-    Route::post('/accept-pm-task', [Engineer::class, '
-    ']);
+    // Route::post('/accept-pm-task', [Engineer::class, '']);
 
 
     /** Preventive Maintenance */
     Route::get('/get-preventive-maintenance', [PreventiveMaintenance::class, 'get_preventive_maintenance']);
-    Route::get('/get-preventive-maintenance-engineer', [PreventiveMaintenance::class, 'get_preventive_maintenance_engineer']);
-    Route::get('/get-pm-record-details', [PreventiveMaintenance::class, 'get_pm_record_details']);
+    Route::get('/get_pm_record_details', [PreventiveMaintenance::class, 'get_pm_record_details']);
     Route::post('/create-pm', [PreventiveMaintenance::class, 'create_preventive_maintenance']);
+    Route::post('/pm_process', [PreventiveMaintenance::class, 'pm_process']);
+    Route::post('/pm_accepted', [PreventiveMaintenance::class, 'pm_accepted']);
+    Route::post('/pm_task_processing', [PreventiveMaintenance::class, 'pm_task_processing']);
+        Route::get('/getStandardActions', [PreventiveMaintenance::class, 'getStandardActions']);
 
 
     /* Log Me Out */

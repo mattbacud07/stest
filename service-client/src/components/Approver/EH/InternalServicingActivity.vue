@@ -5,49 +5,49 @@
 
         <h5 class="pb-5 text-primary">Internal Servicing Details</h5>
         <v-row>
-            <v-col cols="4">
+            <v-col cols="12" lg="4" md="4" sm="6">
                 <v-text-field color="primary" density="compact" label="Delegated to" v-model="delegated_to"
                     placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
-            <v-col cols="4">
-                <v-text-field color="primary" density="compact" label="Type of Avtivity" v-model="type_of_activity"
+            <v-col cols="12" lg="4" md="4" sm="6">
+                <v-text-field color="primary" density="compact" label="Type of Activity" v-model="type_of_activity"
                     placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
-            <v-col cols="4">
-                <v-text-field color="primary" density="compact" label="Type of Avtivity (Other)" v-model="other"
+            <v-col cols="12" lg="4" md="4" sm="6">
+                <v-text-field color="primary" density="compact" label="Type of Activity (Other)" v-model="other"
                     v-if="type_of_activity_val === 12" placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
         </v-row>
         <v-row>
-            <v-col cols="4">
+            <v-col cols="12" lg="4" md="4" sm="6">
                 <v-text-field color="primary" density="compact" label="Delegation Date" v-model="delegation_date"
                     placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="12" lg="4" md="4" sm="6">
                 <v-text-field color="primary" density="compact" label="Date Started" v-model="date_started"
                     placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="12" lg="4" md="4" sm="6">
                 <v-text-field color="primary" density="compact" label="Date Accomplished" v-model="accomplished_date"
                     placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
         </v-row>
         <v-row>
-            <v-col cols="4">
+            <v-col cols="12" lg="4" md="4" sm="6">
                 <v-text-field color="primary" density="compact" label="Packed & Endorsed to Warehouse"
                     v-model="packed_endorse_to_warehouse" placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="12" lg="4" md="4" sm="6">
                 <v-text-field color="primary" density="compact" label="Endorsement Date" v-model="endorsement_date"
                     placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="12" lg="4" md="4" sm="6">
                 <v-text-field color="primary" density="compact" label="Confirmed by Warehouse"
                     v-model="accepted_by_warehouse" placeholder="" variant="outlined" readonly></v-text-field>
             </v-col>
         </v-row>
         <v-row>
-            <v-col cols="6">
+            <v-col cols="12" lg="6" md="6" sm="12">
                 <b class="text-primary ml-1">Actions Done</b>
                 <div v-if="rowData.actions_done && rowData.actions_done.length > 0">
                     <v-card v-for="action in rowData.actions_done" :key="action.key" :text="action.action ?? 'No remarks'" prepend-icon="mdi-playlist-check"
@@ -129,26 +129,24 @@ const getInternalRequest = async () => {
             const data = response.data.request
 
             rowData.value = data[0]
-            // console.log(rowData.value)
 
             received_by.value = rowData.value.received_by
-            type_of_activity.value = rowData.value.internal_external_name.name ?? '.'
+            type_of_activity.value = rowData.value.internal_external_name.name || '--'
             type_of_activity_val.value = rowData.value.type_of_activity
             other.value = rowData.value.other
             delegation_date.value = pub_var.formatDate(rowData.value.delegation_date)
             delegated_to.value = rowData.value.get_user.first_name + ' ' + rowData.value.get_user.last_name
-            date_started.value = rowData.value.date_started ? pub_var.formatDate(rowData.value.date_started) : '.'
-            accomplished_date.value = rowData.value.accomplished_date ? pub_var.formatDate(rowData.value.accomplished_date) : '.'
-            packed_endorse_to_warehouse.value = rowData.value.packed_endorse_to_warehouse === 1 ? 'Yes' : '.'
+            date_started.value = pub_var.formatDate(rowData.value.date_started) || '--'
+            accomplished_date.value = pub_var.formatDate(rowData.value.accomplished_date) || '--'
+            packed_endorse_to_warehouse.value = rowData.value.packed_endorse_to_warehouse === 1 ? 'Yes' : '--'
             packed_date.value = rowData.value.packed_date
             checklist_number.value = rowData.value.checklist_number
-            endorsement_date.value = rowData.value.endorsement_date ? pub_var.formatDate(rowData.value.endorsement_date) : '.'
+            endorsement_date.value = pub_var.formatDate(rowData.value.endorsement_date) || '--'
             remarks.value = rowData.value.remarks
-            accepted_by_warehouse.value = rowData.value.accepted_by_warehouse ? pub_var.formatDate(rowData.value.accepted_by_warehouse) : '.'
+            accepted_by_warehouse.value = pub_var.formatDate(rowData.value.accepted_by_warehouse) || '--'
             status.value = rowData.value.status
 
             actionDone.value = { ...rowData.value.actions_done, ...rowData.value.equipments }
-            // console.log(actionDone.value)
         }
 
 

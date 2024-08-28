@@ -37,9 +37,6 @@ import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vu
 import ApproverHistoryLog from '@/components/Approver/EH/ApproverHistoryLog.vue'
 import RequestDetails from '@/components/Approver/EH/RequestDetails.vue'
 
-import Header from '@/components/layout/Header.vue'
-import Sidebar from '@/components/layout/Sidebars/Sidebar.vue';
-import SubmitWorkOrder from '@/components/EquipmentHandling/SubmitWorkOrder.vue'
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 import { useDisplay } from 'vuetify'
 
@@ -56,6 +53,10 @@ const navigateTo = (item) => {
     }
 };
 
+
+const getInternalStatus = ref(null)
+const getInternalDateTimeUpdated = ref(null)
+const CurrentlyDelegatedTo = ref(null)
 
 
 /** data declarations */
@@ -77,7 +78,10 @@ const getSerialNumber = (serial) => {
 const getStatus = (data) => {
     status.value = data
 }
+
 </script>
+
+
 
 
 
@@ -103,5 +107,8 @@ const getStatus = (data) => {
 
 .vCheckbox {
     height: 40px !important;
+}
+.v-label{
+    color : #222;
 }
 </style>

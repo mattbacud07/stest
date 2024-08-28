@@ -10,7 +10,6 @@
 
             </v-select>
         </v-list-item> 
-        <!-- <v-divider v-if="hideSwitchAccount"></v-divider> -->
 
         <template v-for="(item, index) in sidebarItems" :key="index">
             <v-list-group v-if="item.children">

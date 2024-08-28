@@ -1,29 +1,22 @@
 <template>
     <div>
         <v-row>
-            <v-col cols="4">
+            <v-col cols="8" xl="5" md="5" sm="5">
                 <v-text-field color="primary" v-model="params.search" clearable density="compact"
                     label="Search all fields" variant="outlined"></v-text-field>
             </v-col>
-            <v-col cols="8" style="text-align: right;">
-                <v-dialog v-model="dialog" max-width="400" persistent>
+            <v-col cols="4" xl="7" md="7" sm="7" class="w-100" style="text-align: right;">
+                <v-dialog v-model="dialog" max-width="600" persistent>
                     <template v-slot:activator="{ props: activatorProps }">
-                        <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" density="compact" variant="outlined"
-                            class="text-none mr-2"><v-icon class="mr-2">mdi-account-check-outline</v-icon>
-                            Set Approver</v-btn>
+                        <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="flat"
+                            class="text-none mr-2"><v-icon>mdi-account-check-outline</v-icon> Set Approver</v-btn>
                     </template>
                     <v-card text="" title="Set Approver">
                         <v-col cols="12" class="fix-item">
                             <v-form @submit.prevent="submitApprover" ref="form">
                                 <v-combobox color="primary" v-model="selectedDesignation" :rules="rule.designation"
-                                    clearable label="Designation" density="compact" :items="[
-                                    { key: 'IT DEPARTMENT', value: 1 },
-                                    { key: 'APM/NSM/SM', value: 2 },
-                                    { key: 'WAREHOUSE & INVENTORY MANAGEMENT', value: 3 },
-                                    { key: 'SERVICE DEPARTMENT TEAM LEADER', value: 4 },
-                                    { key: 'SERVICE DEPARTMENT HEAD / SERVICE ENGINEER', value: 5 },
-                                    { key: 'BILLING & INVOICING STAFF / WIM PERSONNEL', value: 6 },
-                                ]" variant="outlined" itemValue="value" itemTitle="key"> </v-combobox>
+                                    clearable label="Designation" density="compact" :items="pub_var.approver_designation" variant="outlined" itemValue="value" itemTitle="key">
+                                </v-combobox>
                                 <v-row class="mt-4">
                                     <v-col cols="8">
                                         <v-text-field variant="outlined" placeholder="Name" density="compact" :rules="rule.name"
@@ -36,10 +29,10 @@
                                 </v-row>
                                 <v-divider></v-divider>
                                 <v-row justify="end" class="p-3">
-                                    <v-btn elevation="0" @click="dialog = false" density="compact"
+                                    <v-btn elevation="0" @click="dialog = false" 
                                         class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
                                         Cancel</v-btn>
-                                    <v-btn type="submit" color="primary" density="compact"  title="Submit"
+                                    <v-btn type="submit" color="primary"   title="Submit"
                                         class="text-none" :loading="loadingSubmit"><v-icon
                                             class="mr-2">mdi-file-send-outline</v-icon> Submit</v-btn>
                                 </v-row>
@@ -72,11 +65,10 @@
 </template>
 <script setup>
 import { onMounted, ref, reactive } from 'vue';
-import axios from 'axios'
 
 import { user_data } from '@/stores/auth/userData'
 import { alertStore } from '@/stores/alert-popup'
-// import * as designation from '@/global/global'
+import * as pub_var from '@/global/global'
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
@@ -116,6 +108,7 @@ const dialog = ref(false)
 const dataTable = ref(null)
 const snackbarSuccess = ref(false)
 const snackbarError = ref(false)
+// const approver_designation = ref({})
 
 
 const loading = ref(true);

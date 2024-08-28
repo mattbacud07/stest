@@ -6,21 +6,36 @@ export const adminRole = 10
 export const adminServiceRole = 'Admin'
 export const approverRole = 'Approver'
 export const engineerRole = 'Engineer'
-export const serviceTLRole = 'Team Leader'
+export const TLRole = 'Team Leader'
 export const wimPersonnel = 'WIM Personnel'
-export const outboundPersonnel = 'Outbound Personnel'
 
-export const rolesArray = [adminServiceRole, approverRole, engineerRole, serviceTLRole, wimPersonnel, outboundPersonnel]
+export const rolesArray = [adminServiceRole, approverRole, engineerRole, TLRole, wimPersonnel]
+export const rolesObject = [
+    { title: 'Approver', value: 1 },
+    { title: 'Team Leader', value: 2 },
+    { title: 'Engineer', value: 3 },
+    { title: 'WIM Personnel', value: 4 },
+    { title: 'Outbound Personnel', value: 5 },
+    { title: 'Administrator', value: 6 },
+]
 
+/** Modules */
+export const eh_module = 'EH'
+export const is_module = 'IS'
+export const pm_module = 'PM'
+export const cm_module = 'CM'
+
+/** SSU */
 export const ssu = {
-    ssu1 : 1,
-    ssu2 : 2,
-    ssu3 : 3,
-    ssu4 : 4,
-    ssu5 : 5,
-    ssu6 : 6,
-    ssu7 : 7,
+    ssu1: 1,
+    ssu2: 2,
+    ssu3: 3,
+    ssu4: 4,
+    ssu5: 5,
+    ssu6: 6,
+    ssu7: 7,
 }
+
 
 
 
@@ -37,6 +52,53 @@ export const BILLING_WIM = 6;
 export const OUTBOUND = 7;
 export const INSTALLATION_TL = 8;
 export const INSTALLATION_ENGINEER = 9;
+
+export const approverArray = [IT_DEPARTMENT, APM_NSM_SM, WIM, SERVICE_TL, SERVICE_HEAD_ENGINEER, BILLING_WIM, OUTBOUND, INSTALLATION_TL, INSTALLATION_ENGINEER];
+
+export const pending_approval_status = (approver) => {
+    switch (approver) {
+        case IT_DEPARTMENT:
+            return 'IT Department'
+            break
+        case APM_NSM_SM:
+            return 'APM/NSM/SM'
+            break
+        case WIM:
+            return 'WIM'
+            break
+        case SERVICE_TL:
+            return 'Service Team Leader'
+            break
+        case SERVICE_HEAD_ENGINEER:
+            return 'Service Head Engineer'
+            break
+        case BILLING_WIM:
+            return 'Billing / WIM'
+            break
+        case OUTBOUND:
+            return 'Outbound Personnel'
+            break
+        case INSTALLATION_TL:
+            return 'Installation - Team Leader -'
+            break
+        case INSTALLATION_ENGINEER:
+            return 'Installation - Engineer'
+            break
+    }
+}
+
+/** Set Config Approver Designation */
+export const approver_designation = [
+    { key: 'IT DEPARTMENT', value: 1 },
+    { key: 'APM/NSM/SM', value: 2 },
+    { key: 'WAREHOUSE & INVENTORY MANAGEMENT', value: 3 },
+    { key: 'SERVICE DEPARTMENT TEAM LEADER', value: 4 },
+    { key: 'SERVICE DEPARTMENT HEAD / SERVICE ENGINEER', value: 5 },
+    { key: 'BILLING & INVOICING STAFF / WIM PERSONNEL', value: 6 },
+    { key: 'OUTBOUND PERSONNEL', value: 7 },
+    // { key: 'TEAM LEADER (SSU)', value: 8 },
+    // { key: 'ENGINEER (SSU)', value: 9 },
+]
 
 
 
@@ -55,22 +117,22 @@ export const INSTALLING = 6;
 export const setJOStatus = (status) => {
     switch (parseInt(status)) {
         case PARTIAL_COMPLETE:
-            return {text: 'Pending', color : 'blue!important'}
+            return { text: 'Pending', color: 'blue!important' }
             break;
         case COMPLETE:
-            return {text: 'Completed', color : 'green!important'}
+            return { text: 'Completed', color: 'green!important' }
             break;
         case DISAPPROVED:
-            return {text: 'Disapproved', color : 'red!important'}
+            return { text: 'Disapproved', color: 'red!important' }
             break;
         case RESCHEDULE:
-            return {text: 'Reschedule', color : 'black!important'}
+            return { text: 'Reschedule', color: 'black!important' }
             break;
         case INSTALLING:
-            return {text: 'Installation Ready', color : 'orange!important'}
+            return { text: 'Installation Ready', color: 'orange!important' }
             break;
         default:
-            return {text: 'Pending Approval', color : 'blue!important'}
+            return { text: 'Pending Approval', color: 'blue!important' }
     }
 }
 
@@ -94,51 +156,35 @@ export const internalStat = {
 
 /** Set Internal Servicing Status */
 export const internalStatus = (status) => {
-    switch(status){
+    switch (status) {
         case internalStat.Delegated:
-            return {text: 'Delegated', color : 'blue!important'}
+            return { text: 'Delegated', color: 'blue!important' }
             break;
         case internalStat.Declined:
-            return {text: 'Declined', color : 'red!important'}
+            return { text: 'Declined', color: 'red!important' }
             break;
         case internalStat.InProgress:
-            return {text: 'In Progress', color : 'orange!important'}
+            return { text: 'In Progress', color: 'orange!important' }
             break;
         case internalStat.Completed:
-            return {text: 'Task Completed', color : 'gray!important'}
+            return { text: 'Task Completed', color: 'gray!important' }
             break;
         case internalStat.Packed:
-            return {text: 'Packed & Endorsed', color : 'violet!important'}
+            return { text: 'Packed & Endorsed to Warehouse', color: 'violet!important' }
             break;
         case internalStat.ConfirmedByWIM:
-            return {text: 'Confirmed by WIM', color : 'green!important'}
+            return { text: 'Confirmed by WIM', color: 'green!important' }
             break;
         default:
-            return {text: '', color : 'blue!important'}
+            return { text: '', color: 'blue!important' }
     }
 
 }
-// export const I_ONGOING = 1;
-// export const I_PACKED_ENDORSED = 2;
-// export const I_COMPLETE = 3;
-// export const I_DISAPPROVED = 4;
-// export const I_RESCHEDULE = 5;
-// Delegated: The request has been assigned to a specific engineer.
-// Accepted: The engineer has accepted the request and will start processing it.
-// Declined: The engineer has declined the request, and it needs to be re-delegated to another engineer.
-// In Progress: The engineer has accepted the request and is currently processing it.
-// Completed: The engineer has finished processing the request and has confirmed its completion.
-// Packed: The request has been packed and is ready to be endorsed to the WIM personnel.
-// Endorsed to WIM: The request has been handed over to the WIM personnel.
-// Confirmed by WIM: The WIM personnel have confirmed receipt and completion of the request.
-
-
-
 
 
 /** Set Job Order Form ID */
-export const setReportNumber = (id, date_created)=>{
-    return 'JOF-' + String(id).padStart(3,0) + '-' + moment(date_created).format('YYYY')
+export const setReportNumber = (id, date_created) => {
+    return 'JOF-' + String(id).padStart(3, 0) + '-' + moment(date_created).format('YYYY')
 }
 
 
@@ -155,34 +201,22 @@ export const formatDateNoTime = (date) => {
 
 
 
-
-
-
-
-
-
-
-
-
 /** Set Request Name */
 export const requestName = (rtype, rname, other) => {
-    if(rtype === 6){
+    if (rtype === 6) {
         return "Other - " + other;
-    }else if(rtype === 12){
-        return "Other - " + other ;
-    }else{
+    } else if (rtype === 12) {
+        return "Other - " + other;
+    } else {
         return rname
     }
 }
 
-
-
-
 /** Set Request Type */
 export const requestType = (rtype) => {
-    if(rtype <= 6){
+    if (rtype <= 6) {
         return "External Request";
-    }else{
+    } else {
         return "Internal Request";
     }
 }
