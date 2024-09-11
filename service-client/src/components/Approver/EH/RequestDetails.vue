@@ -1,23 +1,37 @@
 <template>
-    <v-card flat class="mb-3">
+    <!-- <v-row>
+        <v-col cols="12" class="d-flex justify-content-end">
+            <v-chip variant="tonal" color="grey lighten-5" label><span class="text-dark mr-2">Status:</span>
+                <span :style="{ color: pub_var.setJOStatus(main_status).color }">{{ pub_var.setJOStatus(main_status).text
+                    }}
+                </span>
+            </v-chip>
+        </v-col>
+    </v-row> -->
+    <v-card flat class="mb-5 mt-7">
         <v-row>
-            <v-skeleton-loader  v-if="loadingSkeleton" type="list-item" class="mb-2">
+            <v-skeleton-loader v-if="loadingSkeleton" type="list-item" class="mb-2">
             </v-skeleton-loader>
-                <!-- Internal Request -->
-                <!--- Optional || (showInternalRequest && internalRequest === null && !bypass) -->
-                <template v-else>
-                    <v-col cols="12" v-if="showInternalRequest && !bypass && ehStatus === user.user.approval_level">
-                        <InternalRequest :service_id="props.service_id"
-                            :getSelectedRequest="selectedRequestType >= 7 ? selectedRequestType : 0"
-                            :other="other ?? ''" />
-                    </v-col>
-                </template>
+            <!-- Internal Request -->
+            <!--- Optional || (showInternalRequest && internalRequest === null && !bypass) -->
+            <template v-else>
+                <v-col cols="12" v-if="showInternalRequest && !bypass && ehStatus === user.user.approval_level">
+                    <InternalRequest 
+                        :service_id="props.service_id"
+                        :getSelectedRequest="selectedRequestType >= 7 ? selectedRequestType : 0" :other="other ?? ''"
+                        :internalStatus = "internalStatus"
+                        :internalDelegatedTo = "internalDelegatedTo"
+                        :internalID = "internalID"
+                        :internalServicing = "internalServicing"
+                        />
+                </v-col>
+            </template>
 
         </v-row>
     </v-card>
     <v-skeleton-loader v-if="loadingSkeleton" type="list-item, list-item, button, table-row, table-tbody"
         class="mb-2"></v-skeleton-loader>
-    <v-card v-else style="padding: 3em 1em;" elevation="1">
+    <v-card v-else style="padding: 1em 1em;" elevation="1">
         <v-row>
             <v-col :cols="column">
                 <v-text-field color="primary" density="compact" label="Institution" placeholder="Institution"
@@ -64,7 +78,7 @@
             <v-col cols="12" md="6" sm="6"> <!--v-if="externalRequest !== null"-->
                 <h5 class="mb-2" style="font-weight: 700;color: #191970;">External Request</h5>
                 <v-row>
-                    <v-col cols="6">
+                    <v-col cols="12" md="6" sm="6">
                         <v-radio-group v-model="request_type" column readonly>
                             <v-radio color="primary" label="For Demonstration" value="1"></v-radio>
                             <v-radio color="primary" label="Reagent Tie-up" value="2"></v-radio>
@@ -74,7 +88,7 @@
                             <v-radio color="primary" label="Others" value="6"></v-radio>
                         </v-radio-group>
                     </v-col>
-                    <v-col cols="6">
+                    <v-col cols="12" md="6" sm="6">
                         <v-checkbox v-model="attached_gate" class="vCheckbox" color="primary"
                             label="Attached gate/entry pass" readonly></v-checkbox>
                         <v-checkbox v-model="with_contract" class="vCheckbox mt-3" color="primary"
@@ -110,7 +124,7 @@
 
 
 <script setup>
-import { ref, onMounted, getCurrentInstance, defineEmits, watch, provide, inject } from 'vue';
+import { ref, onMounted, getCurrentInstance, defineEmits, watch, toRefs, toRef } from 'vue';
 import { user_data } from '@/stores/auth/userData';
 import * as pub_var from '@/global/global'
 import InternalRequest from './InternalRequest.vue'
@@ -127,6 +141,7 @@ const instance = getCurrentInstance()
 const loadingSkeleton = ref(false)
 // const internalStatus = ref(inject('getInternalStatus'), null)
 const ehStatus = ref('')
+const main_status = ref('')
 
 // 1st
 const requested_by = ref('')
@@ -154,9 +169,26 @@ const props = defineProps({
     showInternalRequest: {
         type: Boolean,
         default: () => false,
+    },
+    internalStatus : {
+        type : Number,
+        default : 0,
+    },
+    internalDelegatedTo : {
+        type : String,
+        default : '',
+    },
+    internalID : {
+        type : Number,
+        default : null,
+    },
+    internalServicing : {
+        type : Object,
+        default : null
     }
 })
 
+const { internalStatus, internalDelegatedTo, internalID, internalServicing } = toRefs(props)
 const column = ref(6)
 watch(width, (val) => {
     if (val < 550) {
@@ -199,6 +231,7 @@ const getDetails = async () => {
             attached_gate.value = field.attach_gate === 1 ? true : false
             with_contract.value = field.with_contract === 1 ? true : false
             ehStatus.value = field.status
+            main_status.value = field.main_status
             instance.emit('set-status', field.status)
             instance.emit('set-updated-ssu', field.ssu)
             instance.emit('get-installation-engineer', field.installer)

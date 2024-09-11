@@ -8,8 +8,10 @@
             <v-col cols="4" xl="7" md="7" sm="7" class="w-100" style="text-align: right;">
                 <v-dialog v-model="dialog" max-width="600" persistent>
                     <template v-slot:activator="{ props: activatorProps }">
-                        <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="flat"
-                            class="text-none mr-2"><v-icon>mdi-account-check-outline</v-icon> Set Approver</v-btn>
+                        <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="tonal"
+                            class="text-none">
+                            <v-icon>mdi-account-check-outline</v-icon> {{ width <= 500 ?  '' : ' Set Approver' }}
+                        </v-btn>
                     </template>
                     <v-card text="" title="Set Approver">
                         <v-col cols="12" class="fix-item">
@@ -73,6 +75,10 @@ import * as pub_var from '@/global/global'
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
+
+
+import {useDisplay} from 'vuetify'
+const { width } = useDisplay()
 
 const alert = alertStore()
 

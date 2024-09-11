@@ -55,7 +55,8 @@ class PMSettings extends Controller
                     
                     PM::where([
                         'id' => $item['id'],
-                        'status' => $item['status']
+                        'status' => $item['status'],
+                        'work_type' => 'PM'
                     ])->update([
                         'list_scheduled' => $allSched,
                         'scheduled_at' => $scheduled_at,
@@ -109,7 +110,8 @@ class PMSettings extends Controller
                 
                 PM::where([
                     'id' => $item['id'],
-                    'status' => $item['status']
+                    'status' => $item['status'],
+                    'work_type' => 'PM'
                 ])->update([
                     'list_scheduled' => $allSched,
                     'scheduled_at' => $scheduled_at,

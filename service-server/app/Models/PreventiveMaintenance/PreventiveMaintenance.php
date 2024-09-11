@@ -25,6 +25,7 @@ class PreventiveMaintenance extends Model
         'equipment_peripheral_id',
         'service_id',
         'item_id',
+        'serial',
         'date_installed',
         'scheduled_at',
         'list_scheduled',
@@ -43,6 +44,8 @@ class PreventiveMaintenance extends Model
         'remarks',
         'status',
         'status_after_service',
+        'tag',
+        'monitoring_end',
     ];
 
 
@@ -51,14 +54,24 @@ class PreventiveMaintenance extends Model
     public const Scheduled = 'Scheduled';
     public const NotSet = 'Not Set';
     public const Delegated = 'Delegated';
-    // public const PendingAcceptance = 'Pending Acceptance';
     public const Accepted = 'Accepted';
     public const InTransit = 'In Transit';
     public const InProgress = 'In Progress';
-    // public const Backlog = 'Backlog';
-    // public const Backjob = 'Backjob';
     public const Completed = 'Completed';
     public const Closed = 'Closed';
+
+    /** PM Tag */
+    public const pm_tag_under_observation = 'Under Observation';
+    public const pm_tag_set_observation = 'Set Observation Period';
+    public const pm_tag_backlog = 'BackLog';
+    public const pm_tag_backjob = 'BackJob';
+    public const pm_tag_non_operational = 'Non-operational';
+
+
+    /** Status after Service */
+    public const operational = 'Operational';
+    public const further_monitoring = 'For Further Monitoring';
+    public const non_operational = 'Non-Operational';
 
 
     public function equipment(){

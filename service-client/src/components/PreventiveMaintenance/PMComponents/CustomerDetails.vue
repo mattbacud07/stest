@@ -1,10 +1,16 @@
 <template>
-    <v-card class="p-3 mt-3" elevation="0" style="border: 1px dotted #191970" title="Customer Details">
+    <v-card class="mt-3" elevation="0" style="border: 1px dotted #191970">
         <v-col cols="12">
             <v-row>
+                <v-col class="d-flex justify-content-between">
+                    <h5 class="text-primary">Customer Details</h5>
+                </v-col>
+            </v-row>
+            <v-row>
                 <v-col cols="12" lg="6" md="6" sm="6">
-                    <v-text-field v-model="formData.serial" color="primary" variant="outlined" density="compact"
-                        label="Serial No." placeholder="Serial No." :readonly="textDisable"></v-text-field>
+                    <v-text-field v-model="formData.serial" @input="confirmSerial" color="primary" variant="outlined"
+                        density="compact" label="Serial No." placeholder="Serial No."
+                        :readonly="currentRole === pub_var.TLRole && status === m_var.Scheduled ? false : textDisable"></v-text-field>
                 </v-col>
             </v-row>
             <v-row>
@@ -33,7 +39,26 @@
 </template>
 
 <script setup>
-import { ref, inject, onMounted, watch } from 'vue'
+import { ref, inject, onMounted, watch, defineProps, toRefs } from 'vue'
+import { getRole } from '@/stores/getRole';
+import * as pub_var from '@/global/global'
+import * as m_var from '@/global/maintenance'
+import { useToast } from 'vue-toast-notification'
+
+
+
+const role = getRole()
+const currentRole = role.currentUserRole
+const toast = useToast()
+
+const emit = defineEmits(['set-confirm-serial'])
+const props = defineProps({
+    status: {
+        type: String,
+        default: ''
+    }
+})
+const { status } = toRefs(props)
 
 const textDisable = ref(true)
 
@@ -62,8 +87,18 @@ watch(pm_data, (pm) => {
             item_description: equipment.description || '---'
         }
     }
-}, {immediate : true})
-onMounted(() => {
+}, { immediate: true })
 
+
+
+/** Reconfirm Serial */
+const confirmSerial = () => {
+    formData.value.serial === '' || formData.value.serial.trim() === '' ? emit('set-confirm-serial', null) : emit('set-confirm-serial', formData.value.serial)
+}
+
+onMounted(() => {
+    if (status.value === m_var.Scheduled && currentRole === pub_var.TLRole) {
+        toast.warning('Please confirm the serial number before proceeding', { duration: 7000 })
+    }
 })
 </script>

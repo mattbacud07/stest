@@ -30,6 +30,7 @@ import SetApprovals from '@/components/ApprovalConfiguration/SetApprovals.vue';
 import ViewApprover from '@/components/ApprovalConfiguration/ViewApprover.vue';
 import { ref, watch } from 'vue'
 
+
 const viewApproverKey = ref(0)
 
 const tab = ref('one')

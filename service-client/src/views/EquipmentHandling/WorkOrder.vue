@@ -2,53 +2,38 @@
     <v-form @submit.prevent="submitWorkOrder" ref="form"> <!--@submit.prevent="submitWorkOrder" ref="form" -->
         <LayoutSinglePage>
             <template #topBarFixed>
-                    <v-col lg="6" md="6" sm="8" cols="8">
-                        <v-breadcrumbs class="pt-7">
-                            <v-breadcrumbs-item v-if="width > 550" v-for="(item, index) in breadcrumbItems" :key="index"
-                                :class="{ 'custom-pointer': !item.disabled }" @click="navigateTo(item)"
-                                :disabled="item.disabled">
-                                {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
-                            </v-breadcrumbs-item>
-                        </v-breadcrumbs>
-                    </v-col>
-                    <v-spacer></v-spacer>
-                    <v-col lg="6" md="6" sm="4" cols="4" align-self="center" class="d-flex justify-end">
-                        <v-dialog v-model="dialog" max-width="400" persistent>
-                            <template v-slot:activator="{ props: activatorProps }">
-                                <v-btn :disabled="btnLoading" v-bind="activatorProps" color="primary" variant="tonal"
-                                    class="text-none mr-2">
-                                    Cancel
-                                </v-btn>
-                            </template>
-                            <v-card text="Discard Changes?" title="Discard">
-                                <template v-slot:actions>
-                                    <v-row justify="end">
-                                        <v-btn @click="discard" elevation="2" background-color="red" size="small"
-                                            color="#191970" class="text-none mr-2">Yes,
-                                            Discard</v-btn>
-                                        <v-btn @click="dialog = false" color="primary" elevation="2" size="small"
-                                            class="text-none mr-3"
-                                            style="background-color: #191970;color: #fff!important;">Keep
-                                            Editing</v-btn>
-                                    </v-row>
-                                </template>
-                            </v-card>
-                        </v-dialog>
-                        <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary" variant="flat" class="text-none btnSubmit">
-                                <v-icon class="mr-2">mdi-note-plus-outline</v-icon> Create
-                            </v-btn>
-                    </v-col>
+                <v-col lg="6" md="6" sm="8" cols="8">
+                    <v-breadcrumbs class="pt-7">
+                        <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
+                            :class="{ 'custom-pointer': !item.disabled }"
+                            :style="{ 'display': width <= 768 ? item.display : '' }" @click="navigateTo(item)"
+                            :disabled="item.disabled">
+                            {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
+                        </v-breadcrumbs-item>
+                    </v-breadcrumbs>
+                </v-col>
+                <v-spacer></v-spacer>
+                <v-col lg="6" md="6" sm="4" cols="4" align-self="center" class="d-flex justify-end">
+                    <v-btn :disabled="btnLoading" @click="discard" color="primary" variant="tonal"
+                        class="text-none mr-2">
+                        Cancel
+                    </v-btn>
+                    <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary" variant="flat"
+                        class="text-none btnSubmit">
+                        <v-icon class="mr-2">mdi-note-plus-outline</v-icon> Create
+                    </v-btn>
+                </v-col>
             </template>
 
             <template #default>
-                <v-container class="container-form">
+                <v-container class="container-form mt-10">
                     <v-card class="p-2 border-sm pt-7 border-dashed" elevation="0">
                         <v-row>
                             <v-col :cols="column">
                                 <v-combobox color="primary" v-model="institutionValue" clearable label="Institution"
                                     density="compact" :items="institutionData" variant="outlined" itemValue="value"
-                                    itemTitle="key" :rules="rule.ruleInstitution"
-                                    :close-on-content-click="false" hide-details></v-combobox>
+                                    itemTitle="key" :rules="rule.ruleInstitution" :close-on-content-click="false"
+                                    hide-details></v-combobox>
                             </v-col>
                             <v-col :cols="column">
                                 <v-text-field color="primary" density="compact" label="Requested by"
@@ -56,12 +41,12 @@
                                     :rules="rule.ruleRequestedBy" hide-details></v-text-field>
                             </v-col>
                         </v-row>
-                        <v-row>
+                        <v-row class="mb-2">
                             <v-col :cols="column">
                                 <v-text-field color="primary" v-model="address" label="Address" density="compact"
                                     variant="outlined" readonly
-                                    onUpdate:Item="(newVal) => { address.value = newVal.key }"
-                                    :rules="rule.ruleAddress" hide-details></v-text-field>
+                                    onUpdate:Item="(newVal) => { address.value = newVal.key }" :rules="rule.ruleAddress"
+                                    hide-details></v-text-field>
                             </v-col>
                             <v-col :cols="column">
                                 <VueDatePicker v-model="proposed_delivery_date" auto-apply :min-date="new Date()"
@@ -73,17 +58,17 @@
                         <v-divider></v-divider>
 
                         <!-- OTHER REQUEST DETAILS -->
-                        <v-row>
+                        <v-row class="mt-3">
                             <v-col :cols="column">
-                                <h5 class="mb-1" style="font-weight: 700;color: #191970;">Other Request Details</h5>
+                                <h5 class="mb-1" style="font-weight: 500;color: #191970;">Other Request Details</h5>
                                 <v-checkbox v-model="ocular" color="primary" label="Request for Ocular" value="1"
-                                    class="vCheckbox"></v-checkbox>
+                                    class="vCheckbox" density="compact"></v-checkbox>
                                 <v-checkbox v-model="bypass" color="primary"
                                     label="Bypass Internal Servicing Procedures" value="1" class="vCheckbox"
-                                    :disabled="disableExternalCheckbox"></v-checkbox>
+                                    :disabled="disableExternalCheckbox" density="compact"></v-checkbox>
                                 <v-checkbox v-model="ship" color="primary"
-                                    label="Ship & Deliver direct to customer immediately" class="vCheckbox"
-                                    value="1"></v-checkbox>
+                                    label="Ship & Deliver direct to customer immediately" class="vCheckbox" value="1"
+                                    density="compact"></v-checkbox>
                             </v-col>
                             <v-col :cols="column">
                                 <v-textarea color="primary" label="Endorsement" v-model="endorsement" row-height="25"
@@ -94,10 +79,11 @@
 
                         <v-divider class="mb-3"></v-divider>
                         <!-- Internal External Request -->
-                        <v-row>
+                        <v-row class="mt-3">
                             <v-col cols="12" md="6" sm="6">
-                                <h5 class="mb-2" style="font-weight: 700;color: #191970;">External Request</h5>
-                                <v-radio-group v-model="externalRequest" :rules="rule.ruleExternal" column>
+                                <h5 class="mb-2" style="font-weight: 500;color: #191970;">External Request</h5>
+                                <v-radio-group v-model="externalRequest" :rules="rule.ruleExternal" column
+                                    density="compact">
                                     <v-radio color="primary" label="For Demonstration" value="1"></v-radio>
                                     <v-radio color="primary" label="Reagent Tie-up" value="2"></v-radio>
                                     <v-radio color="primary" label="Purchased" value="3"></v-radio>
@@ -116,8 +102,9 @@
                                     value="1"></v-checkbox>
                             </v-col>
                             <v-col cols="12" md="6" sm="6">
-                                <h5 class="mb-2" style="font-weight: 700;color: #191970;">Internal Request</h5>
-                                <v-radio-group v-model="internalRequest" :rules="rule.ruleInternal" column>
+                                <h5 class="mb-2" style="font-weight: 500;color: #191970;">Internal Request</h5>
+                                <v-radio-group v-model="internalRequest" :rules="rule.ruleInternal" column
+                                    density="compact">
                                     <v-radio color="primary" label="For Corrective" value="7"></v-radio>
                                     <v-radio color="primary" label="For Refurbishment" value="8"></v-radio>
                                     <v-radio color="primary" label="For Quality Control" value="9"></v-radio>
@@ -135,7 +122,7 @@
                     <!-- Equipment & Peripherals -->
                     <v-card class="mt-3 p-3" elevation="0" style="border: 1px dashed #191970;">
                         <v-row>
-                            <h5 class="p-3" style="font-weight: 700;color: #191970;">EQUIPMENT & PERIPHERALS</h5>
+                            <h5 class="p-3" style="font-weight: 500;color: #191970;">EQUIPMENT & PERIPHERALS</h5>
                             <v-col cols="12">
                                 <div class="table-responsive">
                                     <table class="table table-sm table-bordered">
@@ -191,10 +178,10 @@
                                     </v-btn>
                                     <v-overlay v-model="overlayMasterData"
                                         class="d-flex align-items-center justify-content-center"
-                                        location-strategy="connected">
+                                        :width="width <= 600 ? 400 : 600" location-strategy="connected">
                                         <v-card class="pa-7" min-height="500">
                                             <v-row>
-                                                <v-col cols="4">
+                                                <v-col cols="10" xl="4" md="4" sm="5">
                                                     <v-text-field v-model="params.search" clearable density="compact"
                                                         label="Search all fields" variant="outlined"
                                                         color="primary"></v-text-field>
@@ -233,11 +220,9 @@
                     <v-card class="mt-3 p-3" elevation="0" style="border: .5px dashed #191970;">
 
                         <v-row>
-                            <h5 class="p-3 mt-2" style="font-weight: 700;color: #191970;">ADDITIONAL PERIPHERALS <span
-                                    style="font-size: .8em;font-weight: 100;color: #777;"><i> (Serial number to be
-                                        filled by
-                                        the IT
-                                        Department)</i></span></h5>
+                            <h5 class="p-3 mt-2" style="font-weight: 500;color: #191970;">ADDITIONAL PERIPHERALS <span
+                                    style="font-size: .8em;font-weight: 400;color: #777;"><i><br v-if="width < 615">
+                                        (Serial number to be filled by the IT Department)</i></span></h5>
                             <v-col cols="12">
                                 <div class="table-responsive">
                                     <table class="table table-sm table-bordered table-responsive">
@@ -289,12 +274,12 @@
                                         <v-icon class="mr-3">mdi-database-plus</v-icon>
                                         Select Additional Peripherals
                                     </v-btn>
-                                    <v-overlay v-model="overlayMasterDataPeripherals" location-strategy="connected"
+                                    <v-overlay v-model="overlayMasterDataPeripherals"
                                         class="d-flex align-items-center justify-content-center"
-                                        :location-strategy="static" scroll-strategy="reposition" scrollable>
-                                        <v-card class="pa-7" min-height="600" width="800">
+                                        :width="width <= 600 ? 400 : 600" location-strategy="connected">
+                                        <v-card class="pa-7" min-height="600">
                                             <v-row>
-                                                <v-col cols="4">
+                                                <v-col cols="10" xl="4" md="4" sm="5">
                                                     <v-text-field v-model="params.search" clearable density="compact"
                                                         label="Search all fields" variant="outlined"
                                                         color="primary"></v-text-field>
@@ -338,7 +323,7 @@ import { ref, reactive, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment';
-import { useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 
 /** Vuue3 DataTable */
@@ -346,7 +331,7 @@ import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
 /** Toast Notification */
-import {useToast} from 'vue-toast-notification'
+import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
 /** Lodash Debounce */
@@ -378,9 +363,9 @@ const errorMessage = ref('')
 const deliveryDateError = ref('')
 
 const breadcrumbItems = [
-    { title: 'Back', disabled: false, href: '/equipment-handling' },
-    { title: 'Equipment Handling', disabled: true, href: '' },
-    { title: 'Work Order', disabled: true, href: '' },
+    { title: 'Back', disabled: false, href: '/equipment-handling', display: 'block' },
+    { title: 'Equipment Handling', disabled: true, href: '', display: 'none' },
+    { title: 'Work Order', disabled: true, href: '', display: 'none' },
 ]
 const navigateTo = (item) => {
     if (!item.disabled && item.href) {
@@ -509,7 +494,7 @@ const submitWorkOrder = async () => {
         return
     }
 
-    
+
     if (!proposed_delivery_date.value) {
         deliveryDateError.value = 'Required field'
         setTimeout(() => {
@@ -623,6 +608,7 @@ const removeSelectedPeripherals = (index) => {
 const item_category = ref([]) //Additional Peripheral - IT Dept Approver
 watch(overlayMasterDataPeripherals, async (val) => {
     val === true ? item_category.value = [1, 5, 7] : item_category.value = []
+    params.search = ''
     await getMasterData()
 })
 const getMasterData = async () => {
@@ -678,53 +664,32 @@ const changeServer = (data) => {
     }
 };
 
+
+const setSizeScreen = () => {
+    column.value = width.value < 550 ? 12 : 6;
+};
+
+onBeforeRouteLeave(async (to, from, next) => {
+    const { valid } = await form.value.validate()
+    if (!valid) {
+        const confirm = window.confirm('Discard Changes?')
+        if (confirm) next()
+        else next(false)
+    }
+    else next()
+
+})
+
 /** Discard button */
 const discard = () => {
     router.push('/equipment-handling')
 }
 
-/** Monitoring of Changes before Leaving */
-// const beforeLeaving = async(to, from, next) => {
-//     const { valid } = await form.value.validate()
-//         if(valid) {
-//             next()
-//         }
-//         discard()
-// }
-// const originalBeforeEach = router.beforeEach
-// router.beforeEach(beforeLeaving)
-
-// // Clean up the navigation guard when the component is unmounted
-// onBeforeUnmount(() => {
-//   router.beforeEach(originalBeforeEach);
-// });
-
-
-/** Set Size Screeen */
-const sizeScreen = () => {
-    if (width < 550) {
-        column.value = 12
-    } else if (width < 768) {
-        cols.value.forEach((col) => {
-            if (col.field === 'description') {
-                col.hide = true
-            }
-        })
-    }
-    else {
-        column.value = 6
-        cols.value.forEach((col) => {
-            if (col.field === 'description') {
-                col.hide = false
-            }
-        })
-    }
-}
 
 onMounted(() => {
     getMasterData();
     get_institution()
-    sizeScreen()
+    setSizeScreen()
     // console.log(total_rows)
 });
 </script>
@@ -753,8 +718,9 @@ onMounted(() => {
 .myInputText {
     position: absolute !important;
 }
-.v-label{
-    color : #222;
+
+.v-label {
+    color: #222;
 }
 
 /* .vCheckbox {

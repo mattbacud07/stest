@@ -1,9 +1,22 @@
 <template>
-<v-skeleton-loader v-if="loadingSkeleton" type="article"
-    class="mb-2"></v-skeleton-loader>
-    <v-card v-else style="border: dashed thin #19197023" flat class="pl-2 pr-2 pt-5 pb-4 mb-7">
+    <v-row>
+        <v-col cols="12" class="d-flex justify-content-end mt-7 mb-5">
+            <v-chip variant="tonal" color="grey lighten-5" label><span class="text-dark mr-2">Status:</span>
+                <span :style="{ color: pub_var.internalStatus(status).color }">{{
+                    pub_var.internalStatus(status).text
+                }}
+                </span>
+            </v-chip>
+        </v-col>
+    </v-row>
 
-        <h5 class="pb-5 text-primary">Internal Servicing Details</h5>
+    <v-skeleton-loader v-if="loadingSkeleton" type="article" class="mb-2"></v-skeleton-loader>
+    <v-card v-else style="border: dashed thin #19197023" flat class="pl-2 pr-2 pt-5 pb-4 mb-7">
+        <v-row>
+            <v-col cols="12">
+                <h5 class="pb-5 text-primary">Internal Servicing Details</h5>
+            </v-col>
+        </v-row>
         <v-row>
             <v-col cols="12" lg="4" md="4" sm="6">
                 <v-text-field color="primary" density="compact" label="Delegated to" v-model="delegated_to"
@@ -50,13 +63,13 @@
             <v-col cols="12" lg="6" md="6" sm="12">
                 <b class="text-primary ml-1">Actions Done</b>
                 <div v-if="rowData.actions_done && rowData.actions_done.length > 0">
-                    <v-card v-for="action in rowData.actions_done" :key="action.key" :text="action.action ?? 'No remarks'" prepend-icon="mdi-playlist-check"
-                        class="mt-3" elevation2>
+                    <v-card v-for="action in rowData.actions_done" :key="action.key"
+                        :text="action.action ?? 'No remarks'" prepend-icon="mdi-playlist-check" class="mt-3" elevation2>
                         <template v-slot:subtitle>
                             <v-row class="p-3">
                                 <span>{{ getEquipmentSerialNumber(action).code }}</span>
-                            <v-spacer></v-spacer>
-                            <span>{{ getEquipmentSerialNumber(action).serialNo }}</span>
+                                <v-spacer></v-spacer>
+                                <span>{{ getEquipmentSerialNumber(action).serialNo }}</span>
                             </v-row>
                         </template>
 
@@ -75,6 +88,9 @@ import { user_data } from '@/stores/auth/userData'
 // import TextField from '@/components/GeneralComponents/TextField.vue'
 import * as pub_var from '@/global/global'
 
+import { useDisplay } from 'vuetify'
+const { width } = useDisplay()
+
 const user = user_data()
 
 const apiRequest = user.apiRequest()
@@ -82,10 +98,10 @@ const loadingSkeleton = ref(false)
 const rowData = ref({})
 const actionDone = reactive({})
 
-const getEquipmentSerialNumber = (action) =>{
+const getEquipmentSerialNumber = (action) => {
     const e = rowData.value.equipments.find(e => e.id === action.equipment_id)
-    if(e){
-        return {code: `Item Code -  ${e.item_code}`, serialNo : `Serial No. -  ${e.serial_number}`}
+    if (e) {
+        return { code: `Item Code -  ${e.item_code}`, serialNo: `Serial No. -  ${e.serial_number}` }
     }
     return ''
 }
@@ -110,7 +126,7 @@ const status = ref('')
 const props = defineProps({
     id: {
         type: Number,
-        default: 0
+        default: null
     }
 })
 

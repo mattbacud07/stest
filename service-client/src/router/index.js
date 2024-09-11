@@ -26,8 +26,8 @@ const router = createRouter({
 
 
 
-     /** ============================= Administrator Routes ===============================================================*/
-     {
+    /** ============================= Administrator Routes ===============================================================*/
+    {
       path: '/admin-dashboard',
       name: 'AdminDashboard',
       component: () => import('../views/Admin/AdminDashboard.vue'),
@@ -78,7 +78,7 @@ const router = createRouter({
       component: () => import('../views/EquipmentHandling/EquipmentHandling.vue'),
       meta: {
         requiresAuth: true
-      }
+      },
     },
     {
       path: '/work-order',
@@ -86,7 +86,7 @@ const router = createRouter({
       component: () => import('../views/EquipmentHandling/WorkOrder.vue'),
       meta: {
         requiresAuth: true
-      }
+      },
     },
     {
       path: '/view-work-order/:id',
@@ -108,7 +108,7 @@ const router = createRouter({
     },
 
 
-   
+
 
 
     /** =======================================Team Leader Routes ========================================================*/
@@ -151,9 +151,9 @@ const router = createRouter({
      */
     {
       path: '/preventive-maintenance',
-      name : 'PreventiveMaintenance',
-      component : () => import('../views/PreventiveMaintenance/PreventiveMaintenance.vue'),
-      props : true,
+      name: 'PreventiveMaintenance',
+      component: () => import('../views/PreventiveMaintenance/PreventiveMaintenance.vue'),
+      props: true,
       meta: {
         requiresAuth: true
       }
@@ -161,20 +161,61 @@ const router = createRouter({
 
 
     {
-      path: '/pm-view/:id',
-      name : 'PMView',
-      component : () => import('../views/PreventiveMaintenance/PMView.vue'),
-      props : true,
+      path: '/pm-view/:id/:work_type',
+      name: 'PMView',
+      component: () => import('../views/PreventiveMaintenance/PMView.vue'),
+      props: true,
+      meta: {
+        requiresAuth: true
+      },
+      beforeEnter: (to, from, next) => {
+        const validWorkType = ['PM', 'CM']
+        const work_type = to.params.work_type
+
+        if (validWorkType.includes(work_type)) next()
+        else next(false)
+      },
+      children: [
+        {
+          path: 'print-preview',
+          name: 'PMPrint',
+          component: () => import('../components/Print/PMPrint.vue'),
+        }
+      ],
+    },
+
+
+    /**
+     * ==================================== Corrective Maintenance Routes ========================================
+     */
+    {
+      path: '/corrective-maintenance',
+      name: 'Corrective',
+      component: () => import('../views/Corrective/Corrective.vue'),
+      props: true,
       meta: {
         requiresAuth: true
       }
     },
 
+
+    // {
+    //   path: '/pm-view/:id',
+    //   name: 'PMView',
+    //   component: () => import('../views/PreventiveMaintenance/PMView.vue'),
+    //   props: true,
+    //   meta: {
+    //     requiresAuth: true
+    //   },
+    // },
+
   ]
 })
 
+
 router.beforeEach((to, from, next) => {
   const authenticated = JSON.parse(localStorage.getItem('isAuthenticated'))
+
 
   if (to.meta.requiresAuth && !authenticated) {
     next({ path: '/' })
@@ -183,6 +224,8 @@ router.beforeEach((to, from, next) => {
   } else {
     next();
   }
+
+  return false
 })
 
 export default router

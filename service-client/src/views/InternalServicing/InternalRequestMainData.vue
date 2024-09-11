@@ -1,72 +1,76 @@
 <template>
     <LayoutWithActions>
         <template #filter>
-                    <v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom"
-                        transition="slide-x-reverse-transition">
-                        <template v-slot:activator="{ props }">
-                            <v-btn color="primary" prepend-icon="mdi-filter-outline" variant="tonal"
-                                text="Advanced filtering" class="text-none" v-bind="props"></v-btn>
+            <v-menu v-model="filterMenu" :close-on-content-click="false" location="bottom"
+                transition="slide-x-reverse-transition">
+                <template v-slot:activator="{ props }">
+                    <v-btn color="primary" prepend-icon="mdi-filter-outline" variant="tonal" text="Advanced filtering"
+                        class="text-none" v-bind="props">
+                        <template v-slot:append>
+                        <v-badge color="warning" :content="nonEmptyCountFilter"
+                            v-if="nonEmptyCountFilter > 0" class="ml-2 mr-2"></v-badge>
                         </template>
+                    </v-btn>
+                </template>
 
-                        <v-card min-width="350" :width="width < 500 ? '350' : '500'" max-width="500" min-height="500" style="overflow-x: hidden!important;">
-                            <v-row>
-                                <v-col cols="12">
-                                    <v-col cols="12">
-                                        <!-- Filter by Status  -->
-                                        <v-menu v-model="filterByStatusDropDown" :close-on-content-click="false"
-                                            min-width="400" width="400" height="auto" location="bottom">
-                                            <template v-slot:activator="{ props }">
-                                                <v-btn color="primary" variant="tonal" v-bind="props" class="text-none">
-                                                    <v-badge color="primary" :content="filter.filterStatus.length"
-                                                        v-if="filter.filterStatus.length > 0"
-                                                        class="mr-3 ml-2"></v-badge>
-                                                    Status <v-icon>mdi-chevron-down</v-icon> </v-btn>
-                                            </template>
+                <v-card min-width="350" :width="width < 500 ? '350' : '500'" max-width="500" min-height="500"
+                    style="overflow-x: hidden!important;">
+                    <v-row>
+                        <v-col cols="12">
+                            <v-col cols="12">
+                                <!-- Filter by Status  -->
+                                <v-menu v-model="filterByStatusDropDown" :close-on-content-click="false" min-width="400"
+                                    width="400" height="auto" location="bottom">
+                                    <template v-slot:activator="{ props }">
+                                        <v-btn color="primary" variant="tonal" v-bind="props" class="text-none">
+                                            <v-badge color="primary" :content="filter.filterStatus.length"
+                                                v-if="filter.filterStatus.length > 0" class="mr-3 ml-2"></v-badge>
+                                            Status <v-icon>mdi-chevron-down</v-icon> </v-btn>
+                                    </template>
 
-                                            <v-card width="auto" class="pr-3">
-                                                <v-checkbox v-model="filter.filterStatus" class="columnChooserCheckBox"
-                                                    :label="pub_var.internalStatus(stat).text" :value="stat"
-                                                    v-for="(stat, index) in internalStatus" :key="stat"></v-checkbox>
-                                            </v-card>
-                                            <!-- @change="filterByStatusAction" @click:prependInner="filterByStatusAction" -->
-                                        </v-menu>
-                                    </v-col>
+                                    <v-card width="auto" class="pr-3">
+                                        <v-checkbox v-model="filter.filterStatus" class="columnChooserCheckBox"
+                                            :label="pub_var.internalStatus(stat).text" :value="stat"
+                                            v-for="(stat, index) in internalStatus" :key="stat"></v-checkbox>
+                                    </v-card>
+                                    <!-- @change="filterByStatusAction" @click:prependInner="filterByStatusAction" -->
+                                </v-menu>
+                            </v-col>
 
-                                    <v-col cols="12">
-                                        <!-- Filter by Institution  -->
-                                        <v-combobox :loading="loadingInstitutionData" color="primary"
-                                            v-model="filter.filterInstitution" label="Institution" density="compact"
-                                            :items="institutionData" chips closable-chips single-line itemValue="iId"
-                                            variant="outlined" itemTitle="iName" multiple>
-                                        </v-combobox>
-                                    </v-col>
+                            <v-col cols="12">
+                                <!-- Filter by Institution  -->
+                                <v-combobox :loading="loadingInstitutionData" color="primary"
+                                    v-model="filter.filterInstitution" label="Institution" density="compact"
+                                    :items="institutionData" chips closable-chips single-line itemValue="iId"
+                                    variant="outlined" itemTitle="iName" multiple>
+                                </v-combobox>
+                            </v-col>
 
-                                    <v-col cols="12">
-                                        <VueDatePicker v-model="filter.delegation_date" auto-apply range model-type="yyyy-MM-dd"
-                                            :enable-time-picker="false" placeholder="Delegation Date" />
-                                            {{ filter.delegation_date }}
-                                    </v-col>
+                            <v-col cols="12">
+                                <VueDatePicker v-model="filter.delegation_date" auto-apply range model-type="yyyy-MM-dd"
+                                    :enable-time-picker="false" placeholder="Delegation Date" />
+                            </v-col>
 
 
-                                    <v-col cols="12">
-                                        <div style="position: absolute;bottom: 0!important;left:0;width: 100%;"
-                                            class="d-flex justify-content-center">
-                                            <v-spacer></v-spacer>
+                            <v-col cols="12">
+                                <div style="position: absolute;bottom: 0!important;left:0;width: 100%;"
+                                    class="d-flex justify-content-center">
+                                    <v-spacer></v-spacer>
 
-                                            <v-btn variant="tonal" @click="filterMenu = false" class="text-none rounded-0"
-                                                style="width: 50%;">
-                                                Close
-                                            </v-btn>
-                                            <v-btn color="primary" variant="flat" prepend-icon="mdi-close"
-                                                @click="clearFilter" class="text-none rounded-0" style="width: 50%;">
-                                                Clear
-                                            </v-btn>
-                                        </div>
-                                    </v-col>
-                                </v-col>
-                            </v-row>
-                        </v-card>
-                    </v-menu>
+                                    <v-btn variant="tonal" @click="filterMenu = false" class="text-none rounded-0"
+                                        style="width: 50%;">
+                                        Close
+                                    </v-btn>
+                                    <v-btn color="primary" variant="flat" prepend-icon="mdi-close" @click="clearFilter"
+                                        class="text-none rounded-0" style="width: 50%;">
+                                        Clear
+                                    </v-btn>
+                                </div>
+                            </v-col>
+                        </v-col>
+                    </v-row>
+                </v-card>
+            </v-menu>
         </template>
         <template #default="{ searchText }">
             <v-card class="mx-auto mt-10">
@@ -96,16 +100,18 @@
                         <span>{{ pub_var.formatDate(data.value.accomplished_date) }}</span>
                     </template>
                     <template #packed_endorse_to_warehouse="data">
-                        <span v-if="data.value.packed_endorse_to_warehouse"><v-icon
-                                color="primary">mdi-check</v-icon></span>
+                        <span v-if="data.value.packed_endorse_to_warehouse">Yes</span>
                     </template>
                     <template #endorsement_date="data">
                         <span>{{ pub_var.formatDate(data.value.endorsement_date) }}</span>
                     </template>
+                    <template #accepted_by_warehouse="data">
+                        <span>{{ pub_var.formatDate(data.value.accepted_by_warehouse) }}</span>
+                    </template>
                     <template #status="data">
                         <span class="text-dark"
                             :style="{ fontWeight: '700', color: pub_var.internalStatus(data.value.status).color }">{{
-                        pub_var.internalStatus(data.value.status).text }}</span>
+                                pub_var.internalStatus(data.value.status).text }}</span>
                         <br><span class="small"
                             v-if="data.value.status === pub_var.internalStat.ConfirmedByWIM">Internal Process
                             Completed</span>
@@ -125,9 +131,9 @@ import { getRole } from '@/stores/getRole'
 import * as pub_var from '@/global/global'
 import moment from 'moment';
 import LayoutWithActions from '@/components/layout/MainLayout/LayoutWithActions.vue';
-import {useDisplay} from 'vuetify'
+import { useDisplay } from 'vuetify'
 
-const {width} = useDisplay()
+const { width } = useDisplay()
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
@@ -155,7 +161,15 @@ const clearFilter = () => {
         filterInstitution: [],
         delegation_date: '',
     };
+    localStorage.removeItem('ISFilter')
 }
+// Computed property to count non-empty fields
+const nonEmptyCountFilter = computed(() => {
+    return Object.values(filter.value).filter(value => {
+        // Check if the value is not empty
+        return (Array.isArray(value) && value.length > 0) || (typeof value === 'string' && value.trim() !== '');
+    }).length;
+});
 
 const filterMenu = ref(false)
 const btnDisabled = ref(true)
@@ -192,11 +206,11 @@ const rowSelect = (data) => {
     internalId.value = selectedRows.map((data) => { return data.id })[0]
 }
 
-
-
 watch(filter, (newFilter) => {
+    localStorage.setItem('ISFilter', JSON.stringify(newFilter));
     getInternalRequest()
 }, { deep: true })
+
 
 /** Declaration of User Data Store*/
 const user = user_data();
@@ -216,13 +230,14 @@ const cols =
         // { field: 'first_name', title: 'Requested by' },
         { field: 'equipment_handling.id', title: 'Report Number', filter: true, width: 'auto', hide: false, },
         { field: 'equipment_handling.institution_name', title: 'Institution', filter: true, width: 'auto', hide: false, },
+        { field: 'equipment_handling.ssu', title: 'SSU', filter: true, width: 'auto', hide: false, },
         { field: 'equipment_handling.proposed_delivery_date', title: 'Proposed Delivery Date', filter: true, width: 'auto', hide: false, },
         { field: 'equipment_handling.created_at', title: 'Date Requested', filter: true, width: 'auto', hide: true, },
         { field: 'internal_external_name.name', title: 'Type of Activity', filter: true, width: 'auto', hide: false, },
         { field: 'delegation_date', title: 'Delegation Date', width: 'auto', hide: false, },
         { field: 'date_started', title: 'Date Started', width: 'auto', hide: false, },
         { field: 'accomplished_date', title: 'Date Accomplished', width: 'auto', hide: false, },
-        { field: 'packed_endorse_to_warehouse', title: 'Packed & Endorsed to Warehouse', minWidth: '200px', hide: false, },
+        { field: 'packed_endorse_to_warehouse', title: 'Packed & Endorsed to Warehouse', minWidth: '200px', hide: true, },
         { field: 'endorsement_date', title: 'Endorsement Date', width: 'auto', hide: false, },
         { field: 'accepted_by_warehouse', title: 'Confirmed by Warehouse', minWidth: '200px', hide: false, },
         { field: 'status', title: 'Status', width: 'auto', hide: false, },
@@ -236,6 +251,7 @@ const category = ref('')
 const getInternalRequest = async () => {
     if (currentUserRole === pub_var.engineerRole) category.value = 'delegated_to'
     if (currentUserRole === pub_var.wimPersonnel) category.value = pub_var.wimPersonnel
+    // if (currentUserRole === pub_var.TLRole) category.value = pub_var.TLRole
     try {
         loading.value = true;
         const response = await apiRequest.get('getInternalRequest', {
@@ -289,6 +305,10 @@ const getInstitution = async () => {
     }
 };
 onMounted(() => {
+    const ISFilter = localStorage.getItem('ISFilter');
+    if (ISFilter) {
+        filter.value = JSON.parse(ISFilter);
+    }
     getInternalRequest();
     getInstitution()
 });
@@ -303,9 +323,5 @@ a {
 <style scoped>
 .btnsubmitText {
     color: #fff;
-}
-
-.columnChooserCheckBox {
-    height: 40px !important;
 }
 </style>

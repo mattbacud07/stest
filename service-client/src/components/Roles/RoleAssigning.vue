@@ -2,11 +2,13 @@
     <v-row>
         <v-col cols="12">
             <v-row>
-                <v-col lg="8" md="8" sm="6" cols="4">
+                <v-col lg="8" md="8" sm="6" cols="3">
                     <v-dialog width="400" scrollable v-model="isActive">
                         <template v-slot:activator="{ props: activatorProps }">
-                            <v-btn color="primary" :disabled="btnDisable" prepend-icon="mdi-clipboard-account-outline"
-                                text="Assign" class="text-none" v-bind="activatorProps"></v-btn>
+                            <v-btn color="primary" :disabled="btnDisable" variant="tonal"
+                                class="text-none" v-bind="activatorProps">
+                                <v-icon class="mr-2">mdi-lock-plus</v-icon> {{ width <= 500 ?  '' : ' Assign Role' }}
+                            </v-btn>
                         </template>
 
                         <template v-slot:default="{ isActive }">
@@ -15,7 +17,7 @@
                                 <v-form @submit.prevent="saveRole" ref="form">
                                     <v-divider class="mt-1"></v-divider>
                                     <v-card-text class="px-4">
-                                        <v-select color="primary" v-model="selectedRole" :rules="rule.role"
+                                        <v-select color="primary" v-model="selectedRole" :rules="rule.role" @click="refreshRoles"
                                             :items="get_role_name" item-title="role_name" item-value="roleID"  density="compact" variant="outlined"
                                             label="Roles" hint="Assign roles to the selected users"
                                             persistent-hint></v-select>
@@ -41,7 +43,7 @@
                     </v-dialog>
                 </v-col>
                 <v-spacer></v-spacer>
-                <v-col lg="4" md="4" sm="6" cols="8">
+                <v-col lg="4" md="4" sm="6" cols="9">
                     <v-text-field color="primary" v-model="params.search" clearable density="compact"
                         label="Search all fields" variant="outlined"></v-text-field>
                 </v-col>
@@ -84,6 +86,9 @@ import * as pub_var from '@/global/global.js'
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
+
+import {useDisplay} from 'vuetify'
+const { width } = useDisplay()
 
 const user = user_data()
 user.getUserData
@@ -177,8 +182,6 @@ const saveRole = async () => {
 
 
 
-
-
 /** Fetching Data Users */
 const loading = ref(true);
 const total_rows = ref(0);
@@ -236,6 +239,10 @@ const getRoleName = async () => {
 
     loading.value = false;
 };
+
+const refreshRoles = () => {
+    getRoleName()
+}
 
 
 onMounted(() => {

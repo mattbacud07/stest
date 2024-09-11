@@ -1,26 +1,28 @@
 <template>
     <v-app dense>
-        <v-app-bar>
+        <v-app-bar class="d-print-none">
             <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-            <v-app-bar-title>Service <span style="color:#191970;font-weight:700;">webApp</span></v-app-bar-title>
+            <v-app-bar-title :style="{ display: width <= 426  ? 'none' : '' }">Service <span style="color:#191970;font-weight:700;">webApp</span></v-app-bar-title>
+            <p :style="{ display: width <= 426  ? 'block' : 'none' }">service<span style="color:#191970;font-weight:700;">App</span></p>
             <v-spacer></v-spacer>
-            <topBarUserProfile />
+            
+        <v-spacer></v-spacer><topBarUserProfile />
         </v-app-bar>
 
-        <v-navigation-drawer v-model="drawer">
+        <v-navigation-drawer v-model="drawer" class="d-print-none">
             <BaseSidebar />
         </v-navigation-drawer>
 
         <v-main>
-            <v-toolbar class="fixed-toolbar border-b-sm pr-3" dense
+            <v-toolbar class="fixed-toolbar border-b-sm pr-3 d-print-none" dense color="white"
                 :style="{ width: width < 1280 || drawer === false ? '100%' : 'calc(100% - 256px)' }">
                 <slot name="topBarFixed"></slot>
             </v-toolbar>
 
 
             <!-- Main content slot -->
-            <div class="mainWrapper" :style="{ padding: width < 2560 && width > 980 ? '5% 10%' : '7% 1%' }">
+            <div class="mainWrapper" :style="{ padding: width < 2560 && width > 980 ? '2% 10%' : '3% 0' }">
                 <slot></slot>
             </div>
         </v-main>
@@ -30,13 +32,13 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { useDisplay } from 'vuetify'
 import BaseSidebar from '../Sidebars/BaseSidebar.vue';
 import topBarUserProfile from './LayoutParts/topBarUserProfile.vue';
 
-const drawer = ref(null)
-
+import { useDisplay } from 'vuetify'
 const { width } = useDisplay()
+
+const drawer = ref(null)
 </script>
 
 
@@ -48,7 +50,7 @@ const { width } = useDisplay()
     display: flex;
     align-items: center;
     height: 60px !important;
-    width: calc(100% - 256px);
+    /* width: calc(100% - 256px)!important; */
 }
 
 

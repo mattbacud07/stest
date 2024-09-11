@@ -70,7 +70,7 @@
                     </template>
 
                     <template v-slot:default="{ isActive }">
-                        <v-card prepend-icon="mdi-trash-can" color="error" subtitle="Delete">
+                        <v-card prepend-icon="mdi-trash-can" subtitle="Delete">
                             <p class="p3"></p>
                             <v-card-text>Are you sure you want to delete?</v-card-text>
                             <v-card-actions>
@@ -79,7 +79,7 @@
                                 <v-spacer></v-spacer>
 
                                 <v-btn color="danger" prepend-icon="mdi-shield-remove-outline" text="Delete"
-                                    class="text-none ml-2" variant="flat" @click="deleteAction"
+                                    class="text-none ml-2" variant="outlined" @click="deleteAction"
                                     :loading="loadingSave"></v-btn>
                             </v-card-actions>
                         </v-card>

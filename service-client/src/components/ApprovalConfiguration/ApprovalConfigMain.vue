@@ -9,12 +9,16 @@
         <v-card-text>
             <v-window v-model="tab">
                 <v-window-item value="one">
+                    <SetApprovalDesignation class="mt-3" />
+                </v-window-item>
+                
+                <!-- <v-window-item value="one">
                     <SetApprovals class="mt-3" />
                 </v-window-item>
 
                 <v-window-item value="two">
                     <ViewApprover class="mt-3" :key="viewApproverKey"/>
-                </v-window-item>
+                </v-window-item> -->
             </v-window>
         </v-card-text>
     </v-card>

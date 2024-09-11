@@ -1,17 +1,17 @@
 <template>
     <v-col cols="12">
         <v-row>
-            <v-col cols="2">
-                <v-select color="primary" v-model="role" :items="get_role_name" clearable
-                    item-title="role_name" item-value="role_id" density="compact" variant="plain" placeholder="Select Role"></v-select>
-            </v-col>
-            <v-col cols="7">
-                <v-btn color="primary" size="small" class="text-none mr-2"
-                    :disabled="btnDisabledUpdate"><v-icon>mdi-file-document-edit</v-icon> Edit</v-btn>
-                <v-btn color="error" size="small" class="text-none" :disabled="btnDisabledDelete"
-                    @click="deleteUserRole = true"><v-icon>mdi-delete-empty</v-icon> Delete</v-btn>
+            <v-col cols="12" xl="7" md="5" sm="5" :style="{ 'margin-top' : width <= 550 ? '-15px' : ''}">
+                <v-btn color="primary" class="text-none mr-2" variant="tonal"
+                    :disabled="btnDisabledUpdate">
+                    <v-icon>mdi-file-document-edit</v-icon> {{ width <= 768 ?  '' : ' Edit' }}
+                </v-btn>
+                <v-btn color="error" class="text-none" :disabled="btnDisabledDelete" variant="tonal"
+                    @click="deleteUserRole = true">
+                    <v-icon>mdi-delete-empty</v-icon> {{ width <= 768 ?  '' : ' Delete' }}
+                </v-btn>
+                <v-btn @click="handleRefresh" icon color="primary" size="small" variant="text" class="mr-1"><v-icon>mdi-refresh</v-icon></v-btn>
                 <v-col cols="12" md="6">
-
                     <v-dialog v-model="deleteUserRole" max-width="340">
                         <template v-slot:default="{ isActive }">
                             <v-card prepend-icon="mdi-trash-can-outline" text="Are you sure you want to delete?"
@@ -26,9 +26,12 @@
                         </template>
                     </v-dialog>
                 </v-col>
-
             </v-col>
-            <v-col cols="3">
+            <v-col cols="12" xl="2" md="4" sm="4" :style="{ 'margin-top' : width <= 550 ? '-35px' : ''}">
+                <v-select color="primary" v-model="role" :items="get_role_name" clearable
+                    item-title="role_name" item-value="role_id" density="compact" variant="outlined" label="Filter by role"></v-select>
+            </v-col>
+            <v-col cols="12" xl="3" md="3" sm="3" :style="{ 'margin-top' : width <= 550 ? '-15px' : ''}">
                 <v-text-field color="primary" v-model="params.search" clearable density="compact"
                     label="Search all fields" variant="outlined"></v-text-field>
             </v-col>
@@ -50,6 +53,9 @@ import { user_data } from '@/stores/auth/userData'
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
+
+import {useDisplay} from 'vuetify'
+const { width } = useDisplay()
 
 const user = user_data()
 user.getUserData
@@ -110,16 +116,6 @@ const deleteRole = async () => {
         loadingDelete.value = false
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -189,6 +185,13 @@ const getRoleName = async () => {
 
     loading.value = false;
 };
+
+
+/** Handle Refresh */
+const handleRefresh = () => {
+    getAssignedUserRole()
+}
+
 
 
 

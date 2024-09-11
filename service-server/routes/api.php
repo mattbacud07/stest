@@ -10,7 +10,9 @@ use App\Http\Controllers\ehController\InternalRequest;
 use App\Http\Controllers\ehController\WorkOrder;
 use App\Http\Controllers\Engineer\Engineer;
 use App\Http\Controllers\EquipmentHandling\EquipmentHandlingController;
+use App\Http\Controllers\PreventiveMaintenance\PMSparepartsUsed;
 use App\Http\Controllers\PreventiveMaintenance\PreventiveMaintenance;
+use App\Http\Controllers\PreventiveMaintenance\SendToCM;
 use App\Http\Controllers\TeamLeader\TeamLeader;
 use GuzzleHttp\Middleware;
 use Illuminate\Http\Request;
@@ -87,8 +89,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Assign Role Permission and Modules
         Route::get('/get_role_name', [Roles::class, 'get_role_name']);
         Route::get('/get_permissions', [Roles::class, 'get_permissions']);
+        Route::get('/get_permission_per_role', [Roles::class, 'get_permission_per_role']);
         Route::get('/get_modules', [Roles::class, 'get_modules']);
         Route::put('/set_permissions', [Roles::class, 'set_permissions']);
+        Route::put('/set_permissions_per_role', [Roles::class, 'set_permissions_per_role']);
         Route::put('/set_modules', [Roles::class, 'set_modules']);
         Route::post('/add_role_name', [Roles::class, 'add_role_name']);
         Route::delete('/delete_role_name', [Roles::class, 'delete_role_name']);
@@ -115,6 +119,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/pm_accepted', [PreventiveMaintenance::class, 'pm_accepted']);
     Route::post('/pm_task_processing', [PreventiveMaintenance::class, 'pm_task_processing']);
         Route::get('/getStandardActions', [PreventiveMaintenance::class, 'getStandardActions']);
+
+        Route::get('/spareparts', [PMSparepartsUsed::class, 'view']);
+        Route::post('/sendToCM', [SendToCM::class, 'sendToCM']); //send to CM
+        Route::post('/setDaysObservation', [SendToCM::class, 'setDaysObservation']); //send to CM
 
 
     /* Log Me Out */

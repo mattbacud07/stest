@@ -81,7 +81,7 @@
                 <template #created_at="data">
                     <span>{{ pub_var.formatDate(data.value.created_at) }}</span>
                 </template>
-                <template #id="data">
+                <!-- <template #id="data">
                     <v-dialog width="400" scrollable>
                         <template v-slot:activator="{ props: showPermission }">
                             <v-btn prepend-icon="mdi-account-key-outline" color="primary" variant="tonal"
@@ -123,7 +123,7 @@
                             </v-card>
                         </template>
                     </v-dialog>
-                </template>
+                </template> -->
             </vue3-datatable>
         </v-col>
         <alertMessage v-if="messageDetails.show" :details="messageDetails" />
@@ -254,7 +254,7 @@ const cols =
         { field: 'role_name', title: 'Role' },
         { field: 'description', title: 'Description' },
         { field: 'created_at', title: 'Created_at' },
-        { field: 'id', title: 'Permission' },
+        // { field: 'id', title: 'Permission' },
     ]) || [];
 
 

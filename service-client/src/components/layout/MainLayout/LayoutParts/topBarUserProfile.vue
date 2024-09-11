@@ -1,11 +1,11 @@
 <template>
-    <div class="text-center pa-4">
+    <div class="text-right pa-4">
         <v-btn @click="dialog = true" color="primary"  class="text-none" prepend-icon="mdi-account">
             <span class="text-dark"><b>{{ user.user.first_name }} {{ user.user.last_name }}</b></span>  | Logout
         </v-btn>
 
         <v-dialog v-model="dialog" width="auto">
-            <v-card min-width="400" prepend-icon="mdi-account"
+            <v-card min-width="300" prepend-icon="mdi-account"
                 text="Are you sure you want to leave?"
                 title="Logout">
                 <template v-slot:actions>

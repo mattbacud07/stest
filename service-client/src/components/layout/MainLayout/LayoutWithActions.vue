@@ -3,9 +3,10 @@
         <v-app-bar>
             <v-app-bar-nav-icon  color="primary" @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-            <v-app-bar-title>Service <span style="color:#191970;font-weight:700;">webApp</span></v-app-bar-title>
-            <v-spacer></v-spacer>
-            <topBarUserProfile />
+            <v-app-bar-title :style="{ display: width <= 426  ? 'none' : '' }">Service <span style="color:#191970;font-weight:700;">webApp</span></v-app-bar-title>
+            <p :style="{ display: width <= 426  ? 'block' : 'none',}">service<span style="color:#191970;font-weight:700;">App</span></p>
+            
+        <v-spacer></v-spacer><topBarUserProfile />
         </v-app-bar>
 
         <v-navigation-drawer v-model="drawer">
@@ -47,6 +48,10 @@
                 <v-btn @click="handleCreate" v-if="currentUserRole === 'Requestor'" color="primary" variant="flat" class="text-none"> <!--- v-if="enableCreate"-->
                     <v-icon>mdi-plus</v-icon> {{ width < 768 ? '' : 'Create' }}
                 </v-btn>
+                
+                <!-- <v-btn @click="handleCreateCM" color="primary" variant="flat" class="text-none"> 
+                    <v-icon>mdi-plus</v-icon> {{ width < 768 ? '' : 'Create' }}
+                </v-btn> -->
             </v-toolbar>
 
             <!-- Main content slot -->
@@ -77,7 +82,7 @@ const columnChooser = ref(null)
 const role = getRole()
 const currentUserRole = role.currentUserRole
 
-const details = inject('data') //this is from equipmenthandling.vue table
+const details = inject('data') //this is from Views Pages
 const refresh = inject('refresh', null)
 const column = inject('column', null)
 const btnDisable = ref(details.btnDisable ?? true)
@@ -112,6 +117,10 @@ const handleView = () => {
     if(service_id !== null){
         params.service_id = service_id.value;
     }
+    // console.log(details.work_type)
+    if(details.work_type !== null && details.work_type !== ''){
+        params.work_type = details.work_type
+    }
     
     router.push({ name: details.routeView.value, params });
 }
@@ -119,6 +128,12 @@ const handleView = () => {
 
 /** Hnadle Create Redirection */
 const handleCreate = () =>{
+    router.push({name : 'WorkOrder'})
+}
+
+
+/** Hnadle Create Corrective Maintenance Redirection */
+const handleCreateCM = () =>{
     router.push({name : 'WorkOrder'})
 }
 

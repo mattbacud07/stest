@@ -1,3 +1,14 @@
+
+/* Navigation Drawer */
+/* .v-navigation-drawer{
+  width: 280px!important;
+}
+.v-main{
+  padding-left: 280px!important;
+} */
+.v-navigation-drawer{
+  background: #ffffff!important;
+}
 .cd__main {
   background: linear-gradient(to right, #8e9eab, #eef2f3) !important;
 }
@@ -75,17 +86,19 @@ table.dataTable>tbody>tr.selected>* {
 ::-webkit-scrollbar-track {
   background: #eaeaea;
   box-shadow: inset 2px 2px 3px #e1e1e1;
+  margin: 3px;
+  border-radius: 5px;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #c0c0c0;
-  /* border-radius: 50px; */
+  background: #cccccc;
+  border-radius: 5px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #949494;
+  background: #bebebe;
 }
 
 
@@ -127,7 +140,7 @@ table.dataTable>tbody>tr.selected>* {
 }
 
 .bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered thead tr th {
-  border-color: #f4f4f4!important;
+  border-color: #f0f0f0!important;
 }
 .bh-table-responsive table.bh-table-bordered thead tr, .bh-table-responsive table.bh-table-bordered thead tr{
   background: rgb(255, 255, 255)!important;
@@ -137,6 +150,9 @@ table.dataTable>tbody>tr.selected>* {
  white-space: nowrap;
  text-transform: uppercase;
  font-size: 11px;
+ padding-top: 10px!important;
+ padding-bottom: 10px!important;
+ border-bottom: 1px solid #dadada!important;
 }
 .bh-table-responsive table.bh-table-bordered tbody tr, .bh-table-responsive table.bh-table-bordered tbody tr{
   background: rgb(255, 255, 255)!important;
@@ -145,10 +161,19 @@ table.dataTable>tbody>tr.selected>* {
   white-space: nowrap;
 }
 .bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered tbody tr td{
- font-family: "Satoshi", sans-serif !important;
+ font-family: "Poppins", sans-serif !important;
  font-size: 12px!important;
- font-weight: 500;
+ font-weight: 400;
  color: #191970;
+}
+
+table.bh-table-hover tbody tr:hover{
+  background: #19197011!important;
+}
+
+.bh-datatable .selectedRow{
+  background: #191970!important;
+  color: white!important;
 }
 
 /* ****************************************************End  Table Vue3 DataTable ******************************************** */

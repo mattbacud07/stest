@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -16,7 +17,9 @@ class Kernel extends ConsoleKernel
 //          Set the date.timezone:
         // $schedule->command('app:PMUpdateStatus')->twiceDaily(8, 13);
         // $schedule->command('app:PMUpdateStatus')->dailyAt('08:00');
-        $schedule->command('app:PMUpdateStatus')->everyFiveSeconds();
+        // $schedule->command('app:PMUpdateStatus')->everyFiveSeconds();
+        $startOfMonitoringTime = '08:00';
+        $schedule->command('app:monitor-pm')->everyFiveMinutes();
     }
 
     /**

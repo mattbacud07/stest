@@ -99,8 +99,10 @@ class GeneratePMSched
                 'list_scheduled' => $allSched,
                 'scheduled_at' => $scheduled_at,
                 'item_id' => $equipment['item_id'],
+                'serial' => $equipment['serial_number'],
                 'date_installed' => $date_installed,
                 'status' => is_null($frequency) ? PM::NotSet : PM::Scheduled,
+                'work_type' => 'PM',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);

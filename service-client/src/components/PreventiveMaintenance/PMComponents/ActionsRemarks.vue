@@ -1,6 +1,11 @@
 <template>
 
-    <v-card class="p-3 mt-3" elevation="0" style="border: 1px dashed #191970" title="Actions Taken">
+    <v-card density="compact" class="p-3 mt-3" elevation="0" style="border: 1px dashed #191970">
+        <v-row>
+            <v-col class="d-flex justify-content-between">
+                <h5 class="text-primary">Actions Taken</h5>
+            </v-col>
+        </v-row>
         <v-list>
 
             <v-list-item v-for="data in actions" :key="data" v-if="actions.length > 0">
@@ -58,14 +63,18 @@
         </template>
     </v-card>
 
-    <v-card class="p-3 mt-3" elevation="0" style="border: 1px dashed #191970" title="Remarks & Recommendation">
+    <v-card class="p-3 mt-3" elevation="0" style="border: 1px dashed #191970">
+        <v-row>
+            <v-col class="d-flex justify-content-between">
+                <h5 class="text-primary">Remarks & Recommendation</h5>
+            </v-col>
+        </v-row>
         <v-col col="12">
-            <v-col cols="12">
                 <v-textarea v-model="formData.remarks" @input="inputRemarks" color="primary"
                     :variant="currentRole === pub_var.engineerRole && status === m_var.InProgress ? 'underlined' : 'plain'"
                     placeholder="Type your remarks & recommendations here ..."
                     :readonly="currentRole === pub_var.engineerRole && status === m_var.InProgress ? false : true"></v-textarea>
-            </v-col>
+           
         </v-col>
     </v-card>
 

@@ -1,10 +1,16 @@
 <template>
-    <v-card class="p-3 mt-3" elevation="0" style="border: 1px dashed #191970" title="Service Provider Details">
+    <v-row>
+        <v-col cols="12" class="d-flex justify-content-end">
+            <v-chip variant="tonal" color="grey lighten-5" label><span class="text-dark mr-2">Status:</span>
+                <span :style="{ color: m_var.status_pm(status).color }">{{ m_var.status_pm(status).text
+                    }}</span></v-chip>
+        </v-col>
+    </v-row>
+    <v-card class="mt-3" elevation="0" style="border: 1px dashed #191970">
         <v-col cols="12">
             <v-row>
-                <v-col cols="12" lg="6" md="6" sm="6">
-                    <v-text-field v-model="status" color="primary" variant="outlined" density="compact"
-                        label="Task Status" placeholder="Task Status" :readonly="true"></v-text-field>
+                <v-col cols="12">
+                    <h5 class="text-primary">Service Provider Details</h5>
                 </v-col>
             </v-row>
             <v-row>
@@ -13,8 +19,9 @@
                         label="Delegated to" placeholder="Delegated to" :readonly="textDisable"></v-text-field>
                 </v-col>
                 <v-col cols="12" lg="6" md="6" sm="6">
-                    <v-text-field v-model="formData.delegation_date" color="primary" variant="outlined" density="compact"
-                        label="Delegation Date" placeholder="Delegation Date" :readonly="textDisable"></v-text-field>
+                    <v-text-field v-model="formData.delegation_date" color="primary" variant="outlined"
+                        density="compact" label="Delegation Date" placeholder="Delegation Date"
+                        :readonly="textDisable"></v-text-field>
                 </v-col>
             </v-row>
             <v-row>
@@ -29,8 +36,8 @@
                         label="Date Out" placeholder="Date Out" :readonly="textDisable"></v-text-field>
                 </v-col>
                 <v-col cols="12" lg="6" md="6" sm="6">
-                    <v-text-field v-model="formData.travel_time" color="primary" variant="outlined"
-                        density="compact" label="Travel Time" placeholder="Travel Time" :readonly="textDisable"></v-text-field>
+                    <v-text-field v-model="formData.travel_time" color="primary" variant="outlined" density="compact"
+                        label="Travel Time" placeholder="Travel Time" :readonly="textDisable"></v-text-field>
                 </v-col>
             </v-row>
             <v-row>
@@ -53,6 +60,9 @@
 import { ref, inject, onMounted, watch } from 'vue'
 import * as pub_var from '@/global/global'
 import * as m_var from '@/global/maintenance'
+
+import { useDisplay } from 'vuetify'
+const { width } = useDisplay()
 
 const textDisable = ref(true)
 
@@ -77,13 +87,13 @@ watch(pm_data, (pm) => {
         formData.value = {
             engineer: `${user.first_name || ''} ${user.last_name || ''}`.trim() || '--',
             delegation_date: pub_var.formatDate(pm_data.delegation_date) || '--',
-            date_accepted:  pub_var.formatDate(pm_data.date_accepted) || '--',
-            date_out:  pub_var.formatDate(pm_data.departed_date) || '--',
+            date_accepted: pub_var.formatDate(pm_data.date_accepted) || '--',
+            date_out: pub_var.formatDate(pm_data.departed_date) || '--',
             travel_time: pm_data.travel_duration || '--',
             time_in: pub_var.formatDate(pm_data.start_date) || '--',
             time_out: pub_var.formatDate(pm_data.end_date) || '--',
         };
-        status.value = m_var.status_pm(pm_data.status).text || '---'
+        status.value = pm_data.status || '---'
     }
 }, { immediate: true })
 onMounted(() => {

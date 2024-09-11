@@ -3,9 +3,10 @@
         <v-app-bar>
             <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-            <v-app-bar-title>Service <span style="color:#191970;font-weight:700;">webApp</span></v-app-bar-title>
-            <v-spacer></v-spacer>
-            <topBarUserProfile />
+            <v-app-bar-title :style="{ display: width <= 426  ? 'none' : '' }">Service <span style="color:#191970;font-weight:700;">webApp</span></v-app-bar-title>
+            <p :style="{ display: width <= 426  ? 'block' : 'none' }">service<span style="color:#191970;font-weight:700;">App</span></p>
+            
+        <v-spacer></v-spacer><topBarUserProfile />
         </v-app-bar>
 
         <v-navigation-drawer v-model="drawer">
@@ -26,6 +27,9 @@
 import { ref } from 'vue'
 import BaseSidebar from '../Sidebars/BaseSidebar.vue';
 import topBarUserProfile from './LayoutParts/topBarUserProfile.vue';
+
+import { useDisplay } from 'vuetify'
+const { width } = useDisplay()
 
 const drawer = ref(null)
 </script>

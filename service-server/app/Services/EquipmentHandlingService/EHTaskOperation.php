@@ -20,7 +20,8 @@ class EHTaskOperation
         $getUserSSU = RoleUser::where(['user_id' => $user_id, 'role_id' => 2])->first();
         $approval_level = $getApprovalLevel->approval_level ?? 0;
 
-        $query = EH::select('equipment_handling.*', 'i.name', 'i.address', 'i.area', 'u.first_name', 'u.last_name', 'iE.name as request_name', 'a.approver_level', 'a.approver_name')
+        $query = EH::select('equipment_handling.*', 'i.name', 'i.address', 'i.area', 'u.first_name', 'u.last_name', 
+            DB::raw("CONCAT(u.first_name,' ',u.last_name) as user_name"), 'iE.name as request_name', 'a.approver_level', 'a.approver_name')
             ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'equipment_handling.requested_by', '=', 'u.id')
             ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
             ->leftjoin('internal_external_requests as iE', 'equipment_handling.request_type', '=', 'iE.id')
@@ -62,10 +63,4 @@ class EHTaskOperation
             'count' => $count
         ];
     }
-
-
-    /**
-     * Equipment Handling - Approve Request
-     */
-    public function approveEquipmentHandlingRequest() {}
 }

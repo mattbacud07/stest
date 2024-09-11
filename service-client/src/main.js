@@ -29,6 +29,10 @@ import "vuetify/styles";
 import ToastPlugin from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-bootstrap.css'
 
+/** Export Excel */
+import JsonExcel from 'vue-json-excel3'
+
+
 
 const icons = {
     defaultSet: 'mdi',
@@ -59,6 +63,7 @@ const vuetify = createVuetify({
 
 const app = createApp(App)
 
+app.component("downloadExcel", JsonExcel);
 app.use(createPinia())
 app.use(vuetify)
 app.use(ToastPlugin)

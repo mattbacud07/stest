@@ -11,6 +11,7 @@ use App\Models\WorkOrder\InternalRequest;
 use App\Services\ActionsDoneService;
 use App\Services\ApprovalService;
 use App\Services\PM\GeneratePMSched;
+use App\Services\SendNotification;
 use App\Traits\GlobalVariables;
 use Carbon\Carbon;
 use Exception;
@@ -28,11 +29,18 @@ class EhMainApproverController extends Controller
     protected $approvalService;
     protected $generatePMSched;
     protected $action;
-    public function __construct(ApprovalService $approvalService, GeneratePMSched $generatePMSched, ActionsDoneService $actions)
+    protected $sendNotification;
+    public function __construct(
+        ApprovalService $approvalService,
+        GeneratePMSched $generatePMSched,
+        ActionsDoneService $actions,
+        SendNotification $sendNotification
+    )
     {
         $this->approvalService = $approvalService;
         $this->generatePMSched = $generatePMSched;
         $this->action = $actions;
+        $this->sendNotification = $sendNotification;
     }
 
 

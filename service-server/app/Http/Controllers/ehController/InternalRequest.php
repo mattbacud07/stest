@@ -72,24 +72,6 @@ class InternalRequest extends Controller
         }
     }
 
-
-    /** Check if service_id already exist in Internal Request table */
-    // public function checkIfDelegated(Request $request)
-    // {
-    //     $check_serviceId = WOInternalRequest::where('service_id', $request->service_id)
-    //         ->where('status', self::internalStat['Delegated'])
-    //         ->first();
-    //     $exist = null;
-    //     if ($check_serviceId) {
-    //         $exist = true;
-    //     }
-    //     return response()->json([
-    //         'exist_service_id' => $exist,
-    //     ]);
-    // }
-
-
-
     /**
      * Get All Internal Servicing Request for Specific User
      */
@@ -97,9 +79,15 @@ class InternalRequest extends Controller
     {
         $user_id = $request->user_id;
         try {
+            $userRoleID = [2];  //2 = 'Team Leader' 3 = 'Engineer'
+            $getUserSSU = RoleUser::where('user_id', $user_id)
+            ->whereIn('role_id', $userRoleID)
+            ->get();
+
             $get_request = WOInternalRequest::with(['equipment_handling' => function ($query) {
                 $query->select(
                     'equipment_handling.id',
+                    'equipment_handling.ssu',
                     'institution',
                     'proposed_delivery_date',
                     'equipment_handling.created_at',
@@ -108,14 +96,22 @@ class InternalRequest extends Controller
                     ->join(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'i.id', '=', 'equipment_handling.institution');
             }])
                 ->with('internal_external_name')
-                ->with('getUser');
+                ->with(['getUser' => function($q){
+                    $q->select(
+                        'id',
+                        'first_name',
+                        'last_name'
+                    );
+                }]);
 
 
             if ($request->has('category') && $request->category === 'specificUser') {
                 $get_request->where('delegated_to', $user_id);
-            } elseif ($request->has('category') && $request->category === 'specificRow') {
+            } 
+            if ($request->has('category') && $request->category === 'specificRow') {
                 $get_request->where('id', $request->id);
-            } elseif ($request->has('category') && $request->category === 'specificRowServicing') {
+            } 
+            if ($request->has('category') && $request->category === 'specificRowServicing') {
                 $get_request->where('id', $request->id);
                 $get_request->with(['actions_done' => function ($query) {
                     $query->where('work_type', 'Internal');
@@ -129,7 +125,8 @@ class InternalRequest extends Controller
                         ->join(DB::connection('mysqlSecond')->getDatabaseName() . '.master_data as m', 'm.id', '=', 'equipment_peripherals.item_id');
                     $query->where('category', 'Equipment');
                 }]);
-            } elseif ($request->has('category') && $request->category === 'specificService') {
+            } 
+            if ($request->has('category') && $request->category === 'specificService') {
                 $get_request->where('service_id', $request->service_id);
             }
 
@@ -137,14 +134,30 @@ class InternalRequest extends Controller
 
             /** Depends on Loggedin Roles */
             if($request->has('category') && $request->category === 'delegated_to'){
+                $statusArrayToShow = [
+                    self::internalStat['Delegated'],
+                    self::internalStat['Accepted'],
+                    self::internalStat['InProgress'],
+                ];
                 $get_request->where('delegated_to', $user_id);
+                $get_request->whereIn('status', $statusArrayToShow);
             }
             if($request->has('category') && $request->category === Roles::WIMRole){
                 $get_request->where('status', self::internalStat['Packed']);
             }
+            
+            
+            // if($request->has('category') && $request->category === Roles::TLRole){
+            //     $getTLSSU = $getUserSSU->filter(function ($val) {
+            //         return $val['role_id'] === 2;
+            //     })->map(function ($val) {
+            //         return $val['SSU'];
+            //     });
 
-
-
+            //     $get_request->whereHas('equipment_handling', function($q) use ($getTLSSU){
+            //         $q->whereIn('ssu', $getTLSSU);
+            //     });
+            // }
 
 
             /** Data Filtering  */
@@ -165,6 +178,7 @@ class InternalRequest extends Controller
                     $q->whereIn('institution', $filterInstitution);
                 });
             }
+
             $get_request = $get_request->get();
 
             // $queries = DB::getQueryLog();

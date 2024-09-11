@@ -2,11 +2,12 @@
     <LayoutSinglePage>
         <template #topBarFixed>
             <v-breadcrumbs class="pt-7">
-                <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
-                    :class="{ 'custom-pointer': !item.disabled }" @click="navigateTo(item)" :disabled="item.disabled">
-                    {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
-                </v-breadcrumbs-item>
-            </v-breadcrumbs>
+                        <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
+                            :class="{ 'custom-pointer': !item.disabled} " :style="{'display' : width <= 768 ? item.display : ''}" @click="navigateTo(item)"
+                            :disabled="item.disabled">
+                            {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
+                        </v-breadcrumbs-item>
+                    </v-breadcrumbs>
             <v-spacer></v-spacer>
 
             <!-- Actions for Engineers -->
@@ -83,7 +84,7 @@
                     <v-btn type="button" :loading="btnSubmitLoading"  @click="markAsPackedEndorsed"
                         :disabled="btnDisable" color="primary" variant="flat" class="text-none btnSubmit"><v-icon
                             class="mr-2">mdi-check</v-icon>
-                        Mark as Packed & Endorsed to Warehouse</v-btn>
+                        Packed & Sent to Warehouse</v-btn>
                 </span>
             </div>
             <!-- Actions for WIM Personnel -->
@@ -100,7 +101,7 @@
         <v-form ref="form"> <!--@submit.prevent="submitWorkOrder" ref="form" -->
 
             <template #default>
-                <v-container class="container-form mt-3">
+                <v-container class="container-form mt-7">
                     <InternalServicingActivity :id="parseInt(internalId)" :key="refreshKey"/>
                     <h4 class="text-primary mt-5">Request Details</h4>
                     <RequestDetails :service_id="parseInt(service_id)" /> <!-- @set-status="getStatus"  -->
@@ -133,15 +134,18 @@ import * as pub_var from '@/global/global.js'
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 import InternalServicingActivity from '@/components/Approver/EH/InternalServicingActivity.vue'
 
+import { useDisplay } from 'vuetify'
+const { width } = useDisplay()
+
 /** Toast Notification */
 import {useToast} from 'vue-toast-notification'
 const toast = useToast()
 
 
 const breadcrumbItems = [
-    { title: 'Back', disabled: false, href: '/internal-servicing' },
-    { title: 'Equipment Handling', disabled: true, href: '' },
-    { title: 'Internal Servicing', disabled: true, href: '' },
+    { title: 'Back', disabled: false, href: '/internal-servicing', display : 'block' },
+    { title: 'Equipment Handling', disabled: true, href: '', display : 'none' },
+    { title: 'Internal Servicing', disabled: true, href: '', display : 'none' },
 ]
 const navigateTo = (item) => {
     if (!item.disabled && item.href) {

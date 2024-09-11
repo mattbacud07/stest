@@ -103,12 +103,10 @@
                     <v-col cols="12">
                         <div class="d-flex justify-space-between">
                             <div class="mt-5">
-                                <b>
-                                    Internal Status : <span class="text-success">
+                                    Internal Status : <br/><span class="text-success">
                                         {{ getInternalStatus === pub_var.internalStat.Delegated ? 'Waiting for Acceptance'
                 : pub_var.internalStatus(getInternalStatus).text }} 
                                     </span>
-                                </b>
                             </div>
                             <div class="me-4 text-disabled text-right">{{ pub_var.formatDate(getInternalDateTimeUpdated) }}<br/>
                                 <span class="small text-disabled" v-if="getInternalStatus === pub_var.internalStat.ConfirmedByWIM">Task completed by [<b>{{ CurrentlyDelegatedTo }}</b>]</span>
@@ -116,7 +114,7 @@
                         </div>
                         
                         <span class="small text-grey" 
-                                            v-if="internalStatus === pub_var.internalStat.ConfirmedByWIM">Internal
+                                            v-if="getInternalStatus === pub_var.internalStat.ConfirmedByWIM">Internal
                                             Process Completed</span>
                     </v-col>
                 </v-row>
@@ -217,7 +215,8 @@
                     <div>
                         <strong>Completed <i>(Installed)</i></strong>
                         <div class="text-caption">
-                            <span class="text-success">{{ fname }} {{ lname }} <span v-if="date_installed !== '' || date_installed !== null">(Assigned Engineer)</span></span>
+                            <!-- <span v-if="date_installed !== '' || date_installed !== null">(Assigned Engineer)</span> -->
+                            <span class="text-primary"><i v-if="date_installed !== ''">Installer : </i>{{ fname }} {{ lname }}</span>
                         </div>
                     </div>
                     <span v-if="date_installed !== ''" class="d-flex flex-column text-right timeRemarks">

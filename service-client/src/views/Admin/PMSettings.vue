@@ -1,130 +1,146 @@
 <template>
     <BaseLayout>
         <v-card class="p-4">
-            <v-row>
-                <v-col cols="12" lg="6" md="6" sm="12">
-                    <v-row>
-                        <v-col cols="4">
-                            <v-text-field color="primary" v-model="params.search" clearable density="compact"
-                                label="Search all fields" variant="outlined"></v-text-field>
-                        </v-col>
-                        <v-col cols="8" style="text-align: right;">
-                            <v-dialog v-model="dialog" max-width="400" persistent>
-                                <template v-slot:activator="{ props: activatorProps }">
-                                    <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" elevation="1"
-                                        class="text-none mr-2"><v-icon class="mr-2">mdi-calendar-arrow-right</v-icon>
-                                        Set</v-btn>
-                                </template>
-                                <v-card text="" title="Set PM Schedule">
-                                    <v-col cols="12" class="fix-item">
-                                        <v-form @submit.prevent="saveSched" ref="form">
-                                            <v-select v-model="frequency" :rules="rules.frequency" color="primary" clearable
-                                                label="Schedule" variant="outlined" density="compact"
-                                                :items="pub_maintenance.pmFrequency"></v-select>
-                                            <v-row>
-                                                <v-col cols="8">
-                                                    <v-text-field variant="filled" placeholder="Item Code"
-                                                        density="compact" readonly v-model="item_code"
-                                                        color="primary"></v-text-field>
-                                                </v-col>
-                                                <v-col cols="4">
-                                                    <v-text-field variant="filled" placeholder="Equipment #"
-                                                        density="compact" :rules="rules.id" readonly
-                                                        v-model="equipmentId" color="primary"></v-text-field>
-                                                </v-col>
-                                            </v-row>
-                                            <v-divider></v-divider>
-                                            <v-row justify="end" class="p-3">
-                                                <v-btn elevation="0" @click="dialog = false" class="text-none mr-2">
-                                                    Cancel</v-btn>
-                                                <v-btn type="submit" color="primary" title="Submit" class="text-none"
-                                                    :loading="loadingSubmit">
-                                                    Save</v-btn>
-                                            </v-row>
-                                        </v-form>
-                                    </v-col>
-                                </v-card>
-                            </v-dialog>
-                        </v-col>
-                    </v-row>
-                    <p style="color: #B00020;" class="font-weight-thin">* Select one record to set</p>
-                    <v-row>
-                        <v-col cols="12"> <!-- :hasCheckbox="true" -->
-                            <vue3-datatable ref="dataTable" :rows="rows" :columns="cols" :loading="loading"
-                                :search="params.search" :isServerMode="true" :totalRows="total_rows"
-                                :pageSize="params.pagesize" :hasCheckbox="true" :selectRowOnClick="true"
-                                :sortable="true" skin="bh-table-compact bh-table-bordered" class="set_approver_tables"
-                                @rowSelect="rowSelection" @change="changeServer">
-                                <template #first_name="data">
-                                    {{ data.value.first_name }} {{ data.value.last_name }}
-                                </template>
-                            </vue3-datatable>
-                        </v-col>
-                    </v-row>
-                </v-col>
-                <v-col cols="12" lg="6" md="6" sm="12" >
-                    <v-row>
-                        <v-col cols="4">
-                            <v-text-field color="primary" v-model="params.searchEdit" clearable density="compact"
-                                label="Search all fields" variant="outlined"></v-text-field>
-                        </v-col>
-                        <v-col cols="8" style="text-align: right;">
-                            <v-dialog v-model="dialogEdit" max-width="400" persistent>
-                                <template v-slot:activator="{ props: activatorProps }">
-                                    <v-btn :disabled="btnDisableEdit" v-bind="activatorProps" color="primary"
-                                        elevation="1" class="text-none mr-2"><v-icon class="mr-2">mdi-file-edit</v-icon>
-                                        Edit</v-btn>
-                                </template>
-                                <v-card text="" title="Set PM Schedule">
-                                    <v-col cols="12" class="fix-item">
-                                        <v-form @submit.prevent="saveSchedEdit" ref="formEdit">
-                                            <v-select v-model="frequencyEdit" :rules="rules.frequencyEdit" color="primary"
-                                                clearable label="Schedule" variant="outlined" density="compact"
-                                                :items="pub_maintenance.pmFrequency"></v-select>
-                                            <v-row class="mt-3">
-                                                <v-col cols="8">
-                                                    <v-text-field variant="filled" placeholder="Item Code"
-                                                        density="compact" readonly v-model="item_code_edit"
-                                                        color="primary"></v-text-field>
-                                                </v-col>
-                                                <v-col cols="4">
-                                                    <v-text-field variant="filled" placeholder="Equipment #"
-                                                        density="compact" :rules="rules.idEdit" readonly
-                                                        v-model="equipmentIdEdit" color="primary"></v-text-field>
-                                                </v-col>
-                                            </v-row>
+            <v-tabs v-model="tab" density="compact" class="border-b-sm" bg-color="grey-lighten-5">
+                <v-tab value="set" class="text-none" color="primary"><v-icon class="mr-2">mdi-set-split</v-icon>
+                    Set Frequency</v-tab>
+                <v-tab value="edit" class="text-none" color="primary"><v-icon
+                        class="mr-2">mdi-archive-edit-outline</v-icon> Edit Frequency</v-tab>
+            </v-tabs>
 
-                                            <v-divider></v-divider>
-                                            <v-row justify="end" class="p-3">
-                                                <v-btn elevation="0" @click="dialogEdit = false" class="text-none mr-2">
-                                                    Cancel</v-btn>
-                                                <v-btn type="submit" color="primary" title="Submit" class="text-none"
-                                                    :loading="loadingSubmit">
-                                                    Save</v-btn>
-                                            </v-row>
-                                        </v-form>
-                                    </v-col>
-                                </v-card>
-                            </v-dialog>
-                        </v-col>
-                    </v-row>
-                    <p style="color: #B00020;" class="font-weight-thin">Set Scheduled</p>
-                    <v-row>
-                        <v-col cols="12"> <!-- :hasCheckbox="true" -->
-                            <vue3-datatable ref="dataTableEdit" :rows="rowsEdit" :columns="colsEdit"
-                                :loading="loadingEdit" :search="params.searchEdit" :hasCheckbox="true"
-                                :sortDirection="params.sortDirection" :selectRowOnClick="true" :sortable="true"
-                                skin="bh-table-compact bh-table-bordered" class="set_approver_tables"
-                                @rowSelect="rowSelectionEdit">
-                                <template #first_name="data">
-                                    {{ data.value.first_name }} {{ data.value.last_name }}
-                                </template>
-                            </vue3-datatable>
-                        </v-col>
-                    </v-row>
-                </v-col>
-            </v-row>
+            <v-card-text>
+                <v-window v-model="tab" :disabled="true">
+                    <v-window-item value="set">
+                        <v-row>
+                            <v-col cols="4" xl="8" md="8" sm="8" style="text-align: left;">
+                                <v-dialog v-model="dialog" max-width="400" persistent>
+                                    <template v-slot:activator="{ props: activatorProps }">
+                                        <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary"
+                                            variant="tonal" class="text-none mr-2"><v-icon
+                                                class="mr-2">mdi-calendar-arrow-right</v-icon>
+                                            Set</v-btn>
+                                    </template>
+                                    <v-card text="" title="Set PM Frequency">
+                                        <v-col cols="12" class="fix-item">
+                                            <v-form @submit.prevent="saveSched" ref="form">
+                                                <v-select v-model="frequency" :rules="rules.frequency" color="primary"
+                                                    clearable label="Schedule" variant="outlined" density="compact"
+                                                    :items="pub_maintenance.pmFrequency"></v-select>
+                                                <v-row>
+                                                    <v-col cols="8">
+                                                        <v-text-field variant="filled" placeholder="Item Code"
+                                                            density="compact" readonly v-model="item_code"
+                                                            color="primary"></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="4">
+                                                        <v-text-field variant="filled" placeholder="Equipment #"
+                                                            density="compact" :rules="rules.id" readonly
+                                                            v-model="equipmentId" color="primary"></v-text-field>
+                                                    </v-col>
+                                                </v-row>
+                                                <v-divider></v-divider>
+                                                <v-row justify="end" class="p-3">
+                                                    <v-btn elevation="0" @click="dialog = false" class="text-none mr-2">
+                                                        Cancel</v-btn>
+                                                    <v-btn type="submit" color="primary" title="Submit"
+                                                        class="text-none" :loading="loadingSubmit">
+                                                        Save</v-btn>
+                                                </v-row>
+                                            </v-form>
+                                        </v-col>
+                                    </v-card>
+                                </v-dialog>
+                            </v-col>
+                            <v-col cols="8" xl="4" md="4" sm="4">
+                                <v-text-field color="primary" v-model="params.search" clearable density="compact"
+                                    label="Search all fields" variant="outlined"></v-text-field>
+                            </v-col>
+                        </v-row>
+
+                        <v-row>
+                            <v-col cols="12"> <!-- :hasCheckbox="true" -->
+                                <vue3-datatable ref="dataTable" :rows="rows" :columns="cols" :loading="loading"
+                                    :search="params.search" :isServerMode="true" :totalRows="total_rows"
+                                    :pageSize="params.pagesize" :hasCheckbox="true" :selectRowOnClick="true"
+                                    :sortable="true" skin="bh-table-compact bh-table-bordered"
+                                    class="set_approver_tables" @rowSelect="rowSelection" @change="changeServer">
+                                    <template #first_name="data">
+                                        {{ data.value.first_name }} {{ data.value.last_name }}
+                                    </template>
+                                </vue3-datatable>
+                            </v-col>
+                        </v-row>
+                    </v-window-item>
+
+                    <v-window-item value="edit">
+                        <v-row>
+                            <v-col cols="4" xl="8" md="8" sm="8" style="text-align: left;">
+                                <v-dialog v-model="dialogEdit" max-width="400" persistent>
+                                    <template v-slot:activator="{ props: activatorProps }">
+                                        <v-btn :disabled="btnDisableEdit" v-bind="activatorProps" color="primary"
+                                            variant="tonal" class="text-none mr-2"><v-icon
+                                                class="mr-2">mdi-file-edit</v-icon>
+                                            Edit</v-btn>
+                                    </template>
+                                    <v-card text="" title="Set PM Frequency">
+                                        <v-col cols="12" class="fix-item">
+                                            <v-form @submit.prevent="saveSchedEdit" ref="formEdit">
+                                                <v-select v-model="frequencyEdit" :rules="rules.frequencyEdit"
+                                                    color="primary" clearable label="Schedule" variant="outlined"
+                                                    density="compact" :items="pub_maintenance.pmFrequency"></v-select>
+                                                <v-row class="mt-3">
+                                                    <v-col cols="8">
+                                                        <v-text-field variant="filled" placeholder="Item Code"
+                                                            density="compact" readonly v-model="item_code_edit"
+                                                            color="primary"></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="4">
+                                                        <v-text-field variant="filled" placeholder="Equipment #"
+                                                            density="compact" :rules="rules.idEdit" readonly
+                                                            v-model="equipmentIdEdit" color="primary"></v-text-field>
+                                                    </v-col>
+                                                </v-row>
+
+                                                <v-divider></v-divider>
+                                                <v-row justify="end" class="p-3">
+                                                    <v-btn elevation="0" @click="dialogEdit = false"
+                                                        class="text-none mr-2">
+                                                        Cancel</v-btn>
+                                                    <v-btn type="submit" color="primary" title="Submit"
+                                                        class="text-none" :loading="loadingSubmit">
+                                                        Save</v-btn>
+                                                </v-row>
+                                            </v-form>
+                                        </v-col>
+                                    </v-card>
+                                </v-dialog>
+                            </v-col>
+                            <v-col cols="8" xl="4" md="4" sm="4">
+                                <v-text-field color="primary" v-model="params.searchEdit" clearable density="compact"
+                                    label="Search all fields" variant="outlined"></v-text-field>
+                            </v-col>
+                        </v-row>
+
+                        <v-row>
+                            <v-col cols="12"> <!-- :hasCheckbox="true" -->
+                                <vue3-datatable ref="dataTableEdit" :rows="rowsEdit" :columns="colsEdit"
+                                    :loading="loadingEdit" :search="params.searchEdit" :hasCheckbox="true"
+                                    :sortDirection="params.sortDirection" :selectRowOnClick="true" :sortable="true"
+                                    skin="bh-table-compact bh-table-bordered" class="set_approver_tables"
+                                    @rowSelect="rowSelectionEdit">
+                                    <template #first_name="data">
+                                        {{ data.value.first_name }} {{ data.value.last_name }}
+                                    </template>
+                                </vue3-datatable>
+                            </v-col>
+                        </v-row>
+                    </v-window-item>
+                </v-window>
+            </v-card-text>
         </v-card>
+        <v-tabs>
+
+        </v-tabs>
     </BaseLayout>
 </template>
 
@@ -142,8 +158,12 @@ import debounce from 'lodash/debounce'
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
+import { useDisplay } from 'vuetify'
+const { width } = useDisplay()
+
+const tab = ref(null)
 /** Toast Notification */
-import {useToast} from 'vue-toast-notification'
+import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
 const user = user_data()
@@ -347,3 +367,10 @@ onMounted(() => {
 })
 
 </script>
+
+
+<style scoped>
+.v-tab-item--selected{
+    background: red!important;
+}
+</style>

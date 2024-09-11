@@ -1,74 +1,103 @@
 <template>
-     <!-- <v-skeleton-loader v-if="loadingSkeletonInternalServicing" type="article"
+    <!-- <v-skeleton-loader v-if="loadingSkeletonInternalServicing" type="article"
      class="mb-2"></v-skeleton-loader> -->
-    <div class="bg-grey-lighten-3 rounded p-3 border-dashed border-sm border-primary">
-        <v-row class="p-3">
-            <h5 class="mb-2" style="font-weight: 700;color: #191970;"><span>Service Department - Internal
-                    Servicing</span></h5>
-            <v-spacer></v-spacer>
-            <span v-if="getInternalStatus !== null">
-                * Delegated to {{ CurrentlyDelegatedTo }}
-                <i class="text-red">
-                    (Status : {{ getInternalStatus === pub_var.internalStat.Delegated ? 'Waiting for Acceptance' :
-                pub_var.internalStatus(getInternalStatus).text }})
-                </i>
-            </span>
+    <div class="bg-grey-lighten-5 rounded p-4 border-dashed border-sm">
+        <v-row>
+            <v-col cols="12">
+                <h5 style="font-weight: 500;color: #191970;"><span>Service Department - Internal
+                        Servicing</span></h5>
+            </v-col>
         </v-row>
-        <!-- Approve Button -->
-        <v-dialog v-model="dialogInternalRequest" max-width="500" persistent>
-            <template v-slot:activator="{ props: activatorProps }">
-                <v-btn type="button" elevation="0" size="small" v-bind="activatorProps"
-                    
-                    color="primary" class="text-none btnSubmit mt-3 rounded-0">
-                    <!-- :disabled="getInternalStatus !== null || getInternalStatus !== pub_var.internalStat.Declined ? true : false" -->
-                    <v-icon class="mr-2">mdi-check</v-icon>
-                    Start</v-btn>
-            </template>
+        <!-- Delegate Button Button -->
+        <v-col cols="12" v-if="internalServicing && !internalServicing?.get_user?.id">
+            <v-dialog v-model="dialogInternalRequest" max-width="500" persistent>
+                <template v-slot:activator="{ props: activatorProps }">
+                    <v-btn type="button" variant="tonal" v-bind="activatorProps" color="primary"
+                        class="text-none btnSubmit mt-3">
+                        <v-icon class="mr-2">mdi-transfer-right</v-icon>
+                        Start</v-btn>
+                </template>
 
-            <v-card>
-                <v-form @submit.prevent="delegateInternalServicing" ref="form">
-                    <v-col cols="12">
-                        <h5 class="mt-3" style="font-weight: 700;color: #191970;">Internal Servicing</h5>
-                        <v-divider></v-divider>
-                        <v-radio-group v-model="type_of_activity" :rules="rule_type_of_activity"
-                            :readonly="disable_type_of_activity">
-                            <v-radio color="primary" label="For Corrective" value="7"></v-radio>
-                            <v-radio color="primary" label="For Refurbishment" value="8"></v-radio>
-                            <v-radio color="primary" label="For Quality Control" value="9"></v-radio>
-                            <v-radio color="primary" label="Training Purposes" value="10"></v-radio>
-                            <v-radio color="primary" label="For Disposal" value="11"></v-radio>
-                            <v-radio color="primary" label="Other" value="12"></v-radio>
-                        </v-radio-group>
-                        <v-text-field v-if="showOther" :rules="rule_other" v-model="other"
-                            :readonly="disable_type_of_activity" density="compact" variant="outlined"
-                            label="Other Request"></v-text-field>
+                <v-card>
+                    <v-form @submit.prevent="delegateInternalServicing" ref="form">
+                        <v-col cols="12">
+                            <h5 class="mt-3" style="font-weight: 500;color: #191970;">Internal Servicing</h5>
+                            <v-divider></v-divider>
+                            <v-radio-group v-model="type_of_activity" :rules="rule_type_of_activity"
+                                :readonly="disable_type_of_activity">
+                                <v-radio color="primary" label="For Corrective" value="7"></v-radio>
+                                <v-radio color="primary" label="For Refurbishment" value="8"></v-radio>
+                                <v-radio color="primary" label="For Quality Control" value="9"></v-radio>
+                                <v-radio color="primary" label="Training Purposes" value="10"></v-radio>
+                                <v-radio color="primary" label="For Disposal" value="11"></v-radio>
+                                <v-radio color="primary" label="Other" value="12"></v-radio>
+                            </v-radio-group>
+                            <v-text-field v-if="showOther" :rules="rule_other" v-model="other"
+                                :readonly="disable_type_of_activity" density="compact" variant="outlined"
+                                label="Other Request"></v-text-field>
 
-                        <v-combobox color="primary" class="mt-5" v-model="Engineers" :rules="rule_engineers" clearable
-                            label="Delegate to" placeholder="Delegate to" density="compact" :items="engineersData"
-                            variant="outlined" itemValue="value" itemTitle="key"></v-combobox>
-                    </v-col>
+                            <v-combobox color="primary" class="mt-5" v-model="Engineers" :rules="rule_engineers"
+                                clearable label="Delegate to" placeholder="Delegate to" density="compact"
+                                :items="engineersData" variant="outlined" itemValue="value"
+                                itemTitle="key"></v-combobox>
+                        </v-col>
 
-                    <v-divider class="mb-5"></v-divider>
-                    <!-- <template v-slot:actions> -->
-                    <v-row justify="end" class="mb-3">
-                        <v-btn elevation="2" @click="dialogInternalRequest = false" background-color="red" size="small"
-                            class="text-none mr-2"><v-icon>mdi-close</v-icon>
-                            Cancel</v-btn>
-                        <v-btn type="submit" size="small" :loading="btnLoading" :disabled="btnDisable" color="#191970"
-                            class="text-none bg-primary mr-5"><v-icon class="mr-2">mdi-check</v-icon>
-                            Delegate</v-btn>
-                    </v-row>
-                    <!-- </template> -->
-                </v-form>
-            </v-card>
-        </v-dialog>
+                        <v-divider class="mb-5"></v-divider>
+                        <!-- <template v-slot:actions> -->
+                        <v-row justify="end" class="mb-3">
+                            <v-btn elevation="2" @click="dialogInternalRequest = false" background-color="red"
+                                size="small" class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                Cancel</v-btn>
+                            <v-btn type="submit" size="small" :loading="btnLoading" :disabled="btnDisable"
+                                color="#191970" class="text-none bg-primary mr-5"><v-icon
+                                    class="mr-2">mdi-check</v-icon>
+                                Delegate</v-btn>
+                        </v-row>
+                        <!-- </template> -->
+                    </v-form>
+                </v-card>
+            </v-dialog>
+        </v-col>
+        <v-row v-if="internalServicing && internalServicing.status">
+            <v-col cols="12" xl="8" md="8" sm="8">
+                <p><span class="text-dark mr-2">Status:</span>
+                    <span :style="{ color: pub_var.internalStatus(internalServicing.status).color }">
+                        {{ internalServicing.status === pub_var.internalStat.Delegated ? 'Waiting for Acceptance' :
+                            pub_var.internalStatus(internalServicing.status).text }}
+                    </span>
+                </p>
+            </v-col>
+            <v-col cols="12" xl="4" md="4" sm="4">
+                <p class="d-flex align-items-center"><span class="text-grey">Delegated to:</span> <span
+                        class="ml-2 text-dark">{{ internalServicing.get_user.first_name }} {{
+                            internalServicing.get_user.last_name }}</span></p>
+            </v-col>
+            <v-col cols="12" xl="4" md="4" sm="4">
+                <label class="text-grey">Delegation Date</label>
+                <p class="mt-2">{{ formatDate(internalServicing.delegation_date) }}</p>
+            </v-col>
+            <v-col cols="12" xl="4" md="4" sm="4">
+                <label class="text-grey">Date Started</label>
+                <p class="mt-2">{{ formatDate(internalServicing.date_started) }}</p>
+            </v-col>
+            <v-col cols="12" xl="4" md="4" sm="4">
+                <label class="text-grey">Date Accomplished</label>
+                <p class="mt-2">{{ formatDate(internalServicing.accomplished_date) }}</p>
+            </v-col>
+            <v-col cols="12" xl="4" md="4" sm="8">
+                <label class="text-grey">Packed & Endorsed to Warehouse</label>
+                <p class="mt-2">{{ internalServicing.packed_endorse_to_warehouse ? 'Yes' : '--' }}</p>
+            </v-col>
+            <v-col cols="12" xl="4" md="4" sm="4">
+                <label class="text-grey">Endorsement Date</label>
+                <p class="mt-2">{{ formatDate(internalServicing.endorsement_date) }}</p>
+            </v-col>
+            <v-col cols="12" xl="4" md="4" sm="4">
+                <label class="text-grey">Confirmed by Warehouse</label>
+                <p class="mt-2">{{ formatDate(internalServicing.accepted_by_warehouse) }}</p>
+            </v-col>
+        </v-row>
 
-        <v-snackbar color="success" v-model="infoSuccess" location="right bottom" :timeout="5000">
-            <v-icon>mdi-alert-circle-outline</v-icon> Successfully delegated.
-        </v-snackbar>
-        <v-snackbar color="error" v-model="exist_service_id" location="right bottom" :timeout="5000">
-            <v-icon>mdi-alert-circle-outline</v-icon> Request currently delegated.
-        </v-snackbar>
     </div>
 </template>
 
@@ -76,16 +105,16 @@
 
 <script setup>
 // import { apiRequest } from '@/api';
-import { ref, onMounted, watch, inject } from 'vue'
+import { ref, onMounted, watch, inject, toRefs } from 'vue'
 import { user_data } from '@/stores/auth/userData'
 import * as pub_var from '@/global/global'
 
 /** Toast Notification */
-import {useToast} from 'vue-toast-notification'
+import { useToast } from 'vue-toast-notification'
+import moment from 'moment';
 const toast = useToast()
 
 const dialogInternalRequest = ref(false)
-// const loadingSkeletonInternalServicing = ref(true)
 const type_of_activity = ref(null)
 const Engineers = ref('')
 const engineersData = ref([])
@@ -95,9 +124,7 @@ const btnDisable = ref(false)
 const showOther = ref(false)
 const other = ref('')
 const disable_type_of_activity = ref(false)
-const getInternalStatus = inject('getInternalStatus', null)
 const disableButton = inject('disableButton', null)
-const CurrentlyDelegatedTo = inject('CurrentlyDelegatedTo', null)
 
 const auth = user_data()
 auth.getUserData
@@ -113,8 +140,27 @@ const props = defineProps({
     other: {
         type: String,
     },
+    internalStatus: {
+        type: Number,
+        default: 0
+    },
+    internalDelegatedTo: {
+        type: String,
+        default: '',
+    },
+    internalID: {
+        type: Number,
+        default: null
+    },
+    internalServicing: {
+        type: Object,
+        default: null
+    }
 })
-
+const { internalServicing } = toRefs(props)
+const formatDate = (data) => {
+    return data !== null ? moment(data).format('MM/DD/YYYY hh:mm a') : '--'
+}
 watch(type_of_activity, (val, oldVal) => {
     showOther.value = val === '12' // Compare val to the string '12'
     if (!showOther.value) {
@@ -157,7 +203,7 @@ const delegateInternalServicing = async () => {
         })
         if (response.data && response.data.success) {
             toast.success('Successfully delegated')
-            if(typeof(disableButton) === 'function') disableButton()
+            if (typeof (disableButton) === 'function') disableButton()
             setTimeout(() => {
                 window.location.reload()
             }, 1000)

@@ -10,6 +10,7 @@ use App\Models\Roles as Role;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Client\ResponseSequence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -140,8 +141,8 @@ class Roles extends Controller
         $roleID = $request->roleID;
         $role_id_exist = null;
         $description = $request->description;
-        $permissions = collect(Permission::defaultAccessType);
-        $module = collect(Module::defaultModule);
+        // $permissions = collect(Permission::defaultAccessType);
+        // $module = collect(Module::defaultModule);
 
         $check_roleID = Role::where('roleID', $roleID)->orWhere('role_name', $role_name)->first();
         if($check_roleID){
@@ -164,22 +165,22 @@ class Roles extends Controller
             }
 
             //Permission Collection
-            $permissions->each(function($accessType) use ($addedRole){
-                Permission::create([
-                    'role_id' => $addedRole,
-                    'access_type' => $accessType,
-                ]);
-            });
+            // $permissions->each(function($accessType) use ($addedRole){
+            //     Permission::create([
+            //         'role_id' => $addedRole,
+            //         'access_type' => $accessType,
+            //     ]);
+            // });
             
             // Module Collection
-            $module->each(function($module) use ($addedRole){
-                Module::create([
-                    'role_id' => $addedRole,
-                    'title' => $module['title'],
-                    'access_module' => $module['access_module'],
-                    'module_type' => $module['module_type'],
-                ]);
-            });
+            // $module->each(function($module) use ($addedRole){
+            //     Module::create([
+            //         'role_id' => $addedRole,
+            //         'title' => $module['title'],
+            //         'access_module' => $module['access_module'],
+            //         'module_type' => $module['module_type'],
+            //     ]);
+            // });
 
             DB::commit();
             return response()->json([
@@ -210,7 +211,55 @@ class Roles extends Controller
         }
     }
 
-    /** Permissions */
+
+
+
+
+
+
+
+
+
+
+
+
+    /** ================================ Permissions ===========================*/
+    
+    /** Get permission per role */
+    public function get_permission_per_role(Request $request){
+        $permission = Role::where('roleID', $request->role_id)->first();
+
+        return response()->json([
+            'permission' => $permission,
+        ]);
+
+    }
+
+    /** Set Permission Role */
+    public function set_permissions_per_role(Request $request){
+        try {
+            DB::beginTransaction();
+
+            Role::where('roleID', $request->role_id)
+            ->update([
+                'permissions' => $request->permissions
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'error' => $th->getMessage(),
+            ]);
+        }
+
+    }
+
+
     // get permissions
     public function get_permissions(){
         try {

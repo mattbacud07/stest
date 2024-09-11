@@ -4,7 +4,7 @@
             <v-card class="mx-auto">
                 <vue3-datatable ref="datatable" class="tableLimitText" :rows="rows" :columns="cols" :loading="loading"
                     :search="searchText" @rowSelect="rowSelect" :columnFilter="false" :sortColumn="params.sortColumn"
-                    :sortDirection="params.sortDirection" :sortable="true"
+                    :sortDirection="params.sortDirection" :sortable="true" noDataContent="No records found"
                     skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true"
                     :selectRowOnClick="true">
                     <template #id="data">
@@ -19,8 +19,8 @@
                     </template>
                     <template #approver_name="data">
                         <span class="text-danger" v-if="parseInt(data.value.main_status) === pub_var.DISAPPROVED">Disapproved</span>
-                        <span class="text-success" v-if="parseInt(data.value.main_status) === pub_var.COMPLETE">Completed</span>
-                        <span>{{ pub_var.pending_approval_status(data.value.status) }} 
+                        <span class="text-success" v-else-if="parseInt(data.value.main_status) === pub_var.COMPLETE">Completed</span>
+                        <span v-else>{{ pub_var.pending_approval_status(data.value.status) }} 
                             {{ pub_var.INSTALLATION_TL === data.value.status || pub_var.INSTALLATION_ENGINEER === data.value.status ? data.value.ssu : '' }}
                         </span>
                     </template>
@@ -32,6 +32,8 @@
                         <span>{{ moment(data.value.created_at).format('MM/DD/YYYY') }}</span>
                     </template>
                 </vue3-datatable>
+
+                <router-view />
 
             </v-card>
         </template>
@@ -79,9 +81,9 @@ const rows = ref(null);
 const cols =
     ref([
         { field: 'id', title: 'Report Number', isUnique: true, type: 'number', hide: false },
-        // { field: 'first_name', title: 'Requested by' },
         { field: 'name', title: 'Institution' , hide: false },
         { field: 'address', title: 'Address', hide: false },
+        { field: 'user_name', title: 'Requested by' },
         { field: 'request_type', title: 'Request Category', hide: false },
         { field: 'request_name', title: 'Type of Request' , hide: false },
         // { field: 'internal_name', title: 'Internal Request' },
@@ -134,9 +136,9 @@ if (currentUserRole === pub_var.approverRole) {
 if (currentUserRole === pub_var.TLRole) {
     routeView.value = 'WorkOrderApprover'
 }
-if (currentUserRole === pub_var.outboundPersonnel) {
-    routeView.value = 'WorkOrderApprover'
-}
+// if (currentUserRole === pub_var.outboundPersonnel) {
+//     routeView.value = 'WorkOrderApprover'
+// }
 if (currentUserRole === pub_var.engineerRole) {
     routeView.value = 'WorkOrderApprover'
 }

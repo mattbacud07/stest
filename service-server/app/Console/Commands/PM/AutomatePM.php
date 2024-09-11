@@ -34,7 +34,7 @@ class AutomatePM extends Command
             DB::beginTransaction();
             $getScheduledToday = PM::whereDate('scheduled_at', '=', $dateToday)->where('status', PM::Scheduled)->get();
             foreach ($getScheduledToday as $data) {
-                $data->update(['status' => PM::PendingAcceptance]);
+                $data->update(['status' => PM::Delegated]);
             }
             DB::commit();
         } catch (\Throwable $th) {

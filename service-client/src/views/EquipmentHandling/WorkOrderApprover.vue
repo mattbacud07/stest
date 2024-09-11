@@ -3,8 +3,9 @@
         <template #topBarFixed>
             <div>
                 <v-breadcrumbs class="pt-7">
-                    <v-breadcrumbs-item v-if="width > 550" v-for="(item, index) in breadcrumbItems" :key="index"
-                        :class="{ 'custom-pointer': !item.disabled }" @click="navigateTo(item)"
+                    <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
+                        :class="{ 'custom-pointer': !item.disabled }"
+                        :style="{ 'display': width <= 768 ? item.display : '' }" @click="navigateTo(item)"
                         :disabled="item.disabled">
                         {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
                     </v-breadcrumbs-item>
@@ -12,15 +13,15 @@
             </div>
             <v-spacer></v-spacer>
             <div v-if="getInternalStatus === pub_var.internalStat.Delegated || getInternalStatus === pub_var.internalStat.InProgress || getInternalStatus === pub_var.internalStat.Packed
-                        || getInternalStatus === pub_var.internalStat.Completed">
+                || getInternalStatus === pub_var.internalStat.Completed">
                 <p style="color: orange;">* Internal Processing Still in Progress</p>
             </div>
             <div v-else>
                 <template v-if="user.user.approval_level === status">
                     <v-dialog v-model="dialog" max-width="400" persistent>
                         <template v-slot:activator="{ props: activatorProps }">
-                            <v-btn :disabled="btnDisable" v-bind="activatorProps"  color="primary"
-                                variant="tonal" class="text-none mr-2">
+                            <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="tonal"
+                                class="text-none mr-2">
                                 Disapprove</v-btn>
                         </template>
                         <v-card text="" title="Disapprove">
@@ -31,10 +32,10 @@
                             </v-col>
                             <template v-slot:actions>
                                 <v-row justify="end">
-                                    <v-btn elevation="2" @click="dialog = false" background-color="red" 
-                                        color="#191970" class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                    <v-btn elevation="2" @click="dialog = false" background-color="red" color="#191970"
+                                        class="text-none mr-2"><v-icon>mdi-close</v-icon>
                                         Cancel</v-btn>
-                                    <v-btn @click="disapproveRequest" color="primary" elevation="2" 
+                                    <v-btn @click="disapproveRequest" color="primary" elevation="2"
                                         class="text-none mr-3"
                                         style="background-color: #191970;color: #fff!important;"><v-icon
                                             class="mr-1">mdi-text-box-remove-outline</v-icon> Disapprove</v-btn>
@@ -47,9 +48,8 @@
                     <v-dialog v-model="dialogApprove" max-width="400" persistent>
                         <template v-slot:activator="{ props: activatorProps }">
 
-                            <v-btn type="button"  v-bind="activatorProps" :disabled="btnDisable"
-                                color="primary" variant="flat" class="text-none btnSubmit"><v-icon
-                                    class="mr-2">mdi-check</v-icon>
+                            <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable" color="primary"
+                                variant="flat" class="text-none btnSubmit"><v-icon class="mr-2">mdi-check</v-icon>
                                 Approve</v-btn>
                         </template>
                         <v-card text="" title="Approve">
@@ -75,12 +75,11 @@
                                 <!-- <template v-slot:actions> -->
                                 <v-divider></v-divider>
                                 <v-row justify="end" class="mt-7 mb-5 pr-3">
-                                    <v-btn variant="tonal" @click="dialogApprove = false"  color="primary"
+                                    <v-btn variant="tonal" @click="dialogApprove = false" color="primary"
                                         class="text-none mr-2"><v-icon>mdi-close</v-icon>
                                         Cancel</v-btn>
-                                    <v-btn type="submit"  :loading="btnLoading" :disabled="btnDisable"
-                                        color="#191970" flat class="text-none bg-primary mr-5"><v-icon
-                                            class="mr-2">mdi-check</v-icon>
+                                    <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="#191970"
+                                        flat class="text-none bg-primary mr-5"><v-icon class="mr-2">mdi-check</v-icon>
                                         Approve</v-btn>
                                 </v-row>
                                 <!-- </template> -->
@@ -90,16 +89,16 @@
                 </template>
 
 
-                <!-- dialogApproveNonApprover Button --> 
-                <template v-if="(pub_var.INSTALLATION_ENGINEER === status && user_current_ssu === updatedSSU && currentUserRole === pub_var.engineerRole) || (pub_var.INSTALLATION_TL === status && user_current_ssu === updatedSSU && currentUserRole === pub_var.TLRole)">
+                <!-- dialogApproveNonApprover Button -->
+                <template
+                    v-if="(pub_var.INSTALLATION_ENGINEER === status && user_current_ssu === updatedSSU && currentUserRole === pub_var.engineerRole) || (pub_var.INSTALLATION_TL === status && user_current_ssu === updatedSSU && currentUserRole === pub_var.TLRole)">
                     <v-dialog v-model="dialogApproveNonApprover" max-width="600" persistent>
                         <template v-slot:activator="{ props: activatorProps }">
 
-                            <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable"
-                                color="primary" variant="flat" class="text-none btnSubmit"><v-icon
-                                    class="mr-2">mdi-check</v-icon>
+                            <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable" color="primary"
+                                variant="flat" class="text-none btnSubmit"><v-icon class="mr-2">mdi-check</v-icon>
                                 Approve </v-btn>
-                                <!-- {{ pub_var.INSTALLATION_ENGINEER }} {{  status  }}   {{  user_current_ssu }} {{  updatedSSU }} -->
+                            <!-- {{ pub_var.INSTALLATION_ENGINEER }} {{  status  }}   {{  user_current_ssu }} {{  updatedSSU }} -->
                         </template>
                         <v-card text="" title="Approve">
                             <v-form @submit.prevent="approveRequest" ref="form">
@@ -107,18 +106,20 @@
                                     <v-textarea class="mr-2 ml-2" v-model="remark" clearable label="Remarks (optional)"
                                         color="primary" variant="outlined"></v-textarea>
 
-                                    <template v-if="pub_var.INSTALLATION_TL === status && user_current_ssu === updatedSSU">
+                                    <template
+                                        v-if="pub_var.INSTALLATION_TL === status && user_current_ssu === updatedSSU">
                                         <v-combobox color="primary" class="ml-2 mr-2 mt-5" v-model="Engineers"
                                             :rules="[v => !!v || 'Required']" label="Assign Engineer"
                                             placeholder="Assign to" density="compact" :items="engineersData"
                                             variant="outlined" itemValue="value" itemTitle="key"></v-combobox>
                                     </template>
 
-                                    <template v-if="pub_var.INSTALLATION_ENGINEER === status && user_current_ssu === updatedSSU">
-                                            <v-textarea class="mr-2 ml-2 mt-3" v-for="item in serialNumberDone"
-                                                :key="item.key" v-model="item.actions_done" clearable
-                                                :label="'Actions Done in Serial -' + item.serial_number" color="primary"
-                                                variant="outlined"></v-textarea>
+                                    <template
+                                        v-if="pub_var.INSTALLATION_ENGINEER === status && user_current_ssu === updatedSSU">
+                                        <v-textarea class="mr-2 ml-2 mt-3" v-for="item in serialNumberDone"
+                                            :key="item.key" v-model="item.actions_done" clearable
+                                            :label="'Actions Done in Serial -' + item.serial_number" color="primary"
+                                            variant="outlined"></v-textarea>
                                     </template>
 
                                 </v-col>
@@ -144,14 +145,21 @@
         <v-container class="container-form mt-3">
             <RequestDetails :service_id="parseInt(service_id)"
                 :showInternalRequest="user.user.approval_level === pub_var.SERVICE_TL ? true : false"
-                @set-status="getStatus" @set-updated-ssu="getUpdatedSSU" @get-installation-engineer="getInstallationEngineer" />
+                @set-status="getStatus" @set-updated-ssu="getUpdatedSSU"
+                @get-installation-engineer="getInstallationEngineer" 
+                :internalStatus="getInternalStatus"
+                :internalDelegatedTo = "CurrentlyDelegatedTo"
+                :internalID = "internalID"
+                :internalServicing = "internalServicing"
+                 />
 
-            <RequestedEquipments :service_id="parseInt(service_id)" @set-serial="getSerialNumber" @get-serials="getSerials" :editSerial="true" />
+            <RequestedEquipments :service_id="parseInt(service_id)" @set-serial="getSerialNumber"
+                @get-serials="getSerials" :editSerial="true" />
 
             <ApproverHistoryLog :service_id="parseInt(service_id)" :status="status" />
 
 
-           
+
         </v-container>
         <!-- </v-form> -->
     </LayoutSinglePage>
@@ -159,7 +167,7 @@
 <script setup>
 import { ref, watch, onMounted, provide } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {useDisplay} from 'vuetify'
+import { useDisplay } from 'vuetify'
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 
 /** Vuue3 DataTable */
@@ -167,22 +175,20 @@ import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
 /** Toast Notification */
-import {useToast} from 'vue-toast-notification'
+import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
 import { user_data } from '@/stores/auth/userData';
 import { getRole } from '@/stores/getRole'
 import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vue';
-// import RequestedEquipments from './RequestedEquipments.vue'
 import ApproverHistoryLog from '@/components/Approver/EH/ApproverHistoryLog.vue'
-// import RequestDetails from './RequestDetails.vue'
 import RequestDetails from '@/components/Approver/EH/RequestDetails.vue';
 import * as pub_var from '@/global/global'
 
 /** data declarations */
 const router = useRouter()
 const route = useRoute()
-const {width} = useDisplay()
+const { width } = useDisplay()
 const user = user_data()
 const apiRequest = user.apiRequest()
 user.getUserData
@@ -198,7 +204,6 @@ const dialogApprove = ref(false)
 const dialogApproveNonApprover = ref(false)
 const btnDisable = ref(false)
 const btnLoading = ref(false)
-const snackbarErrorGeneral = ref(false)
 const id = route.params.id
 const service_id = ref(id)
 const serialNumber = ref([])
@@ -208,6 +213,8 @@ const ssu = ref('')
 const getInternalStatus = ref(null)
 const getInternalDateTimeUpdated = ref(null)
 const CurrentlyDelegatedTo = ref(null)
+const internalID = ref(null)
+const internalServicing = ref({})
 const status = ref(0)
 const exist_service_id = ref(null)
 const Engineers = ref('')
@@ -241,9 +248,9 @@ watch(ssuRule, (val) => {
 })
 /**BreadCrumbs */
 const breadcrumbItems = [
-    { title: 'Back', disabled: false, href: '/equipment-handling' },
-    { title: 'Equipment Handling', disabled: true, href: '' },
-    { title: 'Work Order', disabled: true, href: '' },
+    { title: 'Back', disabled: false, href: '/equipment-handling', display: 'block' },
+    { title: 'Equipment Handling', disabled: true, href: '', display: 'none' },
+    { title: 'Work Order', disabled: true, href: '', display: 'none' },
 ]
 const navigateTo = (item) => {
     if (!item.disabled && item.href) {
@@ -289,13 +296,13 @@ const approveRequest = async () => {
             status: status.value,
             remark: remark.value,
             ...outboundFinalization.value,
-            actionsDone : actionsDone?? []
-            
+            actionsDone: actionsDone ?? []
+
         })
         if (response.data && response.data.success) {
             btnDisable.value = true
             toast.success('Approved successfully')
-                router.push('/equipment-handling')
+            router.push('/equipment-handling')
         }
         else {
             console.log(response.data.error)
@@ -333,15 +340,16 @@ const disapproveRequest = async () => {
 
         if (response.data && response.data.success) {
             toast.success('Disapproval successful')
-                router.push('/equipment-handling')
+            router.push('/equipment-handling')
         }
     } catch (error) {
         alert(error)
     }
     finally {
-        
+
     }
 }
+
 
 /** Check Status of Request if Delegated to an Engineer */
 const checkIfDelegatedToEngineer = async () => {
@@ -350,16 +358,18 @@ const checkIfDelegatedToEngineer = async () => {
             params: { service_id: id, category: 'specificService' }
         })
         if (response.data && response.data.request && response.data.request.length > 0) {
-            const result = response.data.request
-            getInternalStatus.value = result.map((data) => data.status)[0]
-            getInternalDateTimeUpdated.value = result.map((data) => data.updated_at)[0]
-            const fullname = result.map((data) => ({ fname: data.get_user.first_name, lname: data.get_user.last_name }))[0]
-            CurrentlyDelegatedTo.value = fullname.fname + ' ' + fullname.lname
+            const result = response.data.request[0]
+            getInternalStatus.value = result.status
+            internalID.value = result.id
+            getInternalDateTimeUpdated.value = result.updated_at
+            CurrentlyDelegatedTo.value = result.get_user.first_name + ' ' + result.get_user.last_name
+            internalServicing.value = result
         }
     } catch (error) {
         alert(error)
     }
 }
+
 
 /**
  * Get Engineers Data - Use for Delegation
@@ -451,7 +461,8 @@ onMounted(async () => {
 .vCheckbox {
     height: 40px !important;
 }
-.v-label{
-    color : #222;
+
+.v-label {
+    color: #222;
 }
 </style>
