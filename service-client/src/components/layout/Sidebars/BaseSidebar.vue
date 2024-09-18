@@ -60,6 +60,7 @@
         </template>
 
     </v-list>
+    <v-btn @click="createPost" v-if="can('create', 'Post')">Great Post</v-btn>
 </template>
 <script setup>
 import { computed, ref, onMounted, watch, reactive, } from 'vue';
@@ -70,6 +71,21 @@ import { getRole } from '@/stores/getRole'
 import { apiRequestAxios } from '@/api/api';
 import * as pub_const from '@/global/global.js';
 import { useRouter, useRoute } from 'vue-router';
+import { useAbility } from '@casl/vue';
+
+/** Role Data Store */
+const role = getRole()
+role.getRoleData
+
+// const ability = computed(() => role.abilities)
+// const { can } = useAbility(ability.value)
+const can = (action, subject) => {
+    return role.abilities.can(action, subject)
+}
+
+const createPost = () =>{
+    console.log("great is working")
+}
 
 const router = useRouter()
 const route = useRoute()
@@ -85,9 +101,7 @@ const user_roles = user.user.user_roles
 const apiRequest = apiRequestAxios()
 
 
-/** Role Data Store */
-const role = getRole()
-role.getRoleData
+
 
 
 /** Decalarations */

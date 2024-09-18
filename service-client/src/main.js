@@ -32,39 +32,54 @@ import 'vue-toast-notification/dist/theme-bootstrap.css'
 /** Export Excel */
 import JsonExcel from 'vue-json-excel3'
 
+/** CASTL plugin - for permissions */
+import { abilitiesPlugin } from '@casl/vue'
+import { getRole } from './stores/getRole'
+import { ref } from 'vue'
+
 
 
 const icons = {
-    defaultSet: 'mdi',
-    aliases,
-    sets: {
-      mdi,
-    }
+  defaultSet: 'mdi',
+  aliases,
+  sets: {
+    mdi,
   }
+}
 
-  const themeColor = {
-    dark: false,
-    colors: {
-        primary: "#191970",
-    },
-  }
+const themeColor = {
+  dark: false,
+  colors: {
+    primary: "#191970",
+  },
+}
 
 const vuetify = createVuetify({
-    components,
-    directives,
-    icons,
-    theme: {
-        defaultTheme: 'themeColor',
-        themes: {
-            themeColor,
-        },
-      },
-  })
+  components,
+  directives,
+  icons,
+  theme: {
+    defaultTheme: 'themeColor',
+    themes: {
+      themeColor,
+    },
+  },
+})
 
 const app = createApp(App)
 
 app.component("downloadExcel", JsonExcel);
-app.use(createPinia())
+const pnia = createPinia()
+app.use(pnia)
+
+const role = getRole(pnia)
+let ability = ref(role.abilities)
+app.use(abilitiesPlugin, ability.value)
+
+
+// role.$subscribe(() => {
+//   ability.value = role.abilities
+// })
 app.use(vuetify)
 app.use(ToastPlugin)
 app.use(router)
