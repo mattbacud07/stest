@@ -42,10 +42,10 @@
                 <v-btn @click="handleView" variant="tonal" :disabled="btnDisable" color="primary" class="text-none mr-1">
                     <v-icon>mdi-file-eye</v-icon> {{ width < 768 ? '' : 'View' }}
                 </v-btn>
-                <v-btn @click="handleEdit" color="primary" variant="tonal" class="text-none mr-1" :disabled="btnDisable">
+                <!-- <v-btn @click="handleEdit" color="primary" variant="tonal" class="text-none mr-1" :disabled="btnDisable">
                     <v-icon>mdi-pencil</v-icon> {{ width < 768 ?  '' : ' Edit' }}
-                </v-btn>
-                <v-btn @click="handleCreate" v-if="currentUserRole === 'Requestor'" color="primary" variant="flat" class="text-none"> <!--- v-if="enableCreate"-->
+                </v-btn> -->
+                <v-btn @click="handleCreate" v-if="currentUserRole.role_id === 357" color="primary" variant="flat" class="text-none"> <!--- v-if="enableCreate"-->
                     <v-icon>mdi-plus</v-icon> {{ width < 768 ? '' : 'Create' }}
                 </v-btn>
                 

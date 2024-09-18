@@ -19,8 +19,9 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       // component: () => import('../views/Dashboard.vue'),
       component: Dashboard,
-      meta: {
-        requiresAuth: true
+      meta: { 
+        title : 'Dashboard',
+        requiresAuth: true,
       }
     },
 
@@ -40,6 +41,7 @@ const router = createRouter({
       name: 'ApprovalConfiguration',
       component: () => import('../views/Admin/ApprovalConfiguration.vue'),
       meta: {
+        title : 'Admin - Approval Config',
         requiresAuth: true
       }
     },
@@ -48,6 +50,7 @@ const router = createRouter({
       name: 'RolesMain',
       component: () => import('../views/Admin/RolesMain.vue'),
       meta: {
+        title : 'Roles & Permissions',
         requiresAuth: true
       }
     },
@@ -56,6 +59,7 @@ const router = createRouter({
       name: 'PMSettings',
       component: () => import('../views/Admin/PMSettings.vue'),
       meta: {
+        title : 'PM Settings',
         requiresAuth: true
       }
     },
@@ -64,6 +68,7 @@ const router = createRouter({
       name: 'SetStandardActions',
       component: () => import('../views/Admin/SetStandardActions.vue'),
       meta: {
+        title : 'Set Standard Actions',
         requiresAuth: true
       }
     },
@@ -77,6 +82,7 @@ const router = createRouter({
       name: 'EquipmentHandling',
       component: () => import('../views/EquipmentHandling/EquipmentHandling.vue'),
       meta: {
+        title : 'Equipment Handling',
         requiresAuth: true
       },
     },
@@ -85,6 +91,7 @@ const router = createRouter({
       name: 'WorkOrder',
       component: () => import('../views/EquipmentHandling/WorkOrder.vue'),
       meta: {
+        title : 'Work Order',
         requiresAuth: true
       },
     },
@@ -94,6 +101,7 @@ const router = createRouter({
       component: () => import('../views/EquipmentHandling/ViewWorkOrder.vue'),
       props: true,
       meta: {
+        title : 'Work Order',
         requiresAuth: true
       }
     },
@@ -103,6 +111,7 @@ const router = createRouter({
       component: () => import('../views/EquipmentHandling/WorkOrderApprover.vue'),
       props: true,
       meta: {
+        title : 'Work Order',
         requiresAuth: true
       }
     },
@@ -112,15 +121,15 @@ const router = createRouter({
 
 
     /** =======================================Team Leader Routes ========================================================*/
-    {
-      path: '/tl-dashboard',
-      name: 'DashboardTL',
-      component: () => import('../views/TeamLeader/DashboardTL.vue'),
-      props: true,
-      meta: {
-        requiresAuth: true
-      }
-    },
+    // {
+    //   path: '/tl-dashboard',
+    //   name: 'DashboardTL',
+    //   component: () => import('../views/TeamLeader/DashboardTL.vue'),
+    //   props: true,
+    //   meta: {
+    //     requiresAuth: true
+    //   }
+    // },
 
 
     /** ========================================== Internal Servicing Routes =================================================== */
@@ -130,6 +139,7 @@ const router = createRouter({
       component: () => import('../views/InternalServicing/InternalRequestMainData.vue'),
       props: true,
       meta: {
+        title : 'Internal Servicing',
         requiresAuth: true
       }
     },
@@ -140,6 +150,7 @@ const router = createRouter({
       component: () => import('../views/InternalServicing/InternalRequestProcess.vue'),
       props: true,
       meta: {
+        title : 'Internal Servicing',
         requiresAuth: true
       }
     },
@@ -155,6 +166,7 @@ const router = createRouter({
       component: () => import('../views/PreventiveMaintenance/PreventiveMaintenance.vue'),
       props: true,
       meta: {
+        title : 'Preventive Maintenance',
         requiresAuth: true
       }
     },
@@ -166,6 +178,7 @@ const router = createRouter({
       component: () => import('../views/PreventiveMaintenance/PMView.vue'),
       props: true,
       meta: {
+        title : 'Preventive Maintenance',
         requiresAuth: true
       },
       beforeEnter: (to, from, next) => {
@@ -190,10 +203,11 @@ const router = createRouter({
      */
     {
       path: '/corrective-maintenance',
-      name: 'Corrective',
+      name: 'CorrectiveMaintenance',
       component: () => import('../views/Corrective/Corrective.vue'),
       props: true,
       meta: {
+        title : 'Corrective Maintenance',
         requiresAuth: true
       }
     },
@@ -216,6 +230,9 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authenticated = JSON.parse(localStorage.getItem('isAuthenticated'))
 
+  
+  const title = to.meta.title || 'Service App'
+  document.title = title
 
   if (to.meta.requiresAuth && !authenticated) {
     next({ path: '/' })

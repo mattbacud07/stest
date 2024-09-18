@@ -180,6 +180,7 @@ const toast = useToast()
 
 import { user_data } from '@/stores/auth/userData';
 import { getRole } from '@/stores/getRole'
+import { apiRequestAxios } from '@/api/api';
 import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vue';
 import ApproverHistoryLog from '@/components/Approver/EH/ApproverHistoryLog.vue'
 import RequestDetails from '@/components/Approver/EH/RequestDetails.vue';
@@ -190,13 +191,14 @@ const router = useRouter()
 const route = useRoute()
 const { width } = useDisplay()
 const user = user_data()
-const apiRequest = user.apiRequest()
 user.getUserData
+
+const apiRequest = apiRequestAxios()
 
 const role = getRole()
 const currentUserRole = role.currentUserRole
 
-const user_current_ssu = ref(user.user.user_roles?.filter(d => d.role_name === currentUserRole)[0].SSU, null)
+const user_current_ssu = ref(user.user.user_roles?.filter(d => d.role_name === currentUserRole)[0]?.SSU, null)
 
 const form = ref(false)
 const dialog = ref(false)

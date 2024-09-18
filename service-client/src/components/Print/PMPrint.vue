@@ -138,9 +138,10 @@
   import { onMounted, ref } from 'vue';
   import { useRoute } from 'vue-router';
   import {user_data} from '@/stores/auth/userData'
+  import { apiRequestAxios } from '@/api/api';
 
   const user = user_data()
-  const apiRequest = user.apiRequest()
+  const apiRequest = apiRequestAxios()
 
   const route = useRoute()
   const id = route.params.id

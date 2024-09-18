@@ -134,7 +134,8 @@ import { getRole } from '@/stores/getRole';
 import debounce from 'lodash/debounce';
 import { user_data } from '@/stores/auth/userData'
 const user = user_data()
-const apiRequest = user.apiRequest()
+import { apiRequestAxios } from '@/api/api';
+const apiRequest = apiRequestAxios()
 const emit = defineEmits(['status-after-service', 'sparePartsData']);
 
 /** Vuue3 DataTable */

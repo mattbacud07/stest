@@ -118,6 +118,7 @@ import BaseLayout from '@/components/layout/MainLayout/BaseLayout.vue';
 import { ref, reactive, onMounted, watch, provide } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import * as pub_var from '@/global/global.js'
+import { apiRequestAxios } from '@/api/api';
 
 
 /** Vuue3 DataTable */
@@ -130,7 +131,7 @@ const toast = useToast()
 
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 const form = ref(false)
 const datatable = ref(null)
 const addActions = ref(false)

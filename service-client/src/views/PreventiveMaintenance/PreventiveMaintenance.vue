@@ -192,6 +192,9 @@
                 <template #service_id="data">
                     <span color="primary">{{ pub_var.setReportNumber(data.value.service_id) }}</span>
                 </template>
+                <template #monitoring_end="data">
+                    <span>{{ pub_var.formatDateFullMonthNoTime(data.value.monitoring_end) }}</span>
+                </template>
                 <template #status="data">
                     <span :style="{ color: m_var.status_pm(data.value.status).color }"><b>{{
                         m_var.status_pm(data.value.status).text }}</b></span><br />
@@ -209,6 +212,7 @@ import { onMounted, ref, reactive, provide, watch, computed } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import { getRole } from '@/stores/getRole'
 import { useRouter } from 'vue-router';
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global'
 import * as m_var from '@/global/maintenance.js'
 import moment from 'moment';
@@ -224,6 +228,17 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 
 import LayoutWithActions from '@/components/layout/MainLayout/LayoutWithActions.vue'
+
+
+/** Declaration */
+const viewSerialDialog = ref([])
+const viewScheduledDialog = ref([])
+
+/** User_data Store */
+const user = user_data()
+const router = useRouter()
+
+const apiRequest = apiRequestAxios()
 
 const role = getRole()
 const currentUserRole = role.currentUserRole
@@ -315,58 +330,29 @@ const actions = {
 
 provide('data', actions)
 
-/** User_data Store */
-const user = user_data()
-const apiRequest = user.apiRequest()
-const router = useRouter()
-
-const form = ref(false)
-
-
-/** Declaration */
-const dialogCreatePM = ref(false)
-const viewSerialDialog = ref([])
-const viewScheduledDialog = ref([])
-const btnLoading = ref(false)
-const serial_number = ref('')
-const messageDetails = ref({})
-const serialNumbers = ref([])
-const list_scheduled = ref([])
-
-const rules = ref({
-    serial_number: [
-        v => !!v || 'Required field'
-    ],
-})
 
 
 /**
  * @ Row Select Table Event
  */
-const multiSelected = ref([])
+const selectedRows = ref([])
 const rowSelect = (row) => {
-    // const selectedRows = datatable.value.getSelectedRows()
+    selectedRows.value = datatable.value.getSelectedRows()
     if (row.length === 1) btnDisable.value = false
     else btnDisable.value = true
 
-    // const extractId = selectedRows.map((data) => { return data.id })
     selectedId.value = row.map(v => v.id)[0]
-    multiSelected.value = row.map(v => v.id)
+    // multiSelected.value = row.map(v => v.id)
 }
-
-
+const getRowClass = (row) => {
+    const rowID = selectedRows.value.map(v => v.id)
+    return rowID.includes(row.id) ? 'highlightRow' : ''
+}
 /**
  * Double Click View PM
  */
 const doubleClickViewPM = (row) => {
     router.push({ name: 'PMView', params: { id: row.id, work_type : 'PM' } })
-}
-
-/**
- * Get Class of the Row
- */
-const getRowClass = (row) => {
-    return (multiSelected.value || []).includes(row.id) ? 'style="background: red!important"' : ''
 }
 
 
@@ -396,6 +382,7 @@ const cols =
         { field: 'schedule', title: 'Frequency' },
         { field: 'ssu', title: 'SSU' },
         { field: 'username', title: 'Delegated to' },
+        { field: 'monitoring_end', title: 'Enf of Monitoring' },
         { field: 'status_after_service', title: 'Status After Service' },
         { field: 'status', title: 'Status' },
         { field: 'tag', title: 'Tag' },

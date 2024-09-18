@@ -51,6 +51,7 @@
             <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading" :search="params.search"
                 :selectRowOnClick="true" :hasCheckbox="true" :sortable="true" :hide="true" :filter="true"
                 skin="bh-table-compact bh-table-bordered" class="mt-4"
+                :rowClass="getRowClass"
                 @rowSelect="isChecked">
 
                 <template #first_name="data">
@@ -81,6 +82,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch, inject } from 'vue';
 import { user_data } from '@/stores/auth/userData'
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global.js'
 
 /** Vuue3 DataTable */
@@ -92,7 +94,7 @@ const { width } = useDisplay()
 
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 const form = ref(false)
 const selectedRole = ref(null)
 const selectedRoleText = ref(null)
@@ -132,13 +134,18 @@ watch(selectedRole, (val) => {
 })
 
 /** Check - Selecting Users */
-const isChecked = (data) => {
-    const selectedRows = datatable.value.getSelectedRows()
-    if (selectedRows && selectedRows.length > 0) {
+const selectedRows = ref([])
+const isChecked = (row) => {
+    selectedRows.value = datatable.value.getSelectedRows()
+    if (row && row.length > 0) {
         btnDisable.value = false
     } else {
         btnDisable.value = true
     }
+}
+const getRowClass = (row) => {
+    const rowID = selectedRows.value.map(v => v.id)
+    return rowID.includes(row.id) ? 'highlightRow' : ''
 }
 
 /** Check - Selecting Users */

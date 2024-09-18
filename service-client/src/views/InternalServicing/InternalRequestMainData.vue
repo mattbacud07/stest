@@ -7,8 +7,8 @@
                     <v-btn color="primary" prepend-icon="mdi-filter-outline" variant="tonal" text="Advanced filtering"
                         class="text-none" v-bind="props">
                         <template v-slot:append>
-                        <v-badge color="warning" :content="nonEmptyCountFilter"
-                            v-if="nonEmptyCountFilter > 0" class="ml-2 mr-2"></v-badge>
+                            <v-badge color="warning" :content="nonEmptyCountFilter" v-if="nonEmptyCountFilter > 0"
+                                class="ml-2 mr-2"></v-badge>
                         </template>
                     </v-btn>
                 </template>
@@ -77,7 +77,12 @@
                 <vue3-datatable ref="datatable" :rows="rows" :sort="true" :columns="cols" :loading="loading"
                     :search="searchText" :sortable="true" :sortColumn="params.sort_column"
                     :sortDirection="params.sort_direction" skin="bh-table-hover bh-table-compact bh-table-bordered"
-                    :hasCheckbox="true" :selectRowOnClick="true" @rowSelect="rowSelect" class="tableLimitText">
+                    :hasCheckbox="true" :selectRowOnClick="true" 
+                    @rowSelect="rowSelect" 
+                    @rowDBClick="selectRowDBClick" 
+                    :rowClass="getRowClass"
+                    cellClass="internalCell"
+                    class="tableLimitText">
 
                     <template #equipment_handling.id="data">
                         <span>{{ pub_var.setReportNumber(data.value.equipment_handling.id, data.value.created_at)
@@ -128,12 +133,19 @@
 import { onMounted, ref, reactive, computed, provide, watch } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import { getRole } from '@/stores/getRole'
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global'
 import moment from 'moment';
 import LayoutWithActions from '@/components/layout/MainLayout/LayoutWithActions.vue';
 import { useDisplay } from 'vuetify'
+import { useRouter } from 'vue-router';
 
 const { width } = useDisplay()
+const router = useRouter()
+
+/** Declaration of User Data Store*/
+const user = user_data();
+const apiRequest = apiRequestAxios()
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
@@ -193,17 +205,23 @@ const actions = {
 provide('data', actions)
 
 /** Check - Selecting Users */
-const rowSelect = (data) => {
-    const selectedRows = datatable.value.getSelectedRows()
-    if (selectedRows && selectedRows.length === 1) {
-        btnDisabled.value = false
-        selectJustOneMessage.value = ''
-    } else {
-        btnDisabled.value = true
-        selectJustOneMessage.value = "Select one record"
-    }
-    serviceId.value = selectedRows.map((data) => { return data.equipment_handling.id })[0] //SelectedId to pass in other routes for work order approval
-    internalId.value = selectedRows.map((data) => { return data.id })[0]
+const selectedRows = ref([])
+const rowSelect = (row) => {
+    selectedRows.value = datatable.value.getSelectedRows()
+    if (row && row.length === 1)  btnDisabled.value = false
+    else btnDisabled.value = true
+    
+    serviceId.value = row.map((data) => { return data.equipment_handling.id })[0] //SelectedId to pass in other routes for work order approval
+    internalId.value = row.map((data) => { return data.id })[0]
+}
+
+const getRowClass = (row) => {
+    const rowID = selectedRows.value.map(v => v.id)
+    return rowID.includes(row.id) ? 'highlightRow' : ''
+}
+
+const selectRowDBClick = (row) =>{
+    router.push({ name: 'InternalServicingProcess', params: { id: row.service_id, service_id : row.id } }) // Confusing[late programmer] - Change position -> { id: row.service_id, service_id : row.id }
 }
 
 watch(filter, (newFilter) => {
@@ -212,9 +230,7 @@ watch(filter, (newFilter) => {
 }, { deep: true })
 
 
-/** Declaration of User Data Store*/
-const user = user_data();
-const apiRequest = user.apiRequest()
+
 
 
 /** Enable Filter */
@@ -314,12 +330,6 @@ onMounted(() => {
 });
 </script>
 
-
-<!-- <style scoped>
-a {
-    color: aliceblue;
-}
-</style> -->
 <style scoped>
 .btnsubmitText {
     color: #fff;

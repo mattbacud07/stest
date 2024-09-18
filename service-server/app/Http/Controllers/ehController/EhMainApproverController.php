@@ -193,9 +193,9 @@ class EhMainApproverController extends Controller
     /**
      * DisApprove Work Order Request
      */
-    public function disapprove_request(Request $request)
+    public function disapprove_request(Request $request, Guard $guard)
     {
-        $user_id = $request->id;
+        $user_id = $guard->user()->id;
         $service_id = $request->service_id;
         $remark = $request->remark;
         $approval_level = $request->approval_level;

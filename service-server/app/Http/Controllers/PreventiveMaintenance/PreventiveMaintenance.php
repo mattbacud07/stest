@@ -350,6 +350,28 @@ class PreventiveMaintenance extends Controller
             ], 500);
         }
     }
+    /**PM Declined */
+    public function pm_decline(Request $request, Guard $guard){
+        $user_id = $guard->user()->id;
+        $pm_id = $request->pm_id;
+
+        try {
+            DB::beginTransaction();
+            PM::where('id', $pm_id)->update([
+                'status' => PM::Scheduled,
+            ]);
+            DB::commit();
+            return response()->json([
+                'success' => true,
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'error' => $th->getMessage(),
+            ]);
+        }
+
+    }
 
 
 

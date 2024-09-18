@@ -37,23 +37,23 @@ class Engineer extends Controller
         }
     }
 
-    public function accept_pm_task(Request $request, Guard $guard){
+    // public function accept_pm_task(Request $request, Guard $guard){
 
-        $id = $request->id;
-        $user_id = $guard->user()->id;
-        DB::beginTransaction();
-        try {
-            $this->pmTask->accept_pm_task($id, $user_id);
+    //     $id = $request->id;
+    //     $user_id = $guard->user()->id;
+    //     DB::beginTransaction();
+    //     try {
+    //         $this->pmTask->accept_pm_task($id, $user_id);
 
-            DB::commit();
-            return response()->json([
-                'success' => true,
-            ]);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response()->json([
-                'error' => $th->getMessage(),
-            ]);
-        }
-    }
+    //         DB::commit();
+    //         return response()->json([
+    //             'success' => true,
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'error' => $th->getMessage(),
+    //         ]);
+    //     }
+    // }
 }

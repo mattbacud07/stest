@@ -85,7 +85,7 @@
 <script setup>
 import { onMounted, defineProps, toRefs, ref, reactive } from 'vue'
 import { user_data } from '@/stores/auth/userData'
-// import TextField from '@/components/GeneralComponents/TextField.vue'
+import { apiRequestAxios } from '@/api/api'
 import * as pub_var from '@/global/global'
 
 import { useDisplay } from 'vuetify'
@@ -93,7 +93,7 @@ const { width } = useDisplay()
 
 const user = user_data()
 
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 const loadingSkeleton = ref(false)
 const rowData = ref({})
 const actionDone = reactive({})

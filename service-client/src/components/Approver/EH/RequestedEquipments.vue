@@ -44,10 +44,9 @@
     <v-card class="mt-3 p-3" elevation="0" style="border: 1px dashed #191970;" v-if="peripherals.length > 0">
 
         <v-row>
-            <h5 class="p-3 mt-2" style="font-weight: 700;color: #191970;">ADDITIONAL PERIPHERALS <span
-                    style="font-size: .8em;font-weight: 100;color: #777;"><i> (Serial number to be filled by
-                        the IT
-                        Department)</i></span></h5>
+            <h5 class="p-3 mt-2" style="font-weight: 500;color: #191970;">ADDITIONAL PERIPHERALS <span
+                    style="font-size: .8em;font-weight: 400;color: #777;"><i><br v-if="width < 615">
+                        (Serial number to be filled by the IT Department)</i></span></h5>
             <v-col cols="12">
                 <div class="table-responsive">
                     <table class="table table-sm table-bordered table-responsive">
@@ -67,10 +66,12 @@
                                 </td>
                                 <td style="min-width: 250px;">{{ peripheral.description }}</td>
                                 <td>
-                                    <v-form ref="form" @prevent.submit="submitSerial" v-if="user.user.approval_level === 1 && editSerial === true">
+                                    <v-form ref="form" @prevent.submit="submitSerial"
+                                        v-if="user.user.approval_level === 1 && editSerial === true">
                                         <v-text-field clearable density="compact" variant="plain"
-                                            :rules="rulePeripheralSerial" placeholder="Serial number ...."
-                                            w-100 v-model="peripheral.peripheralSerial" @input="setSerialNumber"></v-text-field>
+                                            :rules="rulePeripheralSerial" placeholder="Serial number ...." w-100
+                                            v-model="peripheral.peripheralSerial"
+                                            @input="setSerialNumber"></v-text-field>
                                     </v-form>
                                     <span v-else>{{ peripheral.serial_number }}</span>
                                 </td>
@@ -99,8 +100,11 @@ import { ref, onMounted, watch, getCurrentInstance, provide } from 'vue';
 import { BASE_URL } from '@/api';
 import { user_data } from '@/stores/auth/userData';
 import axios from 'axios'
+import { useDisplay } from 'vuetify'
 
-defineEmits(['set-serial', 'get-serials', 'get-serial-numbers','get-equipments-data'])
+const { width } = useDisplay()
+
+defineEmits(['set-serial', 'get-serials', 'get-serial-numbers', 'get-equipments-data'])
 const instance = getCurrentInstance()
 
 const uri = BASE_URL
@@ -120,11 +124,11 @@ const props = defineProps({
     service_id: {
         type: Number
     },
-    status : {
-        type : Number,
+    status: {
+        type: Number,
     },
-    editSerial : {
-        type : Boolean,
+    editSerial: {
+        type: Boolean,
         // default : () => false 
     },
 })
@@ -156,7 +160,7 @@ const getDetailsEquipment = async () => {
 /** Get instance of parent to pass data from child to parent */
 const setSerialNumber = () => {
     watch(() => peripherals.value.map(peripheral => ({ id: peripheral.equipment_id, serial: peripheral.peripheralSerial })), (newValue) => {
-            instance.emit('set-serial', newValue)
+        instance.emit('set-serial', newValue)
     })
 }
 
@@ -165,4 +169,4 @@ onMounted(() => {
     getDetailsEquipment()
 })
 
-</script> 
+</script>

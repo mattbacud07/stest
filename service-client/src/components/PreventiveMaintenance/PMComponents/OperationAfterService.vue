@@ -1,8 +1,8 @@
 <template>
-    <!-- v-if="statusAfterServiceData === m_var.StatusAfterService.operational && currentRole === pub_var.TLRole && tag === m_var.pm_tag_under_observation" -->
+    <!-- v-if="statusAfterServiceData === m_var.StatusAfterService.operational && currentRole === pub_var.TLRoleID && tag === m_var.pm_tag_under_observation" -->
     <!-- <v-skeleton-loader :loading="pm_data_loading" type="card"> -->
     <v-card class="bg-orange-lighten-5 p-2 mb-7"
-        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.operational && currentRole === pub_var.TLRole && get_pm_data.tag === m_var.pm_tag_under_observation"
+        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.operational && currentRole === pub_var.TLRoleID && get_pm_data.tag === m_var.pm_tag_under_observation"
         transition="fab-transition" elevation="0">
         <v-col cols="12">
             <v-row>
@@ -42,7 +42,7 @@
 
     <!-- Set Observation Period -->
     <v-card class="bg-teal-lighten-5 p-2 mb-7" transition="fab-transition" elevation="0"
-        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.further_monitoring && (currentRole === pub_var.TLRole || currentRole === pub_var.engineerRole) && get_pm_data.tag === m_var.pm_tag_set_observation">
+        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.further_monitoring && (currentRole === pub_var.TLRoleID || currentRole === pub_var.engineerRoleID) && get_pm_data.tag === m_var.pm_tag_set_observation">
         <v-col cols="12">
             <v-row>
                 <!-- After Service - Operational -->
@@ -85,7 +85,7 @@
 
     <!-- After Service - Further Monitoring -->
     <v-card class="bg-teal-lighten-5 p-2 mb-7" transition="fab-transition" elevation="0"
-        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.further_monitoring && (currentRole === pub_var.TLRole || currentRole === pub_var.engineerRole) && get_pm_data.tag === m_var.pm_tag_under_observation">
+        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.further_monitoring && (currentRole === pub_var.TLRoleID || currentRole === pub_var.engineerRoleID) && get_pm_data.tag === m_var.pm_tag_under_observation">
         <v-col cols="12">
             <v-row>
                 <!-- After Service - Operational -->
@@ -95,7 +95,7 @@
                         If sent for CM or a problem occurs, it will be tagged as non-operational
                     </p>
 
-                    <p class="mt-4 text-danger">Monitoring days left: <b>{{ set_days_observation() }}</b></p>
+                    <p class="mt-4 text-primary">Monitoring days left: <b class="text-danger">{{ set_days_observation() }}</b></p>
 
                     <v-dialog max-width="500">
                         <template v-slot:activator="{ props: activatorProps }">
@@ -132,6 +132,7 @@ import { ref, onMounted, defineProps, toRefs, inject, watch } from 'vue'
 import * as pub_var from '@/global/global'
 import * as m_var from '@/global/maintenance'
 import { user_data } from '@/stores/auth/userData'
+import { apiRequestAxios } from '@/api/api'
 import { useToast } from 'vue-toast-notification'
 import { useRoute } from 'vue-router'
 import moment from 'moment'
@@ -140,7 +141,7 @@ const toast = useToast()
 const user = user_data()
 const route = useRoute()
 
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 const loading = ref(false)
 const pm_data_loading = ref(true)
 const work_type = route.params.work_type
@@ -151,7 +152,7 @@ const props = defineProps({
         default: 0
     },
     currentRole: {
-        type: String,
+        type: Number,
         default: ''
     },
     pm_data: {
@@ -195,7 +196,7 @@ const set_days_observation = () =>{
 
     const daysToWait = date_monitoring_end.diff(today, 'days')
 
-    return daysToWait
+    return daysToWait < 0 ? 'The waiting period has elapsed by ' + Math.abs(daysToWait) + ' days': daysToWait
 }
 
 /** Set Days of Observation */

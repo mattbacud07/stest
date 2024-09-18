@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ApprovalConfiguration;
+use App\Http\Controllers\Admin\Designation;
 use App\Http\Controllers\Admin\PMSettings;
 use App\Http\Controllers\Admin\Roles;
 use App\Http\Controllers\authController;
@@ -88,18 +89,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Assign Role Permission and Modules
         Route::get('/get_role_name', [Roles::class, 'get_role_name']);
-        Route::get('/get_permissions', [Roles::class, 'get_permissions']);
+        // Route::get('/get_permissions', [Roles::class, 'get_permissions']);
         Route::get('/get_permission_per_role', [Roles::class, 'get_permission_per_role']);
-        Route::get('/get_modules', [Roles::class, 'get_modules']);
-        Route::put('/set_permissions', [Roles::class, 'set_permissions']);
+        // Route::get('/get_modules', [Roles::class, 'get_modules']);
+        // Route::put('/set_permissions', [Roles::class, 'set_permissions']);
         Route::put('/set_permissions_per_role', [Roles::class, 'set_permissions_per_role']);
-        Route::put('/set_modules', [Roles::class, 'set_modules']);
+        // Route::put('/set_modules', [Roles::class, 'set_modules']);
         Route::post('/add_role_name', [Roles::class, 'add_role_name']);
         Route::delete('/delete_role_name', [Roles::class, 'delete_role_name']);
         Route::post('/assign-role', [Roles::class, 'assign_role']);
         Route::delete('/delete-role', [Roles::class, 'delete_role']);
         Route::get('/assigned-user-role', [Roles::class, 'get_assigned_roles']);
         Route::get('/get-approver-roles', [Roles::class, 'get_approver_roles']);
+        Route::get('/get_designations', [Designation::class, 'get_designations']);
 
 
     /** Team Leader */
@@ -117,12 +119,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/create-pm', [PreventiveMaintenance::class, 'create_preventive_maintenance']);
     Route::post('/pm_process', [PreventiveMaintenance::class, 'pm_process']);
     Route::post('/pm_accepted', [PreventiveMaintenance::class, 'pm_accepted']);
+    Route::post('/pm_decline', [PreventiveMaintenance::class, 'pm_decline']);
     Route::post('/pm_task_processing', [PreventiveMaintenance::class, 'pm_task_processing']);
         Route::get('/getStandardActions', [PreventiveMaintenance::class, 'getStandardActions']);
 
         Route::get('/spareparts', [PMSparepartsUsed::class, 'view']);
         Route::post('/sendToCM', [SendToCM::class, 'sendToCM']); //send to CM
         Route::post('/setDaysObservation', [SendToCM::class, 'setDaysObservation']); //send to CM
+
+
+    /** Get Auth User */
+    Route::get('/get_role_permissions', [authController::class, 'get_role_permissions']);
 
 
     /* Log Me Out */

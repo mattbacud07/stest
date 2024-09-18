@@ -16,6 +16,7 @@
             </v-row>
             <v-row>
                 <v-col>
+                    <p class="small text-danger mb-3"><b>Reminder:</b> <span class="text-dark">Don't forget to save</span></p>
                     <div class="table-responsive">
                         <table class="table table-borderless align-middle">
                             <thead class="table-light">
@@ -69,7 +70,8 @@ const { width } = useDisplay()
 
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+import { apiRequestAxios } from '@/api/api';
+const apiRequest = apiRequestAxios()
 const form = ref(false)
 const btnDisable = ref(false)
 const loading = ref(false)
@@ -80,12 +82,11 @@ const selected_role_id = ref(null)
 
 /** Permissions */
 const permissions = ref([
-    { "module": "EquipmentHandling", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "EquipmentHandling" },
-    { "module": "InternalServicing", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "InternalServicing" },
-    { "module": "PreventiveMaintenance", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "PreventiveMaintenance" },
-    { "module": "CorrectiveMaintenance", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "CorrectiveMaintenance" },
+    { "module": "Equipment Handling", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "EquipmentHandling", "icong" : "mdi-file-document-edit" },
+    { "module": "Internal Servicing", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "InternalServicing", "icong" : "mdi-file-compare" },
+    { "module": "Preventive Maintenance", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "PreventiveMaintenance", "icong" : "mdi-calendar-cursor-outline" },
+    { "module": "Corrective Maintenance", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "CorrectiveMaintenance", "icong" : "mdi-calendar-clock" },
 ])
-
 watch(selected_role_id, async(newValID) => {
     await getPermission(newValID)
 })
@@ -150,7 +151,9 @@ const getRoleData = async () => {
         // loading.value = true;
         const response = await apiRequest.get('get_role_name');
         if (response.data && response.data.role_name) {
-            roles.value = response.data.role_name.map(v => ({
+            roles.value = response.data.role_name
+            .filter(v => v.roleID !== 6)
+            .map(v => ({
                 roleID: v.roleID,
                 role_name: v.role_name
             }))

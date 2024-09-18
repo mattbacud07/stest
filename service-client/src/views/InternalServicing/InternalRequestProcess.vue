@@ -117,16 +117,15 @@
 </template>
 <script setup>
 import { ref, onMounted, inject } from 'vue';
-// import moment from 'moment';
 import { useRoute, useRouter } from 'vue-router';
 import { getRole } from '@/stores/getRole'
+import { apiRequestAxios } from '@/api/api';
 
 const role = getRole()
 role.getRoleData
 
 import { user_data } from '@/stores/auth/userData';
 import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vue'
-import ApproverHistoryLog from '@/components/Approver/EH/ApproverHistoryLog.vue'
 import RequestDetails from '@/components/Approver/EH/RequestDetails.vue'
 import alertMessage from '@/components/PopupMessage/alertMessage.vue'
 import * as pub_var from '@/global/global.js'
@@ -154,13 +153,10 @@ const navigateTo = (item) => {
 };
 
 /** data declarations */
-// const uri = BASE_URL
-// const router = useRouter()
 const route = useRoute()
 const router = useRouter()
 const user = user_data()
-const apiRequest = user.apiRequest()
-// user.getUserData
+const apiRequest = apiRequestAxios()
 
 const dialog = ref(false)
 const btnDisable = ref(false)

@@ -63,7 +63,8 @@
                                     :search="params.search" :isServerMode="true" :totalRows="total_rows"
                                     :pageSize="params.pagesize" :hasCheckbox="true" :selectRowOnClick="true"
                                     :sortable="true" skin="bh-table-compact bh-table-bordered"
-                                    class="set_approver_tables" @rowSelect="rowSelection" @change="changeServer">
+                                    class="set_approver_tables" @rowSelect="rowSelection" :rowClass="getRowClass"
+                                    @change="changeServer">
                                     <template #first_name="data">
                                         {{ data.value.first_name }} {{ data.value.last_name }}
                                     </template>
@@ -123,11 +124,11 @@
 
                         <v-row>
                             <v-col cols="12"> <!-- :hasCheckbox="true" -->
-                                <vue3-datatable ref="dataTableEdit" :rows="rowsEdit" :columns="colsEdit"
+                                <vue3-datatable ref="datatable" :rows="rowsEdit" :columns="colsEdit"
                                     :loading="loadingEdit" :search="params.searchEdit" :hasCheckbox="true"
                                     :sortDirection="params.sortDirection" :selectRowOnClick="true" :sortable="true"
                                     skin="bh-table-compact bh-table-bordered" class="set_approver_tables"
-                                    @rowSelect="rowSelectionEdit">
+                                    @rowSelect="rowSelectionEdit"  :rowClass="getRowClassEdit">
                                     <template #first_name="data">
                                         {{ data.value.first_name }} {{ data.value.last_name }}
                                     </template>
@@ -150,7 +151,6 @@ import { user_data } from '@/stores/auth/userData'
 
 
 import BaseLayout from '@/components/layout/MainLayout/BaseLayout.vue';
-// import Dialog from '@/components/dialog/Dialog.vue'
 import * as pub_maintenance from '@/global/maintenance'
 import debounce from 'lodash/debounce'
 
@@ -162,16 +162,18 @@ import { useDisplay } from 'vuetify'
 const { width } = useDisplay()
 
 const tab = ref(null)
+
 /** Toast Notification */
 import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+import { apiRequestAxios } from '@/api/api';
+const apiRequest = apiRequestAxios()
 
 const dataTable = ref(null)
-const dataTableEdit = ref(null)
+const datatable = ref(null)
 const dialog = ref(false)
 const dialogEdit = ref(false)
 const btnDisable = ref(false)
@@ -283,28 +285,36 @@ const getAllEquipmentsEdit = async () => {
 }
 
 /*** Row Click Selection and get Data */
-const rowSelection = (data) => {
-    const selectedRow = dataTable.value.getSelectedRows()
-    if (selectedRow && selectedRow.length === 1) {
+const selectedRows = ref([])
+const rowSelection = (row) => {
+    selectedRows.value = dataTable.value.getSelectedRows()
+    if (row && row.length === 1) {
         btnDisable.value = false
-        item_code.value = selectedRow[0].item_code
-        equipmentId.value = selectedRow[0].id
+        item_code.value = row[0].item_code
+        equipmentId.value = row[0].id
     } else {
         btnDisable.value = true
     }
 }
+const getRowClass = (row) => {
+    const rowID = selectedRows.value.map(v => v.id)
+    return rowID.includes(row.id) ? 'highlightRow' : ''
+}
 
 /*** Row Click Selection and get Data to Edit */
+const selectedRowsEdit = ref([])
 const rowSelectionEdit = (data) => {
-    const selectedRow = dataTableEdit.value.getSelectedRows()
-    if (selectedRow && selectedRow.length === 1) {
+    selectedRowsEdit.value = datatable.value.getSelectedRows()
+    if (data && data.length === 1) {
         btnDisableEdit.value = false
-        item_code_edit.value = selectedRow[0].item_code
-        equipmentIdEdit.value = selectedRow[0].id
-        frequencyEdit.value = selectedRow[0].schedule
-    } else {
-        btnDisableEdit.value = true
-    }
+        item_code_edit.value = data[0].item_code
+        equipmentIdEdit.value = data[0].id
+        frequencyEdit.value = data[0].schedule
+    } else btnDisableEdit.value = true
+}
+const getRowClassEdit = (data) => {
+    const rowIDEdit = selectedRowsEdit.value.map(v => v.id)
+    return rowIDEdit.includes(data.id) ? 'highlightRow' : ''
 }
 
 /** Save Schedule */
@@ -367,10 +377,3 @@ onMounted(() => {
 })
 
 </script>
-
-
-<style scoped>
-.v-tab-item--selected{
-    background: red!important;
-}
-</style>

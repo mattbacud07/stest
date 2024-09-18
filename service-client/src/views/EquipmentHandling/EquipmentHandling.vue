@@ -6,7 +6,7 @@
                     :search="searchText" @rowSelect="rowSelect" :columnFilter="false" :sortColumn="params.sortColumn"
                     :sortDirection="params.sortDirection" :sortable="true" noDataContent="No records found"
                     skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true"
-                    :selectRowOnClick="true">
+                    :rowClass="getRowClass" :selectRowOnClick="true" @rowDBClick="doubleClickViewData">
                     <template #id="data">
                         <span>{{ pub_var.setReportNumber(data.value.id, data.value.created_at) }}</span>
                     </template>
@@ -18,15 +18,18 @@
                             }}</span>
                     </template>
                     <template #approver_name="data">
-                        <span class="text-danger" v-if="parseInt(data.value.main_status) === pub_var.DISAPPROVED">Disapproved</span>
-                        <span class="text-success" v-else-if="parseInt(data.value.main_status) === pub_var.COMPLETE">Completed</span>
-                        <span v-else>{{ pub_var.pending_approval_status(data.value.status) }} 
-                            {{ pub_var.INSTALLATION_TL === data.value.status || pub_var.INSTALLATION_ENGINEER === data.value.status ? data.value.ssu : '' }}
+                        <span class="text-danger"
+                            v-if="parseInt(data.value.main_status) === pub_var.DISAPPROVED">Disapproved</span>
+                        <span class="text-success"
+                            v-else-if="parseInt(data.value.main_status) === pub_var.COMPLETE">Completed</span>
+                        <span v-else>{{ pub_var.pending_approval_status(data.value.status) }}
+                            {{ pub_var.INSTALLATION_TL === data.value.status || pub_var.INSTALLATION_ENGINEER ===
+                                data.value.status ? data.value.ssu : '' }}
                         </span>
                     </template>
                     <template #main_status="data">
                         <span :style="{ color: pub_var.setJOStatus(data.value.main_status).color }">{{
-            pub_var.setJOStatus(data.value.main_status).text }}</span>
+                            pub_var.setJOStatus(data.value.main_status).text }}</span>
                     </template>
                     <template #created_at="data">
                         <span>{{ moment(data.value.created_at).format('MM/DD/YYYY') }}</span>
@@ -44,8 +47,11 @@ import { onMounted, ref, reactive, provide, watch, defineProps, inject, toRefs }
 import LayoutWithActions from '@/components/layout/MainLayout/LayoutWithActions.vue';
 import { user_data } from '@/stores/auth/userData'
 import { getRole } from '@/stores/getRole'
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global'
 import moment from 'moment';
+import { useRouter } from 'vue-router';
+const router = useRouter()
 
 
 /** Vuue3 DataTable */
@@ -58,14 +64,14 @@ import '@bhplugin/vue3-datatable/dist/style.css'
 const user = user_data();
 const role = getRole()
 role.getRoleData
-const currentUserRole = role.currentUserRole
+const currentUserRole = role.currentUserRole.role_id
 const btnDisable = ref(true)
 const datatable = ref(null)
 const selectedId = ref(null)
 const status = ref(null)
 
 
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 
 
 
@@ -81,67 +87,77 @@ const rows = ref(null);
 const cols =
     ref([
         { field: 'id', title: 'Report Number', isUnique: true, type: 'number', hide: false },
-        { field: 'name', title: 'Institution' , hide: false },
+        { field: 'name', title: 'Institution', hide: false },
         { field: 'address', title: 'Address', hide: false },
         { field: 'user_name', title: 'Requested by' },
         { field: 'request_type', title: 'Request Category', hide: false },
-        { field: 'request_name', title: 'Type of Request' , hide: false },
+        { field: 'request_name', title: 'Type of Request', hide: false },
         // { field: 'internal_name', title: 'Internal Request' },
-        { field: 'proposed_delivery_date', title: 'Proposed Delivery Date', type: 'date' , hide: false },
-        { field: 'created_at', title: 'Date Requested', type: 'date', hide: false  },
-        { field: 'approver_name', title: 'Pending Approval', hide: false  }, //minWidth : '300px' 
-        { field: 'main_status', title: 'Status', type: 'number' , hide: false }, //  minWidth : '200px',
+        { field: 'proposed_delivery_date', title: 'Proposed Delivery Date', type: 'date', hide: false },
+        { field: 'created_at', title: 'Date Requested', type: 'date', hide: false },
+        { field: 'approver_name', title: 'Pending Approval', hide: false }, //minWidth : '300px' 
+        { field: 'main_status', title: 'Status', type: 'number', hide: false }, //  minWidth : '200px',
     ]) || [];
 
-    provide('column', cols)
+provide('column', cols)
 
 
 
 /**
- * @ Row Select Table Event
+ * @ Row Select or Double Click Table Event
  */
-const rowSelect = () => {
-    const selectedRows = datatable.value.getSelectedRows()
-    if (selectedRows && selectedRows.length === 1) {
+const doubleClickViewData = (row) => {
+    router.push({ name: 'WorkOrderApprover', params: { id: row.id } })
+}
+const selectedRows = ref([])
+const rowSelect = (row) => {
+    selectedRows.value = datatable.value.getSelectedRows()
+    if (row && row.length === 1) {
         btnDisable.value = false
     } else {
         btnDisable.value = true
     }
 
-    const extractId = selectedRows.map((data) => { return data.id })
-    const statusId = selectedRows.map((data) => { return data.status })
+    const extractId = row.map((data) => { return data.id })
+    const statusId = row.map((data) => { return data.status })
     selectedId.value = extractId[0]
     status.value = statusId[0]
 }
+const getRowClass = (row) => {
+    const rowID = selectedRows.value.map(v => v.id)
+    return rowID.includes(row.id) ? 'highlightRow' : ''
+}
+
+
 
 
 /** Sent to Topbar */  // Subject to Change [Set Roles and Permission Dynamically]
 const category = ref('')
-const routeView = ref('ViewWorkOrder')
+const routeView = ref('WorkOrderApprover')
 const addView = ref('WorkOrder')
 const service_id = ref(null)
 const enableCreate = ref(false)
 
 
 
-if (currentUserRole === 'Requestor') {
-    routeView.value = 'ViewWorkOrder'
-    addView.value = 'WorkOrder'
-    enableCreate.value = true
-}
-if (currentUserRole === pub_var.approverRole) {
-    routeView.value = 'WorkOrderApprover'
-    // actions.service_id = service_id
-}
-if (currentUserRole === pub_var.TLRole) {
-    routeView.value = 'WorkOrderApprover'
-}
-// if (currentUserRole === pub_var.outboundPersonnel) {
+// if (currentUserRole === 'Requestor') {
+//     routeView.value = 'ViewWorkOrder'
+//     addView.value = 'WorkOrder'
+//     enableCreate.value = true
+// }
+// if (currentUserRole === pub_var.approverRole) {
+//     routeView.value = 'WorkOrderApprover'
+//     // actions.service_id = service_id
+// }
+// if (currentUserRole === pub_var.TLRole) {
 //     routeView.value = 'WorkOrderApprover'
 // }
-if (currentUserRole === pub_var.engineerRole) {
-    routeView.value = 'WorkOrderApprover'
-}
+// // if (currentUserRole === pub_var.outboundPersonnel) {
+// //     routeView.value = 'WorkOrderApprover'
+// // }
+// if (currentUserRole === pub_var.engineerRole) {
+//     routeView.value = 'WorkOrderApprover'
+// }
 
 const actions = {
     selectedId: selectedId,
@@ -197,8 +213,12 @@ onMounted(() => {
 
 
 <style scoped>
-table tbody tr td span:empty::before{
-  content: '' !important;
+* {
+    user-select: none;
+}
+
+table tbody tr td span:empty::before {
+    content: '' !important;
 }
 </style>
 

@@ -344,12 +344,15 @@ const { name, width } = useDisplay()
 // console.log(name.value)
 
 import { user_data } from '@/stores/auth/userData';
+import { apiRequestAxios } from '@/api/api';
 
 /** data declarations */
 const router = useRouter()
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+
+const apiRequest = apiRequestAxios()
+
 const datatable = ref(null)
 const form = ref(false)
 const overlayMasterData = ref(false)
@@ -526,7 +529,7 @@ const submitWorkOrder = async () => {
                     peripherals: peripheral,
                 })
             if (response.data && response.data.success) {
-                toast.success('Successfully created')
+                toast.success('Request successfully created')
                 btnDisable.value = true
                 router.push('/equipment-handling')
                 // const countDownInterval = setInterval(() => {

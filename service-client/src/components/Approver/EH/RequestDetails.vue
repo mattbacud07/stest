@@ -127,6 +127,7 @@
 import { ref, onMounted, getCurrentInstance, defineEmits, watch, toRefs, toRef } from 'vue';
 import { user_data } from '@/stores/auth/userData';
 import * as pub_var from '@/global/global'
+import { apiRequestAxios } from '@/api/api';
 import InternalRequest from './InternalRequest.vue'
 import { useDisplay } from 'vuetify'
 const { width } = useDisplay()
@@ -135,7 +136,7 @@ const { width } = useDisplay()
 /** data declarations */
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 const institutionData = ref([])
 const instance = getCurrentInstance()
 const loadingSkeleton = ref(false)

@@ -135,7 +135,7 @@
 import { ref, reactive, onMounted, watch, provide } from 'vue';
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 import moment from 'moment';
-import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import * as m_var from '@/global/maintenance'
 import * as pub_var from '@/global/global'
 
@@ -160,10 +160,11 @@ const toast = useToast()
 
 import { user_data } from '@/stores/auth/userData';
 import { getRole } from '@/stores/getRole';
+import { apiRequestAxios } from '@/api/api';
 
 
 const role = getRole()
-const currentRole = role.currentUserRole
+const currentRole = role.currentUserRole.role_id
 
 
 
@@ -211,7 +212,9 @@ const router = useRouter()
 const route = useRoute()
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+
+const apiRequest = apiRequestAxios()
+
 const form = ref(false)
 const btnDisable = ref(false)
 const btnLoading = ref(false)
@@ -299,7 +302,7 @@ const pm_decline = async () => {
     }
     try {
         const res = await apiRequest.post('pm_decline', {
-            id: id,
+            pm_id: id,
         })
         if (res.data && res.data.success) {
             toast.success('Reason submitted')
@@ -480,7 +483,7 @@ const getEngineersData = async () => {
     try {
         const response = await apiRequest.get('get-engineers-data')
         if (response.data && response.data.engineers) {
-            const filteredEngineersData = response.data.engineers.filter(data => data.SSU === pm_data.value.eh.ssu)
+            const filteredEngineersData = response.data.engineers.filter(data => data.SSU === pm_data.value?.eh?.ssu)
             const engineersValue = filteredEngineersData.map(data => {
                 return {
                     title: data.users.first_name + ' ' + data.users.last_name,

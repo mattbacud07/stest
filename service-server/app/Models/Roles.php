@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\authLogin\UserModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,6 +21,12 @@ class Roles extends Model
         'description',
         'permissions'
     ];
+
+
+    // protected $casts = [
+    //     'permissions' => 'array',
+    // ];
+
 
     /** Roles */
     public const adminRole = 'Administrator';

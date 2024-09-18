@@ -28,11 +28,7 @@
 </template>
 <script setup>
 import { ref } from 'vue';
-// import moment from 'moment';
 import { useRoute, useRouter } from 'vue-router';
-
-// import { BASE_URL } from '@/api';
-// import { user_data } from '@/stores/auth/userData';
 import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vue'
 import ApproverHistoryLog from '@/components/Approver/EH/ApproverHistoryLog.vue'
 import RequestDetails from '@/components/Approver/EH/RequestDetails.vue'

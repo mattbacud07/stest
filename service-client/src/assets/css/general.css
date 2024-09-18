@@ -140,7 +140,7 @@ table.dataTable>tbody>tr.selected>* {
 }
 
 .bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered thead tr th {
-  border-color: #f0f0f0!important;
+   border-color: #f0f0f0!important;
 }
 .bh-table-responsive table.bh-table-bordered thead tr, .bh-table-responsive table.bh-table-bordered thead tr{
   background: rgb(255, 255, 255)!important;
@@ -154,9 +154,9 @@ table.dataTable>tbody>tr.selected>* {
  padding-bottom: 10px!important;
  border-bottom: 1px solid #dadada!important;
 }
-.bh-table-responsive table.bh-table-bordered tbody tr, .bh-table-responsive table.bh-table-bordered tbody tr{
+/* .bh-table-responsive table.bh-table-bordered tbody tr, .bh-table-responsive table.bh-table-bordered tbody tr{
   background: rgb(255, 255, 255)!important;
-}
+} */
 .bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered tbody tr td{
   white-space: nowrap;
 }
@@ -164,16 +164,25 @@ table.dataTable>tbody>tr.selected>* {
  font-family: "Poppins", sans-serif !important;
  font-size: 12px!important;
  font-weight: 400;
- color: #191970;
+ /* color: #191970; */
 }
 
 table.bh-table-hover tbody tr:hover{
-  background: #19197011!important;
+  background: #19197018!important;
+  color:#191970!important;
 }
 
-.bh-datatable .selectedRow{
-  background: #191970!important;
-  color: white!important;
+/* RowClass of Vue3Table */
+table.bh-table-bordered tbody .highlightRow{
+  background: #19197018!important;
+  color: #191970!important;
+}
+/* /** CellClass of Vue3Table */
+.internalCell{
+  padding: 1px .8em !important;
+}
+.assignedRoleCellClass{
+  padding: 4px .8em !important;
 }
 
 /* ****************************************************End  Table Vue3 DataTable ******************************************** */

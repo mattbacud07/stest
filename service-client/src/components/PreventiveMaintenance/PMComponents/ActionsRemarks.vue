@@ -84,12 +84,13 @@
 import { ref, inject, onMounted, watch, getCurrentInstance, defineEmits, defineProps, toRefs } from 'vue'
 import { getRole } from '@/stores/getRole';
 import { user_data } from '@/stores/auth/userData'
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global';
 import * as m_var from '@/global/maintenance';
 
 
 const user = user_data()
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 
 const role = getRole()
 const currentRole = role.currentUserRole

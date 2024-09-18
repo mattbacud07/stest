@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Client\ResponseSequence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Termwind\Components\Raw;
 
 use function PHPSTORM_META\map;
 
@@ -86,7 +87,9 @@ class Roles extends Controller
     { 
     $role_id = $request->role;
         $user_role = RoleUser::with(['users' => function($q){
-            $q->select('users.*', 'd.name', 'p.position_name')
+            $q->select('users.*', 'd.name', 'p.position_name', 'a_p.user_id', 'a_p.id as approval_id' ,'a_p.approval_level_name','a_p.approver_category',
+            DB::raw("CONCAT(users.first_name,' ',users.last_name) as fullname"))
+            ->leftJoin(DB::connection('mysql')->getDatabaseName() .'.approval_configuration as a_p', 'users.id', '=', 'a_p.user_id')
             ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.departments as d', 'users.department', '=', 'd.id')
             ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.positions as p', 'users.position', '=', 'p.id');
         }])
@@ -200,7 +203,7 @@ class Roles extends Controller
         $id = $request->id;
 
         try {
-            $roleName = Role::findOrFail($id);
+            $roleName = Role::find($id);
             $roleName->delete();
     
             return response()->json(['success' => true], 200); // Success

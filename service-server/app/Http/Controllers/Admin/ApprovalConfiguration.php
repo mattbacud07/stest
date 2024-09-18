@@ -63,8 +63,11 @@ class ApprovalConfiguration extends Controller
     {
         $data = [
             'user_id' => $request->input('user_id'),
+            'roleID' => $request->input('roleID'),
+            'role_user_id' => $request->input('role_user_id'),
             'approval_level' => $request->input('approver_level'),
             'approval_level_name' => $request->input('approver_level_name'),
+            'approver_category' => $request->input('approver_category'),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

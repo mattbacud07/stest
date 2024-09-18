@@ -9,13 +9,20 @@ export const engineerRole = 'Engineer'
 export const TLRole = 'Team Leader'
 export const wimPersonnel = 'WIM Personnel'
 
+
+export const adminServiceRoleID = 6
+export const approverRoleID = 1
+export const engineerRoleID = 3
+export const TLRoleID = 2
+export const wimPersonnelID = 4
+
 export const rolesArray = [adminServiceRole, approverRole, engineerRole, TLRole, wimPersonnel]
 export const rolesObject = [
     { title: 'Approver', value: 1 },
     { title: 'Team Leader', value: 2 },
     { title: 'Engineer', value: 3 },
     { title: 'WIM Personnel', value: 4 },
-    { title: 'Outbound Personnel', value: 5 },
+    // { title: 'Outbound Personnel', value: 5 },
     { title: 'Administrator', value: 6 },
 ]
 
@@ -98,6 +105,10 @@ export const approver_designation = [
     { key: 'OUTBOUND PERSONNEL', value: 7 },
     // { key: 'TEAM LEADER (SSU)', value: 8 },
     // { key: 'ENGINEER (SSU)', value: 9 },
+]
+
+export const approver_category = [
+    { value : 'EH' },
 ]
 
 
@@ -194,6 +205,9 @@ export const setReportNumber = (id, date_created) => {
 export const formatDate = (date) => {
     return date ? moment(date).format('MM/DD/YYYY hh:mm a') : ''
 }
+export const formatDateFullMonthNoTime = (date) => {
+    return date ? moment(date).format('MMMM DD, YYYY') : ''
+}
 export const formatDateNoTime = (date) => {
     return date ? moment(date).format('MM/DD/YYYY') : ''
 }
@@ -220,4 +234,14 @@ export const requestType = (rtype) => {
         return "Internal Request";
     }
 }
+
+
+
+
+
+
+/***
+ * Approval Category
+ */
+export const eh_approver = 'EH'
 

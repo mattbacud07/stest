@@ -51,7 +51,7 @@
                         </template>
 
                         <template v-slot:default="{ isActive }">
-                            <v-card prepend-icon="mdi-trash-can" color="error" subtitle="Delete Role">
+                            <v-card prepend-icon="mdi-trash-can" subtitle="Delete Role">
                                 <p class="p3"></p>
                                 <v-card-text>Are you sure you want to delete?</v-card-text>
                                 <v-card-actions>
@@ -59,7 +59,7 @@
                                         @click="isActive.value = false"></v-btn>
                                     <v-spacer></v-spacer>
 
-                                    <v-btn color="danger" prepend-icon="mdi-shield-remove-outline" text="Delete"
+                                    <v-btn color="error" prepend-icon="mdi-shield-remove-outline" text="Delete"
                                         class="text-none ml-2" variant="flat" @click="deleteRole"
                                         :loading="loadingSave"></v-btn>
                                 </v-card-actions>
@@ -132,6 +132,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch, provide } from 'vue';
 import { user_data } from '@/stores/auth/userData'
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global.js'
 import alertMessage from '@/components/PopupMessage/alertMessage.vue'
 
@@ -147,7 +148,7 @@ const toast = useToast()
 
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 const form = ref(false)
 const role_name = ref('')
 const description = ref('')
@@ -282,41 +283,41 @@ const getPermissionByRole = (role_id) => {
     return permission?.value.filter(data => data.role_id === role_id)
 }
 // Get Permission
-const getPermission = async () => {
-    try {
-        loading.value = true;
-        const response = await apiRequest.get('get_permissions');
-        permission.value = response.data.permission
+// const getPermission = async () => {
+//     try {
+//         loading.value = true;
+//         const response = await apiRequest.get('get_permissions');
+//         permission.value = response.data.permission
 
-        permissionStatus.value = permission.value.reduce((collection, permission) => {
-            collection[permission.id] = permission.status === 1
-            return collection
-        }, {})
+//         permissionStatus.value = permission.value.reduce((collection, permission) => {
+//             collection[permission.id] = permission.status === 1
+//             return collection
+//         }, {})
 
 
-    } catch (error) {
-        console.log(error)
-    }
+//     } catch (error) {
+//         console.log(error)
+//     }
 
-    loading.value = false;
-};
+//     loading.value = false;
+// };
 
 // Save Permission
-const savePermission = async (id, isChecked) => {
-    const value = isChecked ? 1 : 0
-    try {
-        loading.value = true;
-        const response = await apiRequest.put('set_permissions',{
-            id : id, status : value
-        });
-        if(response.data && response.data.success){
-            await getPermission()
-            messageDetails.value = { show: true, color: 'success', text: 'Successfully set permission' }
-        }
-    } catch (error) {
-        console.log(error)
-    }
-}
+// const savePermission = async (id, isChecked) => {
+//     const value = isChecked ? 1 : 0
+//     try {
+//         loading.value = true;
+//         const response = await apiRequest.put('set_permissions',{
+//             id : id, status : value
+//         });
+//         if(response.data && response.data.success){
+//             await getPermission()
+//             messageDetails.value = { show: true, color: 'success', text: 'Successfully set permission' }
+//         }
+//     } catch (error) {
+//         console.log(error)
+//     }
+// }
 
 
 
@@ -327,47 +328,47 @@ const getModuleByRole = (role_id) => {
     return modules?.value.filter(data => data.role_id === role_id)
 }
 // Get Modules
-const getModules = async () => {
-    try {
-        loading.value = true;
-        const response = await apiRequest.get('get_modules');
-        modules.value = response.data.modules
+// const getModules = async () => {
+//     try {
+//         loading.value = true;
+//         const response = await apiRequest.get('get_modules');
+//         modules.value = response.data.modules
 
-        moduleStatus.value = modules.value.reduce((collection, modules) => {
-            collection[modules.id] = modules.status === 1
-            return collection
-        }, {})
+//         moduleStatus.value = modules.value.reduce((collection, modules) => {
+//             collection[modules.id] = modules.status === 1
+//             return collection
+//         }, {})
 
 
-    } catch (error) {
-        console.log(error)
-    }
+//     } catch (error) {
+//         console.log(error)
+//     }
 
-    loading.value = false;
-};
+//     loading.value = false;
+// };
 
 // Save Modules
-const saveModules = async (id, isChecked) => {
-    const value = isChecked ? 1 : 0
-    try {
-        loading.value = true;
-        const response = await apiRequest.put('set_modules',{
-            id : id, status : value
-        });
-        if(response.data && response.data.success){
-            await getModules();
-            messageDetails.value = { show: true, color: 'success', text: 'Successfully set module' }
-        }
-    } catch (error) {
-        console.log(error)
-    }
-}
+// const saveModules = async (id, isChecked) => {
+//     const value = isChecked ? 1 : 0
+//     try {
+//         loading.value = true;
+//         const response = await apiRequest.put('set_modules',{
+//             id : id, status : value
+//         });
+//         if(response.data && response.data.success){
+//             await getModules();
+//             messageDetails.value = { show: true, color: 'success', text: 'Successfully set module' }
+//         }
+//     } catch (error) {
+//         console.log(error)
+//     }
+// }
 
 
 
 onMounted(() => {
     getRoleName();
-    getPermission();
-    getModules();
+    // getPermission();
+    // getModules();
 });
 </script>

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RoleUser;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,39 +26,39 @@ class authController extends Controller
                     $token = $user->createToken($user->email);
 
                     /** Get Complete User Details available for all users*/
-                    $userInformation = DB::table(DB::connection('mysqlSecond')->getDatabaseName().'.users as u')
-                        ->select('p.position_name' , 'd.name as department_name')
-                        ->join(DB::connection('mysqlSecond')->getDatabaseName().'.positions as p','u.position','=','p.id')
-                        ->join(DB::connection('mysqlSecond')->getDatabaseName().'.departments as d','u.department','=','d.id')
-                        ->where('u.id',$user->id)->get();
+                    $userInformation = DB::table(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u')
+                        ->select('p.position_name', 'd.name as department_name')
+                        ->join(DB::connection('mysqlSecond')->getDatabaseName() . '.positions as p', 'u.position', '=', 'p.id')
+                        ->join(DB::connection('mysqlSecond')->getDatabaseName() . '.departments as d', 'u.department', '=', 'd.id')
+                        ->where('u.id', $user->id)->get();
 
-                    
+
                     /** Get Approval Config details */
-                    $getApprovalConfig = DB::table('approval_configuration')->select('approval_level')->where('user_id',$user->id)->get();
+                    $getApprovalConfig = DB::table('approval_configuration')->select('approval_level')->where('user_id', $user->id)->get();
 
                     /** Get user role */
                     $getRole = DB::table('role_user as rU')
-                    ->select('role_id', 'r.role_name', 'SSU')
-                    ->join('roles as r','rU.role_id' ,'=', 'r.roleID')
-                    ->where('user_id', $user->id)->get();
+                        ->select('role_id', 'r.role_name', 'r.permissions', 'SSU')
+                        ->join('roles as r', 'rU.role_id', '=', 'r.roleID')
+                        ->where('user_id', $user->id)->get();
                     // ->pluck('r.role_id')
                     // ->toArray();
 
                     $userData = [];
                     /** Approval Config */
-                    if(isset($getApprovalConfig[0]) && !empty($getApprovalConfig[0])){
+                    if (isset($getApprovalConfig[0]) && !empty($getApprovalConfig[0])) {
                         $userApprovalConfig = (array)$getApprovalConfig[0];
-                    }else{
+                    } else {
                         $userApprovalConfig = [];
                     }
 
                     /** Roles */
-                    if(isset($getRole) && !empty($getRole)){
+                    if (isset($getRole) && !empty($getRole)) {
                         $getUserRole = $getRole;
-                    }else{
+                    } else {
                         $getUserRole = [];
                     }
-                    
+
                     // $userData = $userInformation;
                     $userData = array_merge($user->toArray(), (array)$userInformation[0], $userApprovalConfig);
                     $userData['user_roles'] = $getUserRole;
@@ -66,7 +68,15 @@ class authController extends Controller
                         'accessToken' => $token->plainTextToken,
                         'user' => $userData,
                         // 'user_roles' => $getUserRole,
-                    ], 200);
+                    ], 200)->cookie(
+                        'token',
+                        $token->plainTextToken,
+                        60 * 24 * 7, // Expiration time in minutes (e.g., 7 days)
+                        '/', // Path
+                        null, // Domain (null for current domain)
+                        true, // Secure (HTTPS only, set to `false` for local development)
+                        true // HttpOnly
+                    );
                 } else {
                     return response()->json([
                         'isLogin' => false,
@@ -80,7 +90,7 @@ class authController extends Controller
             // throw $th;
             Log::error($th->getMessage());
 
-            return response()->json(['error' => 'An error occurred.'.$th], 500);
+            return response()->json(['error' => 'An error occurred.' . $th], 500);
         }
     }
 
@@ -99,8 +109,20 @@ class authController extends Controller
         }
     }
 
-    public function sample()
+    /** Get Current Auth User */
+    public function get_role_permissions(Guard $guard)
     {
-        return response()->json(['status' => 'OK Found']);
+        $userID = $guard->user();
+
+        $userRoles = RoleUser::select('role_user.*', 'r.roleID', 'r.role_name', 'r.permissions')
+            ->where('user_id', $userID->id)
+            ->leftJoin('roles as r', 'r.roleID', '=', 'role_user.role_id')
+            ->get();
+
+        // $userDataWithRoles = ['roles' => $userRoles];
+
+        return response()->json([
+            'user_roles_permission' => $userRoles,
+        ]);
     }
 }

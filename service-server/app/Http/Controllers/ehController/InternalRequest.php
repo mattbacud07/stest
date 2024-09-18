@@ -11,6 +11,7 @@ use App\Services\ActionsDoneService;
 use App\Traits\GlobalVariables;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -75,9 +76,9 @@ class InternalRequest extends Controller
     /**
      * Get All Internal Servicing Request for Specific User
      */
-    public function getInternalRequest(Request $request)
+    public function getInternalRequest(Request $request, Guard $guard)
     {
-        $user_id = $request->user_id;
+        $user_id = $guard->user()->id;
         try {
             $userRoleID = [2];  //2 = 'Team Leader' 3 = 'Engineer'
             $getUserSSU = RoleUser::where('user_id', $user_id)

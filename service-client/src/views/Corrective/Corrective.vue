@@ -125,8 +125,8 @@
                      <v-spacer></v-spacer>
                     <download-excel :data="rows" type="xlsx" :fields="colField"
                         :name="'PreventiveMaintenance - ' + moment().format('MM-DD-YYYY')">
-                        <v-btn text="Export Data" prepend-icon="mdi-download" variant="tonal" color="primary"
-                            class='text-none'></v-btn>
+                        <v-btn text="Export" prepend-icon="mdi-download" variant="tonal" color="primary"
+                            class='text-none ml-2'></v-btn>
                     </download-excel>
                 </v-col>
             </v-row>
@@ -198,6 +198,7 @@ import { onMounted, ref, reactive, provide, watch, computed } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import { getRole } from '@/stores/getRole'
 import { useRouter } from 'vue-router';
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global'
 import * as m_var from '@/global/maintenance.js'
 import moment from 'moment';
@@ -306,7 +307,7 @@ provide('data', actions)
 
 /** User_data Store */
 const user = user_data()
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 const router = useRouter()
 
 const form = ref(false)
@@ -332,30 +333,24 @@ const rules = ref({
 /**
  * @ Row Select Table Event
  */
-const multiSelected = ref([])
+const selectedRows = ref([])
 const rowSelect = (row) => {
-    // const selectedRows = datatable.value.getSelectedRows()
+    selectedRows.value = datatable.value.getSelectedRows()
     if (row.length === 1) btnDisable.value = false
     else btnDisable.value = true
 
-    // const extractId = selectedRows.map((data) => { return data.id })
     selectedId.value = row.map(v => v.id)[0]
-    multiSelected.value = row.map(v => v.id)
 }
 
-
+const getRowClass = (row) => {
+    const rowID = selectedRows.value.map(v => v.id)
+    return rowID.includes(row.id) ? 'highlightRow' : ''
+}
 /**
  * Double Click View PM
  */
 const doubleClickViewPM = (row) => {
     router.push({ name: 'PMView', params: { id: row.id, work_type: 'CM' } })
-}
-
-/**
- * Get Class of the Row
- */
-const getRowClass = (row) => {
-    return (multiSelected.value || []).includes(row.id) ? 'style="background: red!important"' : ''
 }
 
 

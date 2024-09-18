@@ -234,19 +234,16 @@
 
 <script setup>
 import { ref, onMounted, inject } from 'vue'
-import axios from 'axios'
-import { BASE_URL } from '@/api'
 import { user_data } from '@/stores/auth/userData';
-import moment from 'moment'
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global'
 
 /** Declarations */
 const approvers = ref([])
 const get_approval_history = ref([])
-const uri = BASE_URL
 const user = user_data()
 user.getUserData
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 
 const tl_assigned = ref('')
 const tl_assigned_fname = ref('')

@@ -65,9 +65,8 @@
 <script setup>
 import { onMounted, ref, reactive, computed } from 'vue';
 import { user_data } from '@/stores/auth/userData'
-import { BASE_URL } from '@/api/index'
+import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global'
-import moment from 'moment';
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
@@ -107,7 +106,7 @@ const rowSelect = (data) => {
 
 /** Declaration of User Data Store*/
 const user = user_data();
-const apiRequest = user.apiRequest()
+const apiRequest = apiRequestAxios()
 
 
 /** Enable Filter */

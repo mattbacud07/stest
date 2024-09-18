@@ -20,7 +20,7 @@ class SendToCM extends Controller
          $pm_data = PM::where('id', $id)->first();
         $tag = null;
          if($pm_data->status_after_service == PM::operational) $tag = PM::pm_tag_backjob;
-         else if($pm_data->status_after_service == PM::further_monitoring) $tag = PM::pm_tag_under_observation;
+         else if($pm_data->status_after_service == PM::further_monitoring) $tag = PM::pm_tag_non_operational;
          else $tag = PM::pm_tag_backlog;
 
          PM::where('id', $pm_data->id)->update([

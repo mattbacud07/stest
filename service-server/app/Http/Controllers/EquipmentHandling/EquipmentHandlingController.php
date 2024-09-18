@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\EquipmentHandlingService\EHBasicOperation;
 use App\Services\EquipmentHandlingService\EHTaskOperation;
+use Illuminate\Contracts\Auth\Guard;
 
 class EquipmentHandlingController extends Controller
 {
@@ -27,21 +28,6 @@ class EquipmentHandlingController extends Controller
         return response()->json(['equipment_handling' => $data], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
@@ -61,9 +47,9 @@ class EquipmentHandlingController extends Controller
     /**
      * Display the specified resource base on condition.
      */
-    public function showBasedOnCondition(Request $request)
+    public function showBasedOnCondition(Request $request, Guard $guard)
     {
-        $user_id = $request->user_id;
+        $user_id = $guard->user()->id;
         $category = $request->category ?? '';
         $result = $this->EHTaskOperation->getEquipmentHandlingByUserId($user_id, $category);
 
@@ -80,27 +66,4 @@ class EquipmentHandlingController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }
