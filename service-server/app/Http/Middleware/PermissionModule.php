@@ -6,6 +6,7 @@ use App\Models\RoleUser;
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class PermissionModule
@@ -15,17 +16,35 @@ class PermissionModule
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, Guard $guard): Response
+    public function handle(Request $request, Closure $next, $module, $action): Response
     {
-        $user = $guard->user();
+        $user = Auth::user();
 
-        $roleUser = RoleUser::where('user_id', $user->id)->first();
-
-        if(!$roleUser){
-            return response()->json(['error' => 'Unauthorized: No role assigned'], 403);
+        if(!$user){
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $role = $roleUser->role_id;
-        return $next($request);
+        $roleUsers = RoleUser::leftjoin('roles', 'roles.roleID', '=', 'role_user.role_id')
+            ->where('role_user.user_id', $user->id)
+            ->select('role_user.*', 'roles.role_name', 'roles.roleID', 'roles.permissions') // Select the fields you need
+            ->get();
+
+        if(!$roleUsers){
+            return response()->json(['error' => 'No roles found'], 403);
+        }
+
+        // $permissions = json_decode($roleUser->permissions, true);
+        foreach($roleUsers as $roleUser){
+            $permissions = json_decode($roleUser['permissions'], true);
+            if($permissions){
+                foreach($permissions as $permission){
+                    if ($permission['module'] === $module && isset($permission[$action]) && $permission[$action]) {
+                        return $next($request);
+                    }
+                }
+            }
+        }
+        
+        return response()->json(['error' => 'Forbidden'], 403);
     }
 }

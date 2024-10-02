@@ -65,12 +65,12 @@
                         <tr v-for="(item, index) in sparepartsUsed" :key="item.id">
                             <td>
                                 {{ item.equipment.item_code }}
-                                <!-- <v-text-field class="hideID">{{ item.id }}</v-text-field> -->
                             </td>
                             <td>{{ item.equipment.description }}</td>
                             <td>{{ item.qty }}</td>
                             <td>{{ item.dr }}</td>
-                            <td rowspan="2">{{ item.si }}</td>
+                            <td>{{ item.si }}</td>
+                            <td colspan="2">{{ item.remarks }}</td>
                         </tr>
                     </tbody>
                     <tbody v-else>
@@ -164,7 +164,7 @@ const props = defineProps({
 
 const { status, pm_id } = toRefs(props)
 
-const textDisable = ref(currentRole === pub_var.engineerRole && status.value === m_var.InProgress ? false : true)
+const textDisable = ref(currentRole === pub_var.engineerRoleID && status.value === m_var.InProgress ? false : true)
 
 
 /** SpareParts */

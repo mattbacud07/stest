@@ -28,6 +28,9 @@ export const apiRequestAxios = () => {
                     localStorage.clear()
                     router.replace({ name: 'login' })
                 }
+                if(error.response.status === 403){
+                    router.replace({ name: 'forbidden'})
+                }
             }
 
             return Promise.reject(error)

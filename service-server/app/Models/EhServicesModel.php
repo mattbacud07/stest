@@ -52,15 +52,24 @@ class EhServicesModel extends Model
     public const SERVICE_HEAD_ENGINEER = 5;
     public const BILLING_WIM = 6;
     public const OUTBOUND = 7;
-    public const TL = 8;
-    public const INSTALLATION_ENGINEER = 9;
-    public const EH_SIGNATORY_COMPLETE = 15;
+    public const AREA_WIM = 8;
+    public const AREA_RSM_SPM_SNM_SM = 9;
+    public const AREA_SERVICE_TL = 10;
+    public const AREA_BILLING_WIM = 11;
+
+    public const INSTALLATION_TL = 18;
+    public const INSTALLATION_ENGINEER = 19;
+    public const EH_SIGNATORY_COMPLETE = 20;
+
+
+    // public const TL = 8;
+    // public const INSTALLATION_ENGINEER = 9;
 
     /** 
      * Work Order Status
      */
     public const ONGOING = 1;
-    public const PARTIAL_COMPLETE = 2;
+    public const ONGOING_AREA_LEVEL = 2;
     public const COMPLETE = 3;
     public const DISAPPROVED = 4;
     public const RESCHEDULE = 5;

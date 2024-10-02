@@ -187,10 +187,8 @@ const filterMenu = ref(false)
 const btnDisabled = ref(true)
 const datatable = ref(null)
 const loadingInstitutionData = ref(false)
-const mapSelected = ref([])
 const serviceId = ref(null)
 const internalId = ref(null)
-const selectJustOneMessage = ref('')
 const status = ref(null)
 const routeView = ref('InternalServicingProcess')
 
@@ -265,8 +263,8 @@ provide('column', cols)
 /** Get Internal Request Servicing */
 const category = ref('')
 const getInternalRequest = async () => {
-    if (currentUserRole === pub_var.engineerRole) category.value = 'delegated_to'
-    if (currentUserRole === pub_var.wimPersonnel) category.value = pub_var.wimPersonnel
+    if (currentUserRole === pub_var.engineerRoleID) category.value = 'delegated_to'
+    if (currentUserRole === pub_var.wimPersonnelID) category.value = pub_var.wimPersonnel
     // if (currentUserRole === pub_var.TLRole) category.value = pub_var.TLRole
     try {
         loading.value = true;

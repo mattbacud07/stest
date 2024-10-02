@@ -2,21 +2,22 @@
     <LayoutSinglePage>
         <template #topBarFixed>
             <v-breadcrumbs class="pt-7">
-                        <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
-                            :class="{ 'custom-pointer': !item.disabled} " :style="{'display' : width <= 768 ? item.display : ''}" @click="navigateTo(item)"
-                            :disabled="item.disabled">
-                            {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
-                        </v-breadcrumbs-item>
-                    </v-breadcrumbs>
+                <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
+                    :class="{ 'custom-pointer': !item.disabled }"
+                    :style="{ 'display': width <= 768 ? item.display : '' }" @click="navigateTo(item)"
+                    :disabled="item.disabled">
+                    {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
+                </v-breadcrumbs-item>
+            </v-breadcrumbs>
             <v-spacer></v-spacer>
 
             <!-- Actions for Engineers -->
-            <div v-if="role.currentUserRole === pub_var.engineerRole">
+            <div v-if="currentUserRoleID === pub_var.engineerRoleID">
                 <span v-if="status === pub_var.internalStat.Delegated">
                     <v-dialog v-model="dialog" max-width="400" persistent>
                         <template v-slot:activator="{ props: activatorProps }">
-                            <v-btn :disabled="btnDisable" v-bind="activatorProps"  color="primary"
-                                variant="tonal" class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
+                            <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="tonal"
+                                class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
                                 Decline</v-btn>
                         </template>
                         <v-card text="" title="Decline">
@@ -27,11 +28,10 @@
                             </v-col>
                             <template v-slot:actions>
                                 <v-row justify="end">
-                                    <v-btn elevation="2" @click="dialog = false" background-color="red" 
-                                        color="#191970" class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                    <v-btn elevation="2" @click="dialog = false" background-color="red" color="#191970"
+                                        class="text-none mr-2"><v-icon>mdi-close</v-icon>
                                         Cancel</v-btn>
-                                    <v-btn @click="declineTask" color="primary" elevation="2" 
-                                        class="text-none mr-3"
+                                    <v-btn @click="declineTask" color="primary" elevation="2" class="text-none mr-3"
                                         style="background-color: #191970;color: #fff!important;"><v-icon
                                             class="mr-1">mdi-close</v-icon>
                                         Decline</v-btn>
@@ -41,7 +41,7 @@
                     </v-dialog>
 
                     <!-- Approve Button -->
-                    <v-btn type="button" :loading="btnSubmitLoading"  @click="acceptInternalRequest"
+                    <v-btn type="button" :loading="btnSubmitLoading" @click="acceptInternalRequest"
                         :disabled="btnDisable" color="primary" variant="flat" class="text-none btnSubmit"><v-icon
                             class="mr-2">mdi-check</v-icon>
                         Accept</v-btn>
@@ -51,7 +51,7 @@
                     <!-- Approve Button -->
                     <v-dialog v-model="dialog" max-width="400" persistent>
                         <template v-slot:activator="{ props: activatorProps }">
-                            <v-btn type="button" v-bind="activatorProps" :loading="btnSubmitLoading" 
+                            <v-btn type="button" v-bind="activatorProps" :loading="btnSubmitLoading"
                                 :disabled="btnDisable" color="primary" variant="flat"
                                 class="text-none btnSubmit"><v-icon class="mr-2">mdi-check</v-icon>
                                 Set as Done</v-btn>
@@ -66,11 +66,11 @@
                             </v-col>
                             <template v-slot:actions>
                                 <v-row justify="end">
-                                    <v-btn elevation="2" @click="dialog = false" background-color="red" 
-                                        color="#191970" class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                    <v-btn elevation="2" @click="dialog = false" background-color="red" color="#191970"
+                                        class="text-none mr-2"><v-icon>mdi-close</v-icon>
                                         Cancel</v-btn>
-                                    <v-btn @click="markAsCompleted" color="primary"
-                                        class="text-none mr-3" :loading="btnSubmitLoading"
+                                    <v-btn @click="markAsCompleted" color="primary" class="text-none mr-3"
+                                        :loading="btnSubmitLoading"
                                         style="background-color: #191970;color: #fff!important;"><v-icon
                                             class="mr-1">mdi-check</v-icon>
                                         Set as Done</v-btn>
@@ -81,7 +81,7 @@
                 </span>
                 <span v-if="status === pub_var.internalStat.Completed">
                     <!-- Approve Button -->
-                    <v-btn type="button" :loading="btnSubmitLoading"  @click="markAsPackedEndorsed"
+                    <v-btn type="button" :loading="btnSubmitLoading" @click="markAsPackedEndorsed"
                         :disabled="btnDisable" color="primary" variant="flat" class="text-none btnSubmit"><v-icon
                             class="mr-2">mdi-check</v-icon>
                         Packed & Sent to Warehouse</v-btn>
@@ -91,10 +91,22 @@
             <div v-else>
                 <span v-if="status === pub_var.internalStat.Packed">
                     <!-- Approve Button -->
-                    <v-btn type="button" :loading="btnSubmitLoading"  @click="markAsPackedEndorsed"
+                    <v-btn type="button" :loading="btnSubmitLoading" @click="confirmationMarkAsConfirmed = true"
                         :disabled="btnDisable" color="primary" variant="flat" class="text-none btnSubmit"><v-icon
                             class="mr-2">mdi-check</v-icon>
-                            Mark as Confirmed</v-btn>
+                        Mark as Confirmed</v-btn>
+
+                    <v-snackbar v-model="confirmationMarkAsConfirmed" tile position="sticky" 
+                    vertical :close-on-content-click="true" color="info" timeout="-1">
+                        Would you like to continue with this action?
+                        <template v-slot:actions>
+                            <v-btn type="button" :loading="btnSubmitLoading" @click="markAsPackedEndorsed"
+                                :disabled="btnDisable" color="primary" variant="flat"
+                                class="btnSubmit mr-2"><v-icon>mdi-check</v-icon>
+                                Yes</v-btn>
+                                <v-btn color="error" variant="flat" @click="confirmationMarkAsConfirmed = false">Cancel</v-btn>
+                        </template>
+                    </v-snackbar>
                 </span>
             </div>
         </template>
@@ -102,14 +114,35 @@
 
             <template #default>
                 <v-container class="container-form mt-7">
-                    <InternalServicingActivity :id="parseInt(internalId)" :key="refreshKey"/>
-                    <h4 class="text-primary mt-5">Request Details</h4>
-                    <RequestDetails :service_id="parseInt(service_id)" /> <!-- @set-status="getStatus"  -->
+                    <InternalServicingActivity :id="parseInt(internalId)" :key="refreshKey" />
+                    <!-- <h4 class="text-primary mt-5">Request Details</h4> -->
 
+                    <v-card class="mt-10">
+                        <v-tabs v-model="tab" density="compact" class="border-b-sm" bg-color="grey-lighten-5">
+                            <v-tab value="details" class="text-none" color="primary"><v-icon class="mr-2">mdi-tooltip-text-outline</v-icon> Request Details</v-tab>
+                            <v-tab value="equipments" class="text-none" color="primary"><v-icon
+                                    class="mr-2">mdi-hammer-screwdriver</v-icon> Requested Equipments</v-tab>
+                        </v-tabs>
+
+                        <v-card-text>
+                            <v-window v-model="tab" :disabled="true">
+                                <v-window-item value="details">
+                                    <RequestDetails :service_id="parseInt(service_id)" /> <!-- @set-status="getStatus"  -->
+                                </v-window-item>
+                                <v-window-item value="equipments">
+                                    <RequestedEquipments :service_id="parseInt(service_id)" @set-serial="getSerialNumber"
+                                        @get-serials="getSerials" :editSerial="true" />
+                                </v-window-item>
+                            </v-window>
+                        </v-card-text>
+                    </v-card>
+
+                    
+<!-- 
                     <RequestedEquipments :service_id="parseInt(service_id)" :status="status" :editSerial="false"
                         @get-serials="getSerials" />
 
-                    <alertMessage v-if="messageDetails.show" :details="messageDetails" />
+                    <alertMessage v-if="messageDetails.show" :details="messageDetails" /> -->
                 </v-container>
             </template>
         </v-form>
@@ -122,12 +155,11 @@ import { getRole } from '@/stores/getRole'
 import { apiRequestAxios } from '@/api/api';
 
 const role = getRole()
-role.getRoleData
+const currentUserRoleID = role.currentUserRole
 
 import { user_data } from '@/stores/auth/userData';
 import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vue'
 import RequestDetails from '@/components/Approver/EH/RequestDetails.vue'
-import alertMessage from '@/components/PopupMessage/alertMessage.vue'
 import * as pub_var from '@/global/global.js'
 
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
@@ -137,14 +169,19 @@ import { useDisplay } from 'vuetify'
 const { width } = useDisplay()
 
 /** Toast Notification */
-import {useToast} from 'vue-toast-notification'
+import { useToast } from 'vue-toast-notification'
 const toast = useToast()
+
+/** Pop up confimration */
+const confirmationMarkAsConfirmed = ref(false)
+
+const tab = ref('equipments')
 
 
 const breadcrumbItems = [
-    { title: 'Back', disabled: false, href: '/internal-servicing', display : 'block' },
-    { title: 'Equipment Handling', disabled: true, href: '', display : 'none' },
-    { title: 'Internal Servicing', disabled: true, href: '', display : 'none' },
+    { title: 'Back', disabled: false, href: '/internal-servicing', display: 'block' },
+    { title: 'Equipment Handling', disabled: true, href: '', display: 'none' },
+    { title: 'Internal Servicing', disabled: true, href: '', display: 'none' },
 ]
 const navigateTo = (item) => {
     if (!item.disabled && item.href) {
@@ -280,13 +317,13 @@ const markAsPackedEndorsed = async () => {
     // console.log('Serial Number Data:', dataToSubmit);
     try {
         const response = await apiRequest.post('markPackedEndorsedToWarehouse', {
-            requested_id: internalId, status : status.value, service_id : id
+            requested_id: internalId, status: status.value, service_id: id
         })
         if (response.data && response.data.success) {
             toast.success('Operation completed successfully')
-            toast.success('Send to warehouse for confirmation',{
-                autoClose : 7000
-            })
+            // toast.success('Send to warehouse for confirmation', {
+            //     autoClose: 7000
+            // })
             getInternalRequest()
             refreshKey.value++
         } else {

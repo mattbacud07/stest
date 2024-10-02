@@ -74,56 +74,13 @@
                         label="Search all fields" variant="outlined"></v-text-field>
                 </v-col>
             </v-row>
-            <!-- <p class="text-danger" style="font-size: .8em;">* Select at least one</p> -->
+            <p class="text-danger" style="font-size: .8em;">* Please consult your IT administrator before making any changes</p>
             <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading" :search="params.search"
                 :selectRowOnClick="true" :hasCheckbox="true" :sortable="true" :sortColumn="params.sort_column" :sortDirection="params.sort_direction" skin="bh-table-compact bh-table-bordered"
                 class="mt-5" @rowSelect="isChecked">
                 <template #created_at="data">
                     <span>{{ pub_var.formatDate(data.value.created_at) }}</span>
                 </template>
-                <!-- <template #id="data">
-                    <v-dialog width="400" scrollable>
-                        <template v-slot:activator="{ props: showPermission }">
-                            <v-btn prepend-icon="mdi-account-key-outline" color="primary" variant="tonal"
-                                class="text-none rounded-0" density="compact" text="Permissions"
-                                v-bind="showPermission"></v-btn>
-                        </template>
-                        <template v-slot:default="{ isActive }">
-                            <v-card :title="data.value.role_name" subtitle="Set Permissions">
-                                <v-form @submit.prevent="savePermission" ref="form">
-                                    <v-divider class="mt-1"></v-divider>
-                                    <v-card-text class="px-4">
-                                        <v-checkbox color="primary" v-model="permissionStatus[permission.id]"
-                                            true-icon="mdi-checkbox-marked-outline"
-                                            v-for="permission in getPermissionByRole(data.value.roleID)"
-                                            :key="permission.id" :label="permission.access_type"
-                                            @update:model-value="savePermission(permission.id, $event)"></v-checkbox>
-                                    </v-card-text>
-                                </v-form>
-                            </v-card>
-                        </template>
-                    </v-dialog>
-                    
-                    <v-dialog width="400" scrollable>
-                        <template v-slot:activator="{ props: showModule }">
-                            <v-btn prepend-icon="mdi-file-account-outline" color="primary" variant="tonal"
-                                class="text-none rounded-0 ml-3" density="compact" text="Modules"
-                                v-bind="showModule"></v-btn>
-                        </template>
-                        <template v-slot:default="{ isActive }">
-                            <v-card :title="data.value.role_name" subtitle="Set Module">
-                                    <v-divider class="mt-1"></v-divider>
-                                    <v-card-text class="px-4">
-                                        <v-checkbox color="primary" v-model="moduleStatus[modules.id]"
-                                            true-icon="mdi-checkbox-marked-outline"
-                                            v-for="modules in getModuleByRole(data.value.roleID)"
-                                            :key="modules.id" :label="modules.title"
-                                            @update:model-value="saveModules(modules.id, $event)"></v-checkbox>
-                                    </v-card-text>
-                            </v-card>
-                        </template>
-                    </v-dialog>
-                </template> -->
             </vue3-datatable>
         </v-col>
         <alertMessage v-if="messageDetails.show" :details="messageDetails" />

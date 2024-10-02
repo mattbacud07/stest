@@ -25,7 +25,7 @@
                 </v-list-item-title>
             </v-list-item>
         </v-list>
-        <template v-if="currentRole === pub_var.engineerRole && status === m_var.InProgress">
+        <template v-if="currentRole === pub_var.engineerRoleID && status === m_var.InProgress">
             <v-col cols="12">
                 <v-card elevation="0">
                     <v-btn @click="addField" class="text-none" color="primary" variant="flat"
@@ -71,9 +71,9 @@
         </v-row>
         <v-col col="12">
                 <v-textarea v-model="formData.remarks" @input="inputRemarks" color="primary"
-                    :variant="currentRole === pub_var.engineerRole && status === m_var.InProgress ? 'underlined' : 'plain'"
+                    :variant="currentRole === pub_var.engineerRoleID && status === m_var.InProgress ? 'underlined' : 'plain'"
                     placeholder="Type your remarks & recommendations here ..."
-                    :readonly="currentRole === pub_var.engineerRole && status === m_var.InProgress ? false : true"></v-textarea>
+                    :readonly="currentRole === pub_var.engineerRoleID && status === m_var.InProgress ? false : true"></v-textarea>
            
         </v-col>
     </v-card>

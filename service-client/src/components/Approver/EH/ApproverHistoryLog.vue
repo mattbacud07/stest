@@ -1,6 +1,6 @@
 <template>
     <v-card class="mt-5" elevation="0">
-        <h6 class="text-primary mb-3 mt-7"><b>Approval Status Tracking</b></h6>
+        <!-- <h6 class="text-primary mb-3 mt-2"><b>Approval Status</b></h6> -->
         <v-timeline density="compact" align="start" side="end" line-thickness="1">
             <v-timeline-item :dot-color="status > 0 ? '#555' : '#d3d3d3'" size="extra-small">
                 <div class="d-flex justify-space-between">
@@ -11,7 +11,7 @@
                                 <!-- <span :class="[getLatest(1).userId === approver.user_id ? 'text-success' : 'text-black']">{{ approver.first_name }} {{ approver.last_name }}</span> -->
                                 <span
                                     :class="[getLatest(pub_var.IT_DEPARTMENT).userId === approver.user_id ? 'text-success' : 'text-black']">{{
-                approver.first_name }} {{ approver.last_name }}</span>
+                                    approver.first_name }} {{ approver.last_name }}</span>
                             </span>
                         </div>
                     </div>
@@ -19,7 +19,7 @@
                         <span class="me-4 text-disabled">{{ getLatest(pub_var.IT_DEPARTMENT).date }}</span>
                         <span
                             :class="['me-4', getLatest(pub_var.IT_DEPARTMENT).checkIfApproved ? 'text-danger' : 'text-primary']">{{
-                getLatest(1).remarks }}</span>
+                                getLatest(pub_var.IT_DEPARTMENT).remarks }}</span>
                     </span>
                     <span v-else>
                         <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
@@ -37,22 +37,22 @@
                             <span v-if="approver.approval_level === pub_var.APM_NSM_SM">
                                 <span
                                     :class="[getLatest(pub_var.APM_NSM_SM).userId === approver.user_id ? 'text-success' : 'text-black']">{{
-                approver.first_name }} {{ approver.last_name }}</span>
+                                    approver.first_name }} {{ approver.last_name }}</span>
                             </span>
                         </div>
                     </div>
-                    <span v-if="status > 2" class="d-flex flex-column text-right timeRemarks">
+                    <span v-if="status > pub_var.APM_NSM_SM" class="d-flex flex-column text-right timeRemarks">
                         <span class="me-4 text-disabled">{{ getLatest(pub_var.APM_NSM_SM).date }}</span>
                         <span
                             :class="['me-4', getLatest(pub_var.APM_NSM_SM).checkIfApproved ? 'text-danger' : 'text-primary']">{{
-                getLatest(2).remarks }}</span>
+                                getLatest(pub_var.APM_NSM_SM).remarks }}</span>
                     </span>
                     <span v-else>
                         <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
                     </span>
                 </div>
             </v-timeline-item>
-            <v-timeline-item :dot-color="status > 3 ? '#555' : '#d3d3d3'" size="extra-small">
+            <v-timeline-item :dot-color="status > pub_var.WIM ? '#555' : '#d3d3d3'" size="extra-small">
                 <div class="d-flex justify-space-between">
                     <div>
                         <strong>Warehouse & Inventory Management</strong>
@@ -60,7 +60,7 @@
                             <span v-if="approver.approval_level === pub_var.WIM">
                                 <span
                                     :class="[getLatest(pub_var.WIM).userId === approver.user_id ? 'text-success' : 'text-black']">{{
-                approver.first_name }} {{ approver.last_name }}</span>
+                                    approver.first_name }} {{ approver.last_name }}</span>
                             </span>
                         </div>
                     </div>
@@ -68,14 +68,14 @@
                         <span class="me-4 text-disabled">{{ getLatest(pub_var.WIM).date }}</span>
                         <span
                             :class="['me-4', getLatest(pub_var.WIM).checkIfApproved ? 'text-danger' : 'text-primary']">{{
-                getLatest(3).remarks }}</span>
+                                getLatest(pub_var.WIM).remarks }}</span>
                     </span>
                     <span v-else>
                         <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
                     </span>
                 </div>
             </v-timeline-item>
-            <v-timeline-item :dot-color="status > 4 ? '#555' : '#d3d3d3'" size="extra-small">
+            <v-timeline-item :dot-color="status > pub_var.SERVICE_TL ? '#555' : '#d3d3d3'" size="extra-small">
                 <div class="d-flex justify-space-between">
                     <div>
                         <strong>Service Dept Team Leader</strong>
@@ -83,15 +83,15 @@
                             <span v-if="approver.approval_level === pub_var.SERVICE_TL">
                                 <span
                                     :class="[getLatest(pub_var.SERVICE_TL).userId === approver.user_id ? 'text-success' : 'text-black']">{{
-                approver.first_name }} {{ approver.last_name }}</span>
+                                    approver.first_name }} {{ approver.last_name }}</span>
                             </span>
                         </div>
                     </div>
-                    <span v-if="status > 4" class="d-flex flex-column text-right timeRemarks">
+                    <span v-if="status > pub_var.SERVICE_TL" class="d-flex flex-column text-right timeRemarks">
                         <span class="me-4 text-disabled">{{ getLatest(pub_var.SERVICE_TL).date }}</span>
                         <span
                             :class="['me-4', getLatest(pub_var.SERVICE_TL).checkIfApproved ? 'text-danger' : 'text-primary']">{{
-                getLatest(4).remarks }}</span>
+                                getLatest(pub_var.SERVICE_TL).remarks }}</span>
                     </span>
                     <span v-else>
                         <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
@@ -103,19 +103,25 @@
                     <v-col cols="12">
                         <div class="d-flex justify-space-between">
                             <div class="mt-5">
-                                    Internal Status : <br/><span class="text-success">
-                                        {{ getInternalStatus === pub_var.internalStat.Delegated ? 'Waiting for Acceptance'
-                : pub_var.internalStatus(getInternalStatus).text }} 
-                                    </span>
+                                Internal Status : <br /><span class="text-success">
+                                    {{ getInternalStatus === pub_var.internalStat.Delegated ? 'Waiting for Acceptance'
+                                        : pub_var.internalStatus(getInternalStatus).text }}
+                                </span>
                             </div>
-                            <div class="me-4 text-disabled text-right">{{ pub_var.formatDate(getInternalDateTimeUpdated) }}<br/>
-                                <span class="small text-disabled" v-if="getInternalStatus === pub_var.internalStat.ConfirmedByWIM">Task completed by [<b>{{ CurrentlyDelegatedTo }}</b>]</span>
-                                <span class="small text-disabled" v-else>Task assigned to [<b>{{ CurrentlyDelegatedTo }}</b>]</span></div>
+                            <div class="me-4 text-disabled text-right">{{ pub_var.formatDate(getInternalDateTimeUpdated)
+                                }}<br />
+                                <span class="small text-disabled"
+                                    v-if="getInternalStatus === pub_var.internalStat.ConfirmedByWIM">Task completed by
+                                    [<b>{{
+                                        CurrentlyDelegatedTo }}</b>]</span>
+                                <span class="small text-disabled" v-else>Task assigned to [<b>{{ CurrentlyDelegatedTo
+                                        }}</b>]</span>
+                            </div>
                         </div>
-                        
-                        <span class="small text-grey" 
-                                            v-if="getInternalStatus === pub_var.internalStat.ConfirmedByWIM">Internal
-                                            Process Completed</span>
+
+                        <span class="small text-grey"
+                            v-if="getInternalStatus === pub_var.internalStat.ConfirmedByWIM">Internal
+                            Process Completed</span>
                     </v-col>
                 </v-row>
 
@@ -129,7 +135,7 @@
                             <span v-if="approver.approval_level === pub_var.SERVICE_HEAD_ENGINEER">
                                 <span
                                     :class="[getLatest(pub_var.SERVICE_HEAD_ENGINEER).userId === approver.user_id ? 'text-success' : 'text-black']">{{
-                approver.first_name }} {{ approver.last_name }}</span>
+                                    approver.first_name }} {{ approver.last_name }}</span>
                             </span>
                         </div>
                     </div>
@@ -137,7 +143,7 @@
                         <span class="me-4 text-disabled">{{ getLatest(pub_var.SERVICE_HEAD_ENGINEER).date }}</span>
                         <span
                             :class="['me-4', getLatest(pub_var.SERVICE_HEAD_ENGINEER).checkIfApproved ? 'text-danger' : 'text-primary']">{{
-                getLatest(5).remarks }}</span>
+                                getLatest(pub_var.SERVICE_HEAD_ENGINEER).remarks }}</span>
                     </span>
                     <span v-else>
                         <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
@@ -152,7 +158,7 @@
                             <span v-if="approver.approval_level === pub_var.BILLING_WIM">
                                 <span
                                     :class="[getLatest(pub_var.BILLING_WIM).userId === approver.user_id ? 'text-success' : 'text-black']">{{
-                approver.first_name }} {{ approver.last_name }}</span>
+                                    approver.first_name }} {{ approver.last_name }}</span>
                             </span>
                         </div>
                     </div>
@@ -160,7 +166,7 @@
                         <span class="me-4 text-disabled">{{ getLatest(pub_var.BILLING_WIM).date }}</span>
                         <span
                             :class="['me-4', getLatest(pub_var.BILLING_WIM).checkIfApproved ? 'text-danger' : 'text-primary']">{{
-                getLatest(6).remarks }}</span>
+                                getLatest(pub_var.BILLING_WIM).remarks }}</span>
                     </span>
                     <span v-else>
                         <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
@@ -176,7 +182,7 @@
                             <span v-if="approver.approval_level === pub_var.OUTBOUND">
                                 <span
                                     :class="[getLatest(pub_var.OUTBOUND).userId === approver.user_id ? 'text-success' : 'text-black']">{{
-                approver.first_name }} {{ approver.last_name }}</span>
+                                    approver.first_name }} {{ approver.last_name }}</span>
                             </span>
                         </div>
                     </div>
@@ -184,18 +190,138 @@
                         <span class="me-4 text-disabled">{{ getLatest(pub_var.OUTBOUND).date }}</span>
                         <span
                             :class="['me-4', getLatest(pub_var.OUTBOUND).checkIfApproved ? 'text-danger' : 'text-primary']">{{
-                getLatest(7).remarks }}</span>
+                                getLatest(pub_var.OUTBOUND).remarks }}</span>
                     </span>
                     <span v-else>
                         <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
                     </span>
                 </div>
+
+
+                <!-- Internal Servicing Tracks Details -->
+                <v-row v-if="final_installation_date">
+                    <v-col cols="12">
+                        <div class="d-flex justify-space-between">
+                            <div class="mt-5">
+                                Final Installation Date : <span class="text-dark">{{  pub_var.formatDateNoTime(final_installation_date)  }} </span>
+                            </div>
+                        </div>
+                        <span class="small text-grey">Driver : {{ driver }}</span>
+                    </v-col>
+                </v-row>
             </v-timeline-item>
+
+
+            <!-- AREA APPROVERS -->
+            <template v-if="area !== 'luzon' && area !== 'LUZON' && area !== 'Luzon'">
+                <v-timeline-item :dot-color="status > pub_var.AREA_WIM ? '#555' : '#d3d3d3'" size="extra-small">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <strong>Area Warehouse & Inventory Management</strong>
+                            <div class="text-caption" v-for="(approver, index) in approvers" :key="index">
+                                <span v-if="approver.approval_level === pub_var.AREA_WIM">
+                                    <span
+                                        :class="[getLatest(pub_var.AREA_WIM).userId === approver.user_id ? 'text-success' : 'text-black']">{{
+                                        approver.first_name }} {{ approver.last_name }}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <span v-if="status > pub_var.AREA_WIM" class="d-flex flex-column text-right timeRemarks">
+                            <span class="me-4 text-disabled">{{ getLatest(pub_var.AREA_WIM).date }}</span>
+                            <span
+                                :class="['me-4', getLatest(pub_var.AREA_WIM).checkIfApproved ? 'text-danger' : 'text-primary']">{{
+                                    getLatest(pub_var.AREA_WIM).remarks }}</span>
+                        </span>
+                        <span v-else>
+                            <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
+                        </span>
+                    </div>
+                </v-timeline-item>
+                <v-timeline-item :dot-color="status > pub_var.AREA_RSM_SPM_SNM_SM ? '#555' : '#d3d3d3'" size="extra-small">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <strong>Area RSM/APM/NSM/SM</strong>
+                            <div class="text-caption" v-for="(approver, index) in approvers" :key="index">
+                                <span v-if="approver.approval_level === pub_var.AREA_RSM_SPM_SNM_SM">
+                                    <span
+                                        :class="[getLatest(pub_var.AREA_RSM_SPM_SNM_SM).userId === approver.user_id ? 'text-success' : 'text-black']">{{
+                                        approver.first_name }} {{ approver.last_name }}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <span v-if="status > pub_var.AREA_RSM_SPM_SNM_SM" class="d-flex flex-column text-right timeRemarks">
+                            <span class="me-4 text-disabled">{{ getLatest(pub_var.AREA_RSM_SPM_SNM_SM).date }}</span>
+                            <span
+                                :class="['me-4', getLatest(pub_var.AREA_RSM_SPM_SNM_SM).checkIfApproved ? 'text-danger' : 'text-primary']">{{
+                                    getLatest(pub_var.AREA_RSM_SPM_SNM_SM).remarks }}</span>
+                        </span>
+                        <span v-else>
+                            <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
+                        </span>
+                    </div>
+                </v-timeline-item>
+                <v-timeline-item :dot-color="status > pub_var.AREA_SERVICE_TL ? '#555' : '#d3d3d3'" size="extra-small">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <strong>Area Service TL & Service Engineer</strong>
+                            <div class="text-caption" v-for="(approver, index) in approvers" :key="index">
+                                <span v-if="approver.approval_level === pub_var.AREA_SERVICE_TL">
+                                    <span
+                                        :class="[getLatest(pub_var.AREA_SERVICE_TL).userId === approver.user_id ? 'text-success' : 'text-black']">{{
+                                        approver.first_name }} {{ approver.last_name }}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <span v-if="status > pub_var.AREA_SERVICE_TL" class="d-flex flex-column text-right timeRemarks">
+                            <span class="me-4 text-disabled">{{ getLatest(pub_var.AREA_SERVICE_TL).date }}</span>
+                            <span
+                                :class="['me-4', getLatest(pub_var.AREA_SERVICE_TL).checkIfApproved ? 'text-danger' : 'text-primary']">{{
+                                    getLatest(pub_var.AREA_SERVICE_TL).remarks }}</span>
+                        </span>
+                        <span v-else>
+                            <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
+                        </span>
+                    </div>
+                </v-timeline-item>
+                <v-timeline-item :dot-color="status > pub_var.AREA_BILLING_WIM ? '#555' : '#d3d3d3'" size="extra-small">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <strong>Area Billing and Invoicing Staff</strong>
+                            <div class="text-caption" v-for="(approver, index) in approvers" :key="index">
+                                <span v-if="approver.approval_level === pub_var.AREA_BILLING_WIM">
+                                    <span
+                                        :class="[getLatest(pub_var.AREA_BILLING_WIM).userId === approver.user_id ? 'text-success' : 'text-black']">{{
+                                        approver.first_name }} {{ approver.last_name }}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <span v-if="status > pub_var.AREA_BILLING_WIM" class="d-flex flex-column text-right timeRemarks">
+                            <span class="me-4 text-disabled">{{ getLatest(pub_var.AREA_BILLING_WIM).date }}</span>
+                            <span
+                                :class="['me-4', getLatest(pub_var.AREA_BILLING_WIM).checkIfApproved ? 'text-danger' : 'text-primary']">{{
+                                    getLatest(pub_var.AREA_BILLING_WIM).remarks }}</span>
+                        </span>
+                        <span v-else>
+                            <span class="me-4 text-disabled">00-00-00 00-00 00 0</span>
+                        </span>
+                    </div>
+                </v-timeline-item>
+
+
+            </template>
+
+
+
+
+
+
+            <!-- For Installation -->
 
             <v-timeline-item :dot-color="status > pub_var.INSTALLATION_TL ? '#555' : '#d3d3d3'" size="extra-small">
                 <div class="d-flex justify-space-between">
                     <div>
-                        <strong>Team Leader <span v-if="SSU !== ''">({{ SSU }})</span> <span v-else>(Team Leader per SSU)</span></strong><i class="small">
+                        <strong>Team Leader <span v-if="SSU !== ''">({{ SSU }})</span> <span v-else>(Team Leader per
+                                SSU)</span></strong><i class="small">
                             (Delegate installation)</i>
                         <div class="text-caption">
                             <span class="text-success">{{ tl_assigned_fname }} {{ tl_assigned_lname }}</span>
@@ -216,7 +342,9 @@
                         <strong>Completed <i>(Installed)</i></strong>
                         <div class="text-caption">
                             <!-- <span v-if="date_installed !== '' || date_installed !== null">(Assigned Engineer)</span> -->
-                            <span class="text-primary"><i v-if="date_installed !== ''">Installer : </i>{{ fname }} {{ lname }}</span>
+                            <span class="text-primary"><i v-if="date_installed !== ''">Installer : </i>{{ fname }} {{
+                                lname
+                                }}</span>
                         </div>
                     </div>
                     <span v-if="date_installed !== ''" class="d-flex flex-column text-right timeRemarks">
@@ -237,6 +365,7 @@ import { ref, onMounted, inject } from 'vue'
 import { user_data } from '@/stores/auth/userData';
 import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global'
+import moment from 'moment';
 
 /** Declarations */
 const approvers = ref([])
@@ -327,6 +456,9 @@ const getApprovalHistory = async () => {
 
 
 /** Get Job Order Details (installer, date installed) */
+const area = ref(null)
+const final_installation_date = ref(null)
+const driver = ref('')
 const getDetails = async () => {
     try {
         const response = await apiRequest.get('get-specific-equipment-handling', {
@@ -347,7 +479,10 @@ const getDetails = async () => {
             fname.value = field.fname
             lname.value = field.lname
             date_installed.value = field.date_installed
+            final_installation_date.value = field.final_installation_date
+            driver.value = field.driver
             SSU.value = field.ssu
+            area.value = field.area
         } else {
             alert('Something went wrong')
         }
@@ -397,7 +532,7 @@ onMounted(() => {
     width: 60%;
 }
 
-.v-timeline-divider__dot .v-icon{
+.v-timeline-divider__dot .v-icon {
     width: 8px !important;
     min-width: 8px !important;
     height: 8px !important;

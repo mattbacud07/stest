@@ -77,15 +77,23 @@ class ApprovalService
     /** Get Next Approval */
     public function getNextApprovalLevel($current_level, $institution_area)
     {
+        $basedOnArea = $institution_area !== 'luzon' && $institution_area !== 'LUZON' && $institution_area !== 'Luzon'
+         ? EH::AREA_WIM //if false
+         : EH::INSTALLATION_TL; //if true
         $levels = [
             EH::IT_DEPARTMENT => [EH::APM_NSM_SM, EH::ONGOING],
             EH::APM_NSM_SM => [EH::WIM, EH::ONGOING],
             EH::WIM => [EH::SERVICE_TL, EH::ONGOING],
             EH::SERVICE_TL => [EH::SERVICE_HEAD_ENGINEER, EH::ONGOING],
             EH::SERVICE_HEAD_ENGINEER => [EH::BILLING_WIM, EH::ONGOING],
-            EH::BILLING_WIM => [EH::OUTBOUND, EH::ONGOING, $institution_area],
-            EH::OUTBOUND => [EH::TL, EH::ONGOING, $institution_area],
-            EH::TL => [EH::INSTALLATION_ENGINEER, EH::INSTALLING, $institution_area],
+            EH::BILLING_WIM => [EH::OUTBOUND, EH::ONGOING],
+            EH::OUTBOUND => [$basedOnArea, EH::ONGOING],
+            EH::AREA_WIM => [EH::AREA_RSM_SPM_SNM_SM, EH::ONGOING],
+            EH::AREA_RSM_SPM_SNM_SM => [EH::AREA_SERVICE_TL, EH::ONGOING],
+            EH::AREA_SERVICE_TL => [EH::AREA_BILLING_WIM, EH::ONGOING],
+            EH::AREA_BILLING_WIM => [EH::INSTALLATION_TL, EH::ONGOING],
+
+            EH::INSTALLATION_TL => [EH::INSTALLATION_ENGINEER, EH::INSTALLING],
             EH::INSTALLATION_ENGINEER => [EH::INSTALLATION_ENGINEER + 1, EH::COMPLETE]
         ];
 

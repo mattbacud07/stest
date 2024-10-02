@@ -1,6 +1,6 @@
 <template>
     <!-- Equipment & Peripherals -->
-    <v-card class="mt-3 p-3" elevation="0" style="border: 1px dashed #191970;">
+    <v-card class="mt-3 p-3" elevation="0" >
         <v-row>
             <h5 class="p-3" style="font-weight: 700;color: #191970;">EQUIPMENT & PERIPHERALS</h5>
             <v-col cols="12">
@@ -36,12 +36,11 @@
                     </table>
                 </div>
             </v-col>
-
         </v-row>
     </v-card>
 
-    <!-- Additional Peripherals -->
-    <v-card class="mt-3 p-3" elevation="0" style="border: 1px dashed #191970;" v-if="peripherals.length > 0">
+    <!-- Additional Peripherals ----- style="border: 1px dashed #191970;"-->
+    <v-card class="mt-3 p-3 rounded-0" elevation="0" style="border-top: 1px dashed #191970;" v-if="peripherals.length > 0">
 
         <v-row>
             <h5 class="p-3 mt-2" style="font-weight: 500;color: #191970;">ADDITIONAL PERIPHERALS <span
@@ -109,7 +108,6 @@ const instance = getCurrentInstance()
 
 const uri = BASE_URL
 const user = user_data()
-user.getUserData
 
 const equipments = ref([])
 const peripherals = ref([])

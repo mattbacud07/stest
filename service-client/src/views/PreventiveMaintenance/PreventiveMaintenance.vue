@@ -125,11 +125,11 @@
 
                 <!-- Filter Chips -->
                 <v-col cols="12" sm="8" md="8" lg="8" class="d-flex justify-end" :style="{'margin-top' : width <= 595 ? '-20px' : '', 'margin-bottom' : width <= 595 ? '20px' : ''}">
-                    <v-chip color="primary" variant="text" label
+                    <v-chip color="primary" variant="text" label v-if="can('delegate','Preventive Maintenance')"
                         :prepend-icon="filterChip.filterOptions.includes('assign-next-month') ? 'mdi-checkbox-marked' : 'mdi-checkbox-blank-outline'"
                         @click="filterStatusClick('assign-next-month')">Next Month Assignment</v-chip>
 
-                    <v-chip color="primary" variant="text" label :disabled="disableOptions"
+                    <v-chip color="primary" variant="text" label :disabled="disableOptions" v-if="can('delegate','Preventive Maintenance')"
                         :prepend-icon="filterChip.filterOptions.includes('not-set') ? 'mdi-checkbox-marked' : 'mdi-checkbox-blank-outline'"
                         @click="filterStatusClick('not-set')">Not Set</v-chip>
 
@@ -230,6 +230,11 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import LayoutWithActions from '@/components/layout/MainLayout/LayoutWithActions.vue'
 
 
+/** Permissions */
+import { permit } from '@/castl/permitted';
+const { can } = permit()
+
+
 /** Declaration */
 const viewSerialDialog = ref([])
 const viewScheduledDialog = ref([])
@@ -317,14 +322,18 @@ const clearFilter = () => {
 /** Sent to Topbar */  // Subject to Change [Set Roles and Permission Dynamically]
 const category = ref('')
 const routeView = ref('PMView')
+const createRequest = ref(null)
 const service_id = ref(null)
 const btnDisable = ref(true)
 const selectedId = ref(null)
+
+if(can('create','Preventive Maintenance')) createRequest.value = 'CreatePM'
 
 const actions = {
     selectedId: selectedId,
     btnDisable: btnDisable,
     routeView: routeView,
+    createRequest : createRequest.value,
     work_type: 'PM',
 }
 
@@ -374,14 +383,20 @@ const cols =
         { field: 'item_id', title: 'Item No', hide: true },
         { field: 'item_code', title: 'Item Code' },
         { field: 'description', title: 'Item Description', hide: true, },
-        { field: 'serial_number', title: 'Serial No.' },
+        { field: 'serial', title: 'Serial No.' },
         { field: 'institution_name', title: 'Institution' },
-        { field: 'institution_address', title: 'Address', hide: true, },
+        { field: 'address', title: 'Address', hide: true, },
         { field: 'date_installed', title: 'Date Installed', hide: true, },
         { field: 'scheduled_at', title: 'Scheduled at' },
         { field: 'schedule', title: 'Frequency' },
-        { field: 'ssu', title: 'SSU' },
+        { field: 'ssu', title: 'SSU', hide: true },
         { field: 'username', title: 'Delegated to' },
+        { field: 'delegation_date', title: 'Delegation Date' },
+        { field: 'date_accepted', title: 'Date Accepted' },
+        { field: 'departed_date', title: 'Date Out' },
+        { field: 'travel_duration', title: 'Travel Time' },
+        { field: 'start_date', title: 'Time In' },
+        { field: 'end_date', title: 'Time Out' },
         { field: 'monitoring_end', title: 'Enf of Monitoring' },
         { field: 'status_after_service', title: 'Status After Service' },
         { field: 'status', title: 'Status' },
@@ -403,8 +418,8 @@ const colField = cols.value.reduce((acc, v) => {
 provide('column', cols)
 
 const getPM = async () => {
-    if (currentUserRole === pub_var.TLRole) category.value = pub_var.TLRole
-    if (currentUserRole === pub_var.engineerRole) category.value = pub_var.engineerRole
+    if (currentUserRole === pub_var.TLRoleID) category.value = pub_var.TLRoleID
+    if (currentUserRole === pub_var.engineerRoleID) category.value = pub_var.engineerRoleID
     try {
         loading.value = true;
         const response = await apiRequest.get('get-preventive-maintenance', {
@@ -503,6 +518,6 @@ onMounted(() => {
 
 /* Calendar Vue Dtewpicker */
 .dp--menu-wrapper{
-  position: inherit!important;
+  position: static!important;
 }
 </style>

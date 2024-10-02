@@ -1,6 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../views/Dashboard.vue'
-import Login from '../views/Login.vue'
+
+import { EH, PM, IS, CM } from '@/global/modules'
+import {
+  canAccess,
+  adminGuard
+} from './routeGuardBeforeEnter'
+import { workOrderMainRequest } from './equipmentHandlingGuard'
+import { preventiveMaintenanceRequest } from './preventiveMaintenanceGuard'
+import { internalServicingRequest } from './internalServicingGuard'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,21 +16,18 @@ const router = createRouter({
     {
       path: '/',
       name: 'login',
-      // component: () => import('../views/Login.vue'),
-      component: Login,
+      component: () => import('../views/Login.vue')
+      // component: Login,
     },
+
     {
       path: '/dashboard',
       name: 'dashboard',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      // component: () => import('../views/Dashboard.vue'),
-      component: Dashboard,
-      meta: { 
-        title : 'Dashboard',
+      component: () => import('../views/Dashboard.vue'),
+      meta: {
+        title: 'Dashboard',
         requiresAuth: true,
-      }
+      },
     },
 
 
@@ -33,44 +38,60 @@ const router = createRouter({
       name: 'AdminDashboard',
       component: () => import('../views/Admin/AdminDashboard.vue'),
       meta: {
-        requiresAuth: true
-      }
+        title: 'Admin Dashboard',
+        requiresAuth: true,
+      },
+      beforeEnter: adminGuard()
     },
     {
       path: '/aprroval-config',
       name: 'ApprovalConfiguration',
       component: () => import('../views/Admin/ApprovalConfiguration.vue'),
       meta: {
-        title : 'Admin - Approval Config',
-        requiresAuth: true
-      }
+        title: 'Admin - Approval Config',
+        requiresAuth: true,
+      },
+      beforeEnter: adminGuard()
     },
     {
       path: '/roles',
       name: 'RolesMain',
       component: () => import('../views/Admin/RolesMain.vue'),
       meta: {
-        title : 'Roles & Permissions',
-        requiresAuth: true
-      }
+        title: 'Roles & Permissions',
+        requiresAuth: true,
+      },
+      beforeEnter: adminGuard()
+    },
+    {
+      path: '/ssu-designation',
+      name: 'SSUDesignation',
+      component: () => import('../views/Admin/SetSSUDesignation.vue'),
+      meta: {
+        title: 'SSU & Designation',
+        requiresAuth: true,
+      },
+      beforeEnter: adminGuard()
     },
     {
       path: '/pm-settings',
       name: 'PMSettings',
       component: () => import('../views/Admin/PMSettings.vue'),
       meta: {
-        title : 'PM Settings',
-        requiresAuth: true
-      }
+        title: 'PM Settings',
+        requiresAuth: true,
+      },
+      beforeEnter: adminGuard()
     },
     {
       path: '/set-standard',
       name: 'SetStandardActions',
       component: () => import('../views/Admin/SetStandardActions.vue'),
       meta: {
-        title : 'Set Standard Actions',
-        requiresAuth: true
-      }
+        title: 'Set Standard Actions',
+        requiresAuth: true,
+      },
+      beforeEnter: adminGuard()
     },
 
 
@@ -82,54 +103,42 @@ const router = createRouter({
       name: 'EquipmentHandling',
       component: () => import('../views/EquipmentHandling/EquipmentHandling.vue'),
       meta: {
-        title : 'Equipment Handling',
+        title: 'Equipment Handling',
         requiresAuth: true
       },
+      beforeEnter: canAccess('read', EH),
     },
     {
       path: '/work-order',
       name: 'WorkOrder',
       component: () => import('../views/EquipmentHandling/WorkOrder.vue'),
       meta: {
-        title : 'Work Order',
+        title: 'Work Order',
         requiresAuth: true
       },
+      beforeEnter: canAccess('create', EH),
     },
+    // {
+    //   path: '/view-work-order/:id',
+    //   name: 'ViewWorkOrder',
+    //   component: () => import('../views/EquipmentHandling/ViewWorkOrder.vue'),
+    //   props: true,
+    //   meta: {
+    //     title: 'Work Order',
+    //     requiresAuth: true
+    //   }
+    // },
     {
-      path: '/view-work-order/:id',
-      name: 'ViewWorkOrder',
-      component: () => import('../views/EquipmentHandling/ViewWorkOrder.vue'),
-      props: true,
-      meta: {
-        title : 'Work Order',
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/approver-work-order/:id',
+      path: '/work-order/:id',
       name: 'WorkOrderApprover',
       component: () => import('../views/EquipmentHandling/WorkOrderApprover.vue'),
       props: true,
       meta: {
-        title : 'Work Order',
+        title: 'Work Order',
         requiresAuth: true
-      }
+      },
+      beforeEnter: workOrderMainRequest(['read', 'approve', 'installer', 'delegate'], EH),
     },
-
-
-
-
-
-    /** =======================================Team Leader Routes ========================================================*/
-    // {
-    //   path: '/tl-dashboard',
-    //   name: 'DashboardTL',
-    //   component: () => import('../views/TeamLeader/DashboardTL.vue'),
-    //   props: true,
-    //   meta: {
-    //     requiresAuth: true
-    //   }
-    // },
 
 
     /** ========================================== Internal Servicing Routes =================================================== */
@@ -139,9 +148,10 @@ const router = createRouter({
       component: () => import('../views/InternalServicing/InternalRequestMainData.vue'),
       props: true,
       meta: {
-        title : 'Internal Servicing',
+        title: 'Internal Servicing',
         requiresAuth: true
-      }
+      },
+      beforeEnter: internalServicingRequest(['read'], IS)
     },
 
     {
@@ -150,9 +160,10 @@ const router = createRouter({
       component: () => import('../views/InternalServicing/InternalRequestProcess.vue'),
       props: true,
       meta: {
-        title : 'Internal Servicing',
+        title: 'Internal Servicing',
         requiresAuth: true
-      }
+      },
+      beforeEnter: internalServicingRequest(['read','installer'], IS)
     },
 
 
@@ -166,9 +177,22 @@ const router = createRouter({
       component: () => import('../views/PreventiveMaintenance/PreventiveMaintenance.vue'),
       props: true,
       meta: {
-        title : 'Preventive Maintenance',
+        title: 'Preventive Maintenance',
         requiresAuth: true
-      }
+      },
+      beforeEnter: canAccess('read', PM)
+    },
+
+    {
+      path: '/create-request',
+      name: 'CreatePM',
+      component: () => import('../views/PreventiveMaintenance/CreatePM.vue'),
+      props: true,
+      meta: {
+        title: 'Preventive Maintenance',
+        requiresAuth: true
+      },
+      beforeEnter: canAccess('create', PM)
     },
 
 
@@ -178,23 +202,10 @@ const router = createRouter({
       component: () => import('../views/PreventiveMaintenance/PMView.vue'),
       props: true,
       meta: {
-        title : 'Preventive Maintenance',
+        title: 'Preventive Maintenance',
         requiresAuth: true
       },
-      beforeEnter: (to, from, next) => {
-        const validWorkType = ['PM', 'CM']
-        const work_type = to.params.work_type
-
-        if (validWorkType.includes(work_type)) next()
-        else next(false)
-      },
-      children: [
-        {
-          path: 'print-preview',
-          name: 'PMPrint',
-          component: () => import('../components/Print/PMPrint.vue'),
-        }
-      ],
+      beforeEnter : preventiveMaintenanceRequest(['read','installer','delegate'], PM)
     },
 
 
@@ -207,21 +218,29 @@ const router = createRouter({
       component: () => import('../views/Corrective/Corrective.vue'),
       props: true,
       meta: {
-        title : 'Corrective Maintenance',
+        title: 'Corrective Maintenance',
         requiresAuth: true
       }
     },
 
 
-    // {
-    //   path: '/pm-view/:id',
-    //   name: 'PMView',
-    //   component: () => import('../views/PreventiveMaintenance/PMView.vue'),
-    //   props: true,
-    //   meta: {
-    //     requiresAuth: true
-    //   },
-    // },
+
+
+
+
+
+
+
+    /** ======================= ERRORS REDIRECTION +++++++++++++++++++++++++++++++++++ */
+
+    {
+      path: '/forbidden',
+      name: 'forbidden',
+      component: () => import('../views/Errors/Forbidden.vue'),
+      meta: {
+        title: 'Forbidden'
+      },
+    },
 
   ]
 })
@@ -230,11 +249,12 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authenticated = JSON.parse(localStorage.getItem('isAuthenticated'))
 
-  
+
   const title = to.meta.title || 'Service App'
   document.title = title
 
   if (to.meta.requiresAuth && !authenticated) {
+    localStorage.clear()
     next({ path: '/' })
   } else if (to.path === '/' && authenticated) {
     next({ path: '/dashboard' })

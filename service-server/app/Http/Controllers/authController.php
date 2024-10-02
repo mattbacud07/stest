@@ -16,6 +16,10 @@ class authController extends Controller
     {
         try {
             $isLogin = false;
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
             $users = $request->only('email', 'password');
             if (Auth::guard('usersSecond')->attempt($users)) {
                 $user = Auth::guard('usersSecond')->user();
@@ -110,14 +114,22 @@ class authController extends Controller
     }
 
     /** Get Current Auth User */
-    public function get_role_permissions(Guard $guard)
+    public function get_role_permissions(Request $request)
     {
-        $userID = $guard->user();
+        // $userID = $guard->user();
+        $user = Auth::user();
 
-        $userRoles = RoleUser::select('role_user.*', 'r.roleID', 'r.role_name', 'r.permissions')
-            ->where('user_id', $userID->id)
-            ->leftJoin('roles as r', 'r.roleID', '=', 'role_user.role_id')
-            ->get();
+        $data = RoleUser::select('role_user.*', 'r.roleID', 'r.role_name', 'r.permissions')
+            ->where('user_id', $user->id)
+            ->leftJoin('roles as r', 'r.roleID', '=', 'role_user.role_id');
+
+            if($request->has('currentRole') && !empty($request->currentRole)){
+                $currentRole = $request->currentRole;
+                $data->where('role_id', $currentRole);
+            }
+        
+        $userRoles = $data->get();
+         
 
         // $userDataWithRoles = ['roles' => $userRoles];
 

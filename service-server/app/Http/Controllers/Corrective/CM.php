@@ -52,7 +52,7 @@ class CM extends Controller
             //initialization
             // $query = PM::query();
 
-            $query = DB::table('preventive_maintenance  as pm')->where('pm.work_type','PM')
+            $query = DB::table('preventive_maintenance  as pm')->where('pm.work_type','CM')
             // Select the required columns
             ->select(
                 'pm.*',
@@ -99,7 +99,7 @@ class CM extends Controller
 
             /** Flexible Condition for Specific request */
             if ($request->has('category')) {
-                if ($request->category === Roles::TLRole) {
+                if ((int)$request->category === Roles::TLRoleID) {
                     $today = Carbon::today();
                     $lastDayOfNextMonth = $today->addMonth()->endOfMonth();
 

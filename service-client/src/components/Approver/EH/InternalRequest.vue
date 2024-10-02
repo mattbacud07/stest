@@ -108,6 +108,7 @@
 import { ref, onMounted, watch, inject, toRefs } from 'vue'
 import { user_data } from '@/stores/auth/userData'
 import * as pub_var from '@/global/global'
+import { apiRequestAxios } from '@/api/api'
 
 /** Toast Notification */
 import { useToast } from 'vue-toast-notification'
@@ -128,7 +129,7 @@ const disableButton = inject('disableButton', null)
 
 const auth = user_data()
 auth.getUserData
-const apiRequest = auth.apiRequest()
+const apiRequest = apiRequestAxios()
 
 const props = defineProps({
     service_id: {

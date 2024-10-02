@@ -1,6 +1,7 @@
 import { AbilityBuilder, createMongoAbility } from "@casl/ability";
 import { getActivePinia } from "pinia";
 import { getRole } from "@/stores/getRole";
+import { computed } from "vue";
 
 export const defineAblity = () => {
     const buildAbility = () => {

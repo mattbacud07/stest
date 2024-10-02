@@ -217,7 +217,7 @@
                     </v-card>
 
                     <!-- Additional Peripherals -->
-                    <v-card class="mt-3 p-3" elevation="0" style="border: .5px dashed #191970;">
+                    <v-card class="mt-3 p-3" elevation="0" style="border: .5px dashed #191970;" >
 
                         <v-row>
                             <h5 class="p-3 mt-2" style="font-weight: 500;color: #191970;">ADDITIONAL PERIPHERALS <span
@@ -317,6 +317,7 @@
             </template>
         </LayoutSinglePage>
     </v-form>
+    
 </template>
 <script setup>
 import { ref, reactive, onMounted, watch, onBeforeUnmount, computed } from 'vue';

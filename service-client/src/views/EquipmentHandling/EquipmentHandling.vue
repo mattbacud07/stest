@@ -2,6 +2,10 @@
     <LayoutWithActions>
         <template #default="{ searchText }">
             <v-card class="mx-auto">
+                <v-col class="d-flex justify-content-end" 
+                v-if="can('approve', 'Equipment Handling') || can('installer', 'Equipment Handling') || can('delegate', 'Equipment Handling')">
+                    <v-checkbox label="View Submitted Request" v-model="myRequest" value=true></v-checkbox>
+                </v-col>
                 <vue3-datatable ref="datatable" class="tableLimitText" :rows="rows" :columns="cols" :loading="loading"
                     :search="searchText" @rowSelect="rowSelect" :columnFilter="false" :sortColumn="params.sortColumn"
                     :sortDirection="params.sortDirection" :sortable="true" noDataContent="No records found"
@@ -32,7 +36,10 @@
                             pub_var.setJOStatus(data.value.main_status).text }}</span>
                     </template>
                     <template #created_at="data">
-                        <span>{{ moment(data.value.created_at).format('MM/DD/YYYY') }}</span>
+                        <span>{{ moment(data.value.created_at).format('MM-DD-YYYY') }}</span>
+                    </template>
+                    <template #final_installation_date="data">
+                        <span>{{ moment(data.value.final_installation_date).format('MM-DD-YYYY')}}</span>
                     </template>
                 </vue3-datatable>
 
@@ -53,6 +60,9 @@ import moment from 'moment';
 import { useRouter } from 'vue-router';
 const router = useRouter()
 
+/** Permissions */
+import { permit } from '@/castl/permitted';
+const { can } = permit()
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
@@ -63,8 +73,7 @@ import '@bhplugin/vue3-datatable/dist/style.css'
 /** Declaration of User Data */
 const user = user_data();
 const role = getRole()
-role.getRoleData
-const currentUserRole = role.currentUserRole.role_id
+const currentUserRoleID = role.currentUserRole
 const btnDisable = ref(true)
 const datatable = ref(null)
 const selectedId = ref(null)
@@ -74,10 +83,7 @@ const status = ref(null)
 const apiRequest = apiRequestAxios()
 
 
-
-/** Enable Filter */
-const enableFilter = ref(false)
-
+/** Data Tables Componenets */
 const loading = ref(true);
 const total_rows = ref('');
 
@@ -94,6 +100,7 @@ const cols =
         { field: 'request_name', title: 'Type of Request', hide: false },
         // { field: 'internal_name', title: 'Internal Request' },
         { field: 'proposed_delivery_date', title: 'Proposed Delivery Date', type: 'date', hide: false },
+        { field: 'final_installation_date', title: 'Final Installation Date', type: 'date', hide: false },
         { field: 'created_at', title: 'Date Requested', type: 'date', hide: false },
         { field: 'approver_name', title: 'Pending Approval', hide: false }, //minWidth : '300px' 
         { field: 'main_status', title: 'Status', type: 'number', hide: false }, //  minWidth : '200px',
@@ -134,28 +141,28 @@ const getRowClass = (row) => {
 /** Sent to Topbar */  // Subject to Change [Set Roles and Permission Dynamically]
 const category = ref('')
 const routeView = ref('WorkOrderApprover')
-const addView = ref('WorkOrder')
+const createRequest = ref(null)
 const service_id = ref(null)
-const enableCreate = ref(false)
+
+if(can('create', 'Equipment Handling')) createRequest.value = 'WorkOrder'
 
 
-
-// if (currentUserRole === 'Requestor') {
+// if (currentUserRoleID === 'Requestor') {
 //     routeView.value = 'ViewWorkOrder'
 //     addView.value = 'WorkOrder'
 //     enableCreate.value = true
 // }
-// if (currentUserRole === pub_var.approverRole) {
+// if (currentUserRoleID === pub_var.approverRole) {
 //     routeView.value = 'WorkOrderApprover'
 //     // actions.service_id = service_id
 // }
-// if (currentUserRole === pub_var.TLRole) {
+// if (currentUserRoleID === pub_var.TLRole) {
 //     routeView.value = 'WorkOrderApprover'
 // }
-// // if (currentUserRole === pub_var.outboundPersonnel) {
+// // if (currentUserRoleID === pub_var.outboundPersonnel) {
 // //     routeView.value = 'WorkOrderApprover'
 // // }
-// if (currentUserRole === pub_var.engineerRole) {
+// if (currentUserRoleID === pub_var.engineerRole) {
 //     routeView.value = 'WorkOrderApprover'
 // }
 
@@ -164,23 +171,26 @@ const actions = {
     // service_id : service_id,
     // status: status,
     btnDisable: btnDisable,
-    enableCreate: enableCreate,
     routeView: routeView,
-    addView: addView,
+    createRequest: createRequest.value,
 }
 
 provide('data', actions)
 
-
+const myRequest = ref(localStorage.getItem('myRequest') || false)
+watch(myRequest, (val)=> {
+    getRequest()
+    localStorage.setItem('myRequest', val)
+})
 const getRequest = async () => {
-    if (currentUserRole === pub_var.approverRole) category.value = pub_var.approverRole
-    if (currentUserRole === pub_var.TLRole) category.value = pub_var.TLRole
-    // if (currentUserRole === pub_var.outboundPersonnel) category.value = pub_var.outboundPersonnel
-    if (currentUserRole === pub_var.engineerRole) category.value = pub_var.engineerRole
+    if (currentUserRoleID === pub_var.approverRoleID) category.value = pub_var.approverRole
+    if (currentUserRoleID === pub_var.TLRoleID) category.value = pub_var.TLRole
+    if (currentUserRoleID === pub_var.engineerRoleID) category.value = pub_var.engineerRole
+
     try {
         loading.value = true;
         const response = await apiRequest.get('get-equipment-handling', {
-            params: { user_id: user.user.id, category: category.value },
+            params: { user_id: user.user.id, category: category.value,myRequest : myRequest.value },
         });
         const data = response.data.equipment_handling
 

@@ -12,9 +12,10 @@ export const wimPersonnel = 'WIM Personnel'
 
 export const adminServiceRoleID = 6
 export const approverRoleID = 1
-export const engineerRoleID = 3
 export const TLRoleID = 2
+export const engineerRoleID = 3
 export const wimPersonnelID = 4
+export const requestorID = 5
 
 export const rolesArray = [adminServiceRole, approverRole, engineerRole, TLRole, wimPersonnel]
 export const rolesObject = [
@@ -22,7 +23,7 @@ export const rolesObject = [
     { title: 'Team Leader', value: 2 },
     { title: 'Engineer', value: 3 },
     { title: 'WIM Personnel', value: 4 },
-    // { title: 'Outbound Personnel', value: 5 },
+    { title: 'Requestor', value: 5 },
     { title: 'Administrator', value: 6 },
 ]
 
@@ -57,10 +58,20 @@ export const SERVICE_TL = 4;
 export const SERVICE_HEAD_ENGINEER = 5;
 export const BILLING_WIM = 6;
 export const OUTBOUND = 7;
-export const INSTALLATION_TL = 8;
-export const INSTALLATION_ENGINEER = 9;
+export const AREA_WIM = 8;
+export const AREA_RSM_SPM_SNM_SM = 9;
+export const AREA_SERVICE_TL = 10
+export const AREA_BILLING_WIM = 11
 
-export const approverArray = [IT_DEPARTMENT, APM_NSM_SM, WIM, SERVICE_TL, SERVICE_HEAD_ENGINEER, BILLING_WIM, OUTBOUND, INSTALLATION_TL, INSTALLATION_ENGINEER];
+export const INSTALLATION_TL = 18;
+export const INSTALLATION_ENGINEER = 19;
+
+export const approverArray = [
+    IT_DEPARTMENT, APM_NSM_SM, WIM, SERVICE_TL, 
+    SERVICE_HEAD_ENGINEER, BILLING_WIM, OUTBOUND, 
+    INSTALLATION_TL, INSTALLATION_ENGINEER,
+    AREA_WIM, AREA_RSM_SPM_SNM_SM, AREA_SERVICE_TL, AREA_BILLING_WIM
+];
 
 export const pending_approval_status = (approver) => {
     switch (approver) {
@@ -71,13 +82,13 @@ export const pending_approval_status = (approver) => {
             return 'APM/NSM/SM'
             break
         case WIM:
-            return 'WIM'
+            return 'Warehouse & Inventory Management'
             break
         case SERVICE_TL:
-            return 'Service Team Leader'
+            return 'Service Dept Team Leader'
             break
         case SERVICE_HEAD_ENGINEER:
-            return 'Service Head Engineer'
+            return 'Service Dept Head / Service Engineer'
             break
         case BILLING_WIM:
             return 'Billing / WIM'
@@ -85,8 +96,20 @@ export const pending_approval_status = (approver) => {
         case OUTBOUND:
             return 'Outbound Personnel'
             break
+        case AREA_WIM:
+            return 'Area Warehouse & Inventory Management'
+            break
+        case AREA_RSM_SPM_SNM_SM:
+            return 'Area RSM/APM/NSM/SM'
+            break
+        case AREA_SERVICE_TL:
+            return 'Area Service TL / Service Engineer'
+            break
+        case AREA_BILLING_WIM:
+            return 'Area Billing & Invoicing'
+            break
         case INSTALLATION_TL:
-            return 'Installation - Team Leader -'
+            return 'Delegation - Team Leader -'
             break
         case INSTALLATION_ENGINEER:
             return 'Installation - Engineer'
@@ -103,9 +126,11 @@ export const approver_designation = [
     { key: 'SERVICE DEPARTMENT HEAD / SERVICE ENGINEER', value: 5 },
     { key: 'BILLING & INVOICING STAFF / WIM PERSONNEL', value: 6 },
     { key: 'OUTBOUND PERSONNEL', value: 7 },
-    // { key: 'TEAM LEADER (SSU)', value: 8 },
-    // { key: 'ENGINEER (SSU)', value: 9 },
-]
+    { key: 'AREA WAREHOUSE & INVENTORY MANAGEMENT', value: 8 },  
+    { key: 'AREA RSM/SPM/SNM/SM', value: 9 },  
+    { key: 'AREA SERVICE TEAM LEADER', value: 10 },  
+    { key: 'AREA BILLING/WIM', value: 11 },  
+];
 
 export const approver_category = [
     { value : 'EH' },
@@ -118,17 +143,18 @@ export const approver_category = [
  * Job Order Status
  */
 export const ONGOING = 1;
-export const PARTIAL_COMPLETE = 2;
+// export const PARTIAL_COMPLETE = 2;
+export const ONGOING_AREA_LEVEL = 2
 export const COMPLETE = 3;
 export const DISAPPROVED = 4;
-export const RESCHEDULE = 5;
+// export const RESCHEDULE = 5;
 export const INSTALLING = 6;
 
 /** Set Job Order Status */
 export const setJOStatus = (status) => {
     switch (parseInt(status)) {
-        case PARTIAL_COMPLETE:
-            return { text: 'Pending', color: 'blue!important' }
+        case ONGOING_AREA_LEVEL:
+            return { text: 'Pending Approval - Area Level', color: 'blue!important' }
             break;
         case COMPLETE:
             return { text: 'Completed', color: 'green!important' }
@@ -136,9 +162,9 @@ export const setJOStatus = (status) => {
         case DISAPPROVED:
             return { text: 'Disapproved', color: 'red!important' }
             break;
-        case RESCHEDULE:
-            return { text: 'Reschedule', color: 'black!important' }
-            break;
+        // case RESCHEDULE:
+        //     return { text: 'Reschedule', color: 'black!important' }
+        //     break;
         case INSTALLING:
             return { text: 'Installation Ready', color: 'orange!important' }
             break;
@@ -209,7 +235,7 @@ export const formatDateFullMonthNoTime = (date) => {
     return date ? moment(date).format('MMMM DD, YYYY') : ''
 }
 export const formatDateNoTime = (date) => {
-    return date ? moment(date).format('MM/DD/YYYY') : ''
+    return date ? moment(date).format('MM/DD/YYYY') : '--'
 }
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Models\authLogin;
 
+use App\Models\RoleUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -19,6 +20,11 @@ class UserModel extends Authenticatable
     protected $table = 'users';
     public $timestamps = true;
     protected $fillable = ['email', 'password', 'first_name', 'last_name'];
+
+
+    public function roleUsers(){
+        return $this->hasMany(RoleUser::class, 'user_id', 'id');
+    }
 
 
     // Get fullname

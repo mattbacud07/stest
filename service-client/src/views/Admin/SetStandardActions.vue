@@ -130,7 +130,6 @@ import {useToast} from 'vue-toast-notification'
 const toast = useToast()
 
 const user = user_data()
-user.getUserData
 const apiRequest = apiRequestAxios()
 const form = ref(false)
 const datatable = ref(null)

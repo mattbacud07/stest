@@ -14,6 +14,7 @@ import '@mdi/font/css/materialdesignicons.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 import App from './App.vue'
 import router from './router'
@@ -34,8 +35,11 @@ import JsonExcel from 'vue-json-excel3'
 
 /** CASTL plugin - for permissions */
 import { abilitiesPlugin } from '@casl/vue'
-import { getRole } from './stores/getRole'
+import { abilityStore } from './stores/abilityStores'
 import { ref } from 'vue'
+
+/** Printing */
+import Print from 'vue3-print-nb'
 
 
 
@@ -70,10 +74,11 @@ const app = createApp(App)
 
 app.component("downloadExcel", JsonExcel);
 const pnia = createPinia()
+pnia.use(piniaPluginPersistedstate)
 app.use(pnia)
 
-const role = getRole(pnia)
-let ability = ref(role.abilities)
+const abilityStored = abilityStore(pnia)
+let ability = ref(abilityStored.abilities)
 app.use(abilitiesPlugin, ability.value)
 
 
@@ -82,6 +87,7 @@ app.use(abilitiesPlugin, ability.value)
 // })
 app.use(vuetify)
 app.use(ToastPlugin)
+app.use(Print)
 app.use(router)
 
 

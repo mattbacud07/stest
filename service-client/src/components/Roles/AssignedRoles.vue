@@ -434,10 +434,6 @@ onMounted(() => {
 
 
 <style scoped>
-.bh-table-responsive table.bh-table-compact tbody tr td,
-.bh-table-responsive table.bh-table-compact thead tr th {
-    padding: 0 7px !important;
-}
 .textDown{
     overflow: hidden;
     text-overflow: ellipsis!important;

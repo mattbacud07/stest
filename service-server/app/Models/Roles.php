@@ -22,7 +22,6 @@ class Roles extends Model
         'permissions'
     ];
 
-
     // protected $casts = [
     //     'permissions' => 'array',
     // ];
@@ -35,4 +34,12 @@ class Roles extends Model
     public const engineerRole = 'Engineer';
     public const OutboundRole = 'Outbound Personnel';
     public const WIMRole = 'WIM Personnel';
+
+    /** ROLE ID */
+    public const adminRoleID = 6;
+    public const approverRoleID = 1;
+    public const TLRoleID = 2;
+    public const engineerRoleID = 3;
+    public const OutboundRoleID = 4;
+    public const WIMRoleID = 5;
 }

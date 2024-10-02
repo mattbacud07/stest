@@ -29,9 +29,21 @@ import { useRouter } from 'vue-router';
 import { user_data } from '@/stores/auth/userData'
 import { BASE_URL } from '@/api/index';
 
+import { requestorID } from '@/global/global';
+
 /** Toast Notification */
 import { useToast } from 'vue-toast-notification'
 const toast = useToast()
+
+/** Roles and Permissions */
+import { getRole } from '@/stores/getRole';
+const role = getRole()
+import { abilityStore } from '@/stores/abilityStores';
+const ability = abilityStore()
+
+import { logout } from '@/stores/auth/logout';
+import DOMPurify from 'dompurify';
+const logMeOut = logout()
 
 axios.defaults.withCredentials = true
 // axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
@@ -57,6 +69,15 @@ const rules = ref({
     ],
 })
 
+// Sanitize
+const sanitizeAndTrim = (input) => {
+    const trimmedInput = input.trim();
+    
+    const sanitizedInput = DOMPurify.sanitize(trimmedInput);
+    
+    return sanitizedInput;
+}
+
 /** Form Submit */
 const loginProcess = async () => {
     loading.value = true
@@ -69,8 +90,8 @@ const loginProcess = async () => {
 
     try {
         const response = await axios.post(uri + 'api/authentication', {
-            email: auth.value.email,
-            password: auth.value.password,
+            email: sanitizeAndTrim(auth.value.email),
+            password: sanitizeAndTrim(auth.value.password),
         },
             {
                 headers: {
@@ -81,9 +102,28 @@ const loginProcess = async () => {
 
         if (response.data && response.data.isLogin) {
             router.push('/dashboard')
-
+            if (response.data.user && response.data.accessToken) {
+                userData.setUserData(response.data.user) //set User Data
+                userData.setTokenData(response.data.accessToken) // set Tokens Data
+                const userInfo = response.data.user
+                /** Setting Default Role and permissions */
+                const checkUserRoleRequestor = userInfo.user_roles.find(v => v.role_id === requestorID)
+                if (checkUserRoleRequestor) {
+                    role.setCurrentUserRole(checkUserRoleRequestor.role_id)
+                    ability.buildAbility()
+                } else {
+                    const defaultRole = response.data.user.user_roles[0]
+                    if (defaultRole) {
+                        role.setCurrentUserRole(defaultRole.role_id)
+                        ability.buildAbility()
+                    }
+                    else {
+                        role.setCurrentUserRole(null)
+                    }
+                }
+            }
             /** Store Token in LocalStorage */ // -> alternate  // localStorage.setItem('accessToken', response.data.accessToken)
-            localStorage.setItem('users', JSON.stringify(response.data.user))
+            // localStorage.setItem('users', JSON.stringify(response.data.user))
             localStorage.setItem('token', JSON.stringify(response.data.accessToken))
             localStorage.setItem('isAuthenticated', 'true')
 

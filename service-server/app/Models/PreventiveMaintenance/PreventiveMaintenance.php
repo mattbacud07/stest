@@ -26,6 +26,8 @@ class PreventiveMaintenance extends Model
         'service_id',
         'item_id',
         'serial',
+        'institution',
+        'ssu',
         'date_installed',
         'scheduled_at',
         'list_scheduled',
@@ -66,6 +68,7 @@ class PreventiveMaintenance extends Model
     public const pm_tag_backlog = 'BackLog';
     public const pm_tag_backjob = 'BackJob';
     public const pm_tag_non_operational = 'Non-operational';
+    public const pm_tag_completed = 'Completed';
 
 
     /** Status after Service */
@@ -81,13 +84,13 @@ class PreventiveMaintenance extends Model
         return $this->hasOne(PM_Setting::class, 'equipment', 'item_id');
     }
 
-    public function eh(){
-        return $this->hasOne(EhServicesModel::class, 'id', 'service_id');
-    }
+    // public function eh(){
+    //     return $this->hasOne(EhServicesModel::class, 'id', 'service_id');
+    // }
 
-    public function equipment_peripherals(){
-        return $this->hasOne(EquipmentPeripherals::class, 'id','equipment_peripheral_id');
-    }
+    // public function equipment_peripherals(){
+    //     return $this->hasOne(EquipmentPeripherals::class, 'id','equipment_peripheral_id');
+    // }
 
     public function user(){
         return $this->hasOne(UserModel::class, 'id', 'engineer');

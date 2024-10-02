@@ -12,6 +12,7 @@ export const adminSidebarConfig = [
         icong: 'mdi-account-multiple',
         children: [
             { name: 'RolesMain', module: 'Roles & Permission', icong: 'mdi-account-badge' },
+            { name: 'SSUDesignation', module: 'Set SSU & Approver Designation', icong: 'mdi-file-document-plus' },
             { name: 'ApprovalConfiguration', module: 'Aprover Config', icong: 'mdi-checkbox-multiple-outline' },
         ],
     },

@@ -2,7 +2,8 @@
     <div class="text-right pa-4">
         <v-btn @click="dialog = true" color="primary"  class="text-none" prepend-icon="mdi-account">
             <span class="text-dark"><b>{{ user.user.first_name }} {{ user.user.last_name }}</b></span>  | Logout
-        </v-btn>
+        </v-btn><br/>
+        <span class="small mr-4" v-if="user?.user?.user_roles?.length === 1">Logged in as : <b class="text-dark">{{ user.user.user_roles[0]?.role_name }}</b></span>
 
         <v-dialog v-model="dialog" width="auto">
             <v-card min-width="300" prepend-icon="mdi-account"
@@ -24,7 +25,6 @@ import { logout } from '@/stores/auth/logout'
 import { useRouter } from 'vue-router';
 
 const user = user_data()
-user.getUserData
 const logMeOut = logout()
 const router = useRouter()
 const loading = ref(false)

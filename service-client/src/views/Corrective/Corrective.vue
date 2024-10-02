@@ -221,6 +221,10 @@ const currentUserRole = role.currentUserRole
 const datatable = ref(null)
 const { width } = useDisplay()
 
+/** Permissions */
+import { permit } from '@/castl/permitted';
+const {can} = permit()
+
 
 /**Advanced Filtering of Data */
 const filterMenu = ref(false)
@@ -295,12 +299,15 @@ const routeView = ref('PMView')
 const service_id = ref(null)
 const btnDisable = ref(true)
 const selectedId = ref(null)
+const createRequest = ref(null)
+if(can('create','Preventive Maintenance')) createRequest.value='CreatePM'
 
 const actions = {
     selectedId: selectedId,
     btnDisable: btnDisable,
     routeView: routeView,
-    work_type: 'CM'
+    work_type: 'CM',
+    createRequest : createRequest.value
 }
 
 provide('data', actions)
@@ -372,14 +379,20 @@ const cols =
         { field: 'item_id', title: 'Item No', hide: true },
         { field: 'item_code', title: 'Item Code' },
         { field: 'description', title: 'Item Description', hide: true, },
-        { field: 'serial_number', title: 'Serial No.' },
+        { field: 'serial', title: 'Serial No.' },
         { field: 'institution_name', title: 'Institution' },
-        { field: 'institution_address', title: 'Address', hide: true, },
+        { field: 'address', title: 'Address', hide: true, },
         // { field: 'date_installed', title: 'Date Installed', hide: true, },
         // { field: 'scheduled_at', title: 'Scheduled at' },
         // { field: 'schedule', title: 'Frequency' },
         { field: 'ssu', title: 'SSU' },
         { field: 'username', title: 'Delegated to' },
+        { field: 'delegation_date', title: 'Delegation Date' },
+        { field: 'date_accepted', title: 'Date Accepted' },
+        { field: 'departed_date', title: 'Date Out' },
+        { field: 'travel_duration', title: 'Travel Time' },
+        { field: 'start_date', title: 'Time In' },
+        { field: 'end_date', title: 'Time Out' },
         { field: 'status_after_service', title: 'Status After Service' },
         { field: 'status', title: 'Status' },
         { field: 'tag', title: 'Tag' },
@@ -400,8 +413,8 @@ const colField = cols.value.reduce((acc, v) => {
 provide('column', cols)
 
 const getPM = async () => {
-    if (currentUserRole === pub_var.TLRole) category.value = pub_var.TLRole
-    if (currentUserRole === pub_var.engineerRole) category.value = pub_var.engineerRole
+    if (currentUserRole === pub_var.TLRoleID) category.value = pub_var.TLRoleID
+    if (currentUserRole === pub_var.engineerRoleID) category.value = pub_var.engineerRoleID
     try {
         loading.value = true;
         const response = await apiRequest.get('get-preventive-maintenance', {

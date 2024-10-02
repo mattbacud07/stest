@@ -10,7 +10,7 @@
                 <v-col cols="12" lg="6" md="6" sm="6">
                     <v-text-field v-model="formData.serial" @input="confirmSerial" color="primary" variant="outlined"
                         density="compact" label="Serial No." placeholder="Serial No."
-                        :readonly="currentRole === pub_var.TLRole && status === m_var.Scheduled ? false : textDisable"></v-text-field>
+                        :readonly="currentRole === pub_var.TLRoleID && status === m_var.Scheduled ? false : textDisable"></v-text-field>
                 </v-col>
             </v-row>
             <v-row>
@@ -75,14 +75,14 @@ const pm_data = ref(inject('pm_data'))
 watch(pm_data, (pm) => {
     if (pm) {
         // console.log(pm)
-        const peripherals = pm.equipment_peripherals
+        // const peripherals = pm.equipment_peripherals
         const equipment = pm.equipment
-        const institution = pm.eh
+        // const institution = pm.eh
         const pm_data = pm
         formData.value = {
-            serial: peripherals.serial_number || '---',
-            institution: institution.name || '---',
-            address: institution.address || '---',
+            serial: pm_data.serial || '---',
+            institution: pm_data.institution_name || '---',
+            address: pm_data.address || '---',
             item_code: equipment.item_code || '---',
             item_description: equipment.description || '---'
         }
@@ -97,8 +97,8 @@ const confirmSerial = () => {
 }
 
 onMounted(() => {
-    if (status.value === m_var.Scheduled && currentRole === pub_var.TLRole) {
-        toast.warning('Please confirm the serial number before proceeding', { duration: 7000 })
-    }
+    // if (status.value === m_var.Scheduled && currentRole === pub_var.TLRoleID) {
+    //     toast.warning('Please confirm the serial number before proceeding', { duration: 7000 })
+    // }
 })
 </script>

@@ -14,7 +14,7 @@ class EHTaskOperation
     /**
      * Get Equipment handling by USER ID and Based on WHERE STatement.
      */
-    public function getEquipmentHandlingByUserId($user_id, $category)
+    public function getEquipmentHandlingByUserId($user_id, $category, $myRequest)
     {
         $getApprovalLevel = DB::table('approval_configuration')->where('user_id', $user_id)->first();
         $getUserSSU = RoleUser::where(['user_id' => $user_id, 'role_id' => 2])->first();
@@ -26,32 +26,37 @@ class EHTaskOperation
             ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
             ->leftjoin('internal_external_requests as iE', 'equipment_handling.request_type', '=', 'iE.id')
             ->leftjoin('approver_designation as a', 'equipment_handling.status', '=', 'a.approver_level');
-
-        if ($category === Roles::approverRole) {
-            $query->where([
-                'equipment_handling.status' => $approval_level,
-                'equipment_handling.main_status' => EH::ONGOING,
-            ]);
-        } elseif ($category === Roles::TLRole) {
-            $query->where([
-                'equipment_handling.status' => EH::TL,
-                'equipment_handling.ssu' => $getUserSSU['SSU'],
-                'equipment_handling.main_status' => EH::ONGOING
-            ]);
-        }
-        // elseif($category === Roles::OutboundRole){
-        //     $query->where([
-        //         'equipment_handling.status' => EH::OUTBOUND,
-        //         'equipment_handling.main_status' => EH::ONGOING]);
-        // }
-        elseif ($category === Roles::engineerRole) {
-            $query->where([
-                'equipment_handling.installer' => $user_id,
-                'equipment_handling.status' => EH::INSTALLATION_ENGINEER,
-                'equipment_handling.main_status' => EH::INSTALLING
-            ]);
-        } else {
+        
+        $convertMyRequestToBoolean = filter_var($myRequest, FILTER_VALIDATE_BOOLEAN);
+        if($convertMyRequestToBoolean){
             $query->where('requested_by', $user_id);
+        }else{
+            if ($category === Roles::approverRole) {
+                $query->where([
+                    'equipment_handling.status' => $approval_level,
+                    'equipment_handling.main_status' => EH::ONGOING,
+                ]);
+            } elseif ($category === Roles::TLRole) {
+                $query->where([
+                    'equipment_handling.status' => EH::INSTALLATION_TL,
+                    'equipment_handling.ssu' => $getUserSSU['SSU'],
+                    'equipment_handling.main_status' => EH::ONGOING
+                ]);
+            }
+            // elseif($category === Roles::OutboundRole){
+            //     $query->where([
+            //         'equipment_handling.status' => EH::OUTBOUND,
+            //         'equipment_handling.main_status' => EH::ONGOING]);
+            // }
+            elseif ($category === Roles::engineerRole) {
+                $query->where([
+                    'equipment_handling.installer' => $user_id,
+                    'equipment_handling.status' => EH::INSTALLATION_ENGINEER,
+                    'equipment_handling.main_status' => EH::INSTALLING
+                ]);
+            } else {
+                $query->where('requested_by', $user_id);
+            }
         }
 
         $data = $query->get();

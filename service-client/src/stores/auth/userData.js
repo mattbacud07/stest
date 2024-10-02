@@ -5,14 +5,13 @@ export const user_data = defineStore('users', {
         user: {},
         tokenData: null,
     }),
-
-    // actions: {
-        
-    // },
-    getters: {
-        getUserData() {
-            this.user = JSON.parse(localStorage.getItem('users'))
-            this.tokenData = JSON.parse(localStorage.getItem('token'))
+    actions: {
+        setUserData(userData) {
+            this.user = userData
+        },
+        setTokenData(token){
+            this.tokenData = token
         }
-    }
+    },
+    persist : true
 })

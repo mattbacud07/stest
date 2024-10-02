@@ -48,40 +48,6 @@ class EHBasicOperation
             return $service_data;
     }
 
-    /**
-     * Create a new equipment handling.
-     * 
-     * @param array $data
-     * @return \App\Models\EhServicesModel
-     */
-    public function createEquipmentHandling($data)
-    {
-        // Optionally, set the ID of the user creating the equipment handling
-        // $data['created_by'] = Auth::id();
-        // Create and return the new equipment handling
-        return EhServicesModel::create($data);
-    }
-
-    /**
-     * Update an existing equipment handling.
-     * 
-     * @param int $id
-     * @param array $data
-     * @return \App\Models\EhServicesModel|null
-     */
-    public function updateEquipmentHandling($id, $data)
-    {
-        // Find the equipment handling by its ID
-        $equipmentHandling = EhServicesModel::find($id);
-        if ($equipmentHandling) {
-            // Update the equipment handling with the provided data
-            $equipmentHandling->update($data);
-            // Return the updated equipment handling
-            return $equipmentHandling;
-        }
-        // Return null if the equipment handling was not found
-        return null;
-    }
 
     /**
      * Delete an equipment handling by its ID.
@@ -103,6 +69,8 @@ class EHBasicOperation
         return false;
     }
 
+
+    
     /**
      * Get equipment handlings based on a specific equipment ID.
      * 

@@ -45,13 +45,9 @@
                 <!-- <v-btn @click="handleEdit" color="primary" variant="tonal" class="text-none mr-1" :disabled="btnDisable">
                     <v-icon>mdi-pencil</v-icon> {{ width < 768 ?  '' : ' Edit' }}
                 </v-btn> -->
-                <v-btn @click="handleCreate" v-if="currentUserRole.role_id === 357" color="primary" variant="flat" class="text-none"> <!--- v-if="enableCreate"-->
+                <v-btn @click="handleCreate" v-if="details?.createRequest" color="primary" variant="flat" class="text-none"> <!--- v-if="enableCreate"-->
                     <v-icon>mdi-plus</v-icon> {{ width < 768 ? '' : 'Create' }}
                 </v-btn>
-                
-                <!-- <v-btn @click="handleCreateCM" color="primary" variant="flat" class="text-none"> 
-                    <v-icon>mdi-plus</v-icon> {{ width < 768 ? '' : 'Create' }}
-                </v-btn> -->
             </v-toolbar>
 
             <!-- Main content slot -->
@@ -67,12 +63,16 @@
 </template>
 
 <script setup>
-import { ref, inject, provide, watch, onMounted, defineEmits } from 'vue'
+import { ref, inject, provide, watch, onMounted, defineEmits, computed } from 'vue'
 import BaseSidebar from '../Sidebars/BaseSidebar.vue';
 import topBarUserProfile from './LayoutParts/topBarUserProfile.vue'
 import { useRouter, useRoute } from 'vue-router';
 import {useDisplay} from 'vuetify'
 import { getRole } from '@/stores/getRole'
+
+/** CAstl Permission */
+import { permit } from '@/castl/permitted';
+const {can} = permit()
 
 const router = useRouter()
 const route = useRoute()
@@ -92,9 +92,8 @@ const emits = defineEmits(['searchText'])
 const searching  = (e) =>{
     emits('searchText', e.target.value)
 }
+
 const service_id = 'service_id' in details ? details.service_id : null 
-// const status = 'status' in details && details.status !== null ? details.status : null 
-// console.log(service_id.value)
 const enableCreateFunction = () => {
     if(route.name === 'EquipmentHandling'){
         return enableCreate.value = true
@@ -128,7 +127,9 @@ const handleView = () => {
 
 /** Hnadle Create Redirection */
 const handleCreate = () =>{
-    router.push({name : 'WorkOrder'})
+    if(details?.createRequest){
+        router.push({name : details.createRequest})
+    }
 }
 
 

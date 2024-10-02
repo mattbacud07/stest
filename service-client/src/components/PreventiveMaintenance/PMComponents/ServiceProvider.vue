@@ -1,9 +1,17 @@
 <template>
     <v-row>
         <v-col cols="12" class="d-flex justify-content-end">
-            <v-chip variant="tonal" color="grey lighten-5" label><span class="text-dark mr-2">Status:</span>
-                <span :style="{ color: m_var.status_pm(status).color }">{{ m_var.status_pm(status).text
+            <v-chip variant="tonal" color="primary" label><span class="text-dark mr-2">Status:</span>
+                <span :style="{ color: m_var.status_pm(status).color, 'font-weight' : '500' }">{{ m_var.status_pm(status).text
                     }}</span></v-chip>
+            <v-chip v-if="formData.status_after_service !== ''" variant="tonal" color="error" label class="ml-2">
+                <span class="text-dark mr-2">Status after service:</span>
+                <span style="font-weight: 500;">{{  formData.status_after_service }}</span>
+            </v-chip>
+            <v-chip v-if="formData.tag !== ''" variant="tonal" color="warning" label class="ml-2">
+                <span class="text-dark mr-2">Tag:</span>
+                <span style="font-weight: 500;">{{  formData.tag }}</span>
+            </v-chip>
         </v-col>
     </v-row>
     <v-card class="mt-3" elevation="0" style="border: 1px dashed #191970">
@@ -74,6 +82,8 @@ const formData = ref({
     travel_time: '',
     time_in: '',
     time_out: '',
+    tag: '',
+    status_after_service: '',
 });
 const status = ref('')
 
@@ -92,6 +102,8 @@ watch(pm_data, (pm) => {
             travel_time: pm_data.travel_duration || '--',
             time_in: pub_var.formatDate(pm_data.start_date) || '--',
             time_out: pub_var.formatDate(pm_data.end_date) || '--',
+            tag: pm_data.tag || '--',
+            status_after_service: pm_data.status_after_service || '--',
         };
         status.value = pm_data.status || '---'
     }

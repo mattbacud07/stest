@@ -2,25 +2,25 @@
     <LayoutSinglePage>
         <template #topBarFixed class="d-print-none">
             <div>
-                <!-- <v-breadcrumbs class="pt-7">
+                <v-breadcrumbs class="pt-7">
                     <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
                         :class="{ 'custom-pointer': !item.disabled }" @click="navigateTo(item)"
                         :disabled="item.disabled">
                         {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
                     </v-breadcrumbs-item>
-                </v-breadcrumbs> -->
+                </v-breadcrumbs>
 
-                <v-btn @click="printPreview(isPrintPreview)" class="text-none" prepend-icon="mdi-printer-eye" color="primary" density="compact">{{ isPrintPreview ? 'Back' : 'Print Preview'}}</v-btn>
-             
+                <!-- <v-btn @click="printPreview(isPrintPreview)" class="text-none" prepend-icon="mdi-printer-eye" color="primary" density="compact">{{ isPrintPreview ? 'Back' : 'Print Preview'}}</v-btn> -->
+                <!-- <v-btn v-print="'#printThisA4'" class="text-none" prepend-icon="mdi-printer-eye" color="primary"
+                    density="compact">Print Preview</v-btn> -->
             </div>
             <v-spacer></v-spacer>
-            
-            <v-skeleton-loader v-if="!isPrintPreview" type="button" :loading="skeleton">
+
+            <v-skeleton-loader type="button" :loading="skeleton">
                 <!-- Delegate Button -->
                 <div>
                     <!-- TL -->
-                    <template v-if="currentRole === pub_var.TLRole && getUserSSU() === pm_ssu">
-                        <!-- </span>  -->
+                    <template v-if="can('delegate', 'Preventive Maintenance') && getUserSSU() === pm_ssu">
                         <v-dialog v-model="delegateEngineerDialog" max-width="400" persistent
                             v-if="status === m_var.Scheduled">
                             <template v-slot:activator="{ props: activatorProps }">
@@ -37,7 +37,7 @@
                                 <v-form @submit.prevent="delegateEngineer" ref="form">
                                     <v-col cols="12">
                                         <v-select color="primary" v-model="selectedEngineer" class="mr-2 ml-2 mt-5"
-                                            :label="pm_data.eh.ssu + ' Engineer'" placeholder="" density="compact"
+                                            :label="pm_ssu + ' Engineer'" placeholder="" density="compact"
                                             variant="outlined" :items="engineersData" item-title="title"
                                             item-value="value" :rules="[v => !!v || 'Required']" clearable></v-select>
                                     </v-col>
@@ -59,7 +59,7 @@
                     </template>
 
                     <!-- Engineer -->
-                    <template v-if="currentRole === pub_var.engineerRole && getUserSSU() === pm_ssu">
+                    <template v-if="can('installer', 'Preventive Maintenance') && getUserSSU() === pm_ssu">
                         <div v-if="status === m_var.Delegated">
                             <v-dialog v-model="pm_decline_dialog" max-width="400" persistent>
                                 <template v-slot:activator="{ props: activatorProps }">
@@ -110,14 +110,14 @@
                         </div>
                     </template>
 
-                 </div>
+                </div>
             </v-skeleton-loader>
         </template>
 
         <template #default>
-            <v-skeleton-loader class="d-print-none" v-if="!isPrintPreview" type="list-item-three-line@2, table@2" loading-text="Prperties Loafding"
-                :loading="skeleton">
-                <v-container class="mt-10">
+            <v-skeleton-loader class="d-print-none" type="list-item-three-line@2, table@2"
+                loading-text="Prperties Loafding" :loading="skeleton">
+                <v-container class="mt-10" id="printThisA4">
                     <OperationAfterService :pm_data="pm_data" :pm_id="parseInt(id)" :currentRole="currentRole" />
                     <ServiceProvider />
                     <CustomerDetails @set-confirm-serial="getConfirmSerial" :status="status" />
@@ -126,8 +126,6 @@
                         :pm_id="parseInt(id)" @sparePartsData="getSparePartsData" />
                 </v-container>
             </v-skeleton-loader>
-
-            <router-view v-else/>
         </template>
     </LayoutSinglePage>
 </template>
@@ -158,21 +156,35 @@ const { width } = useDisplay()
 import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
+
+
 import { user_data } from '@/stores/auth/userData';
 import { getRole } from '@/stores/getRole';
 import { apiRequestAxios } from '@/api/api';
 
+/** data declarations */
+const router = useRouter()
+const route = useRoute()
+const user = user_data()
 
+const apiRequest = apiRequestAxios()
+
+/** Role Stores and Permissions */
 const role = getRole()
-const currentRole = role.currentUserRole.role_id
+const currentRole = role.currentUserRole
+
+/** Permissions */
+import { permit } from '@/castl/permitted';
+const { can } = permit()
 
 
 
-
+// console.log(router)
+const currentWorkType = ref(route.params.work_type === 'PM' ? '/preventive-maintenance' : '/corrective-maintenance')
 const breadcrumbItems = [
-    // { title: 'Back', disabled: false, href: '/corrective' },
-    // { title: 'Preventive Maintenance', disabled: true, href: '' },
-    // { title: 'PM-Details', disabled: true, href: '' },
+    { title: 'Back', disabled: false, href: currentWorkType.value },
+    { title: route.params.work_type === 'PM' ? 'Preventive Maintenance' : 'Corrective Maintenance', disabled: true, href: '' },
+    { title: route.params.work_type === 'PM' ? 'PM-Details' : 'CM-Details', disabled: true, href: '' },
 ]
 const navigateTo = (item) => {
     if (!item.disabled && item.href) {
@@ -207,14 +219,6 @@ const getRemarks = (valRemark) => {
 }
 
 
-/** data declarations */
-const router = useRouter()
-const route = useRoute()
-const user = user_data()
-user.getUserData
-
-const apiRequest = apiRequestAxios()
-
 const form = ref(false)
 const btnDisable = ref(false)
 const btnLoading = ref(false)
@@ -224,18 +228,6 @@ const id = route.params.id
 
 const pm_data = ref(null)
 const selectedEngineer = ref('')
-
-
-// Print preview
-const isPrintPreview = ref(false)
-const printPreview = (printPreview) =>{
-    isPrintPreview.value = !printPreview
-    router.push({ name: 'PMPrint', params : {id : id, work_type : route.params.work_type}})
-}
-
-
-
-
 
 
 
@@ -303,10 +295,12 @@ const pm_decline = async () => {
     try {
         const res = await apiRequest.post('pm_decline', {
             pm_id: id,
+            reason : reason_to_decline.value
         })
         if (res.data && res.data.success) {
             toast.success('Reason submitted')
             form.value.reset()
+            router.push(currentWorkType.value)
         }
         else {
             toast.error('Something went wrong')
@@ -429,9 +423,9 @@ const skeleton = ref(false)
 const status = ref('')
 const statusAfterServiceData = ref('')
 const tag = ref('')
-const pm_ssu = ref('')
+const pm_ssu = ref(null)
 const getUserSSU = () => {
-    const roleUser = user.user.user_roles.find(v => v.role_name === currentRole);
+    const roleUser = user.user.user_roles.find(v => v.role_id === currentRole);
     const ssu = roleUser ? roleUser.SSU : null;
     return ssu;
 }
@@ -447,7 +441,7 @@ const getPMDetails = async () => {
             status.value = pm_data.value.status
             statusAfterServiceData.value = pm_data.value.status_after_service
             tag.value = pm_data.value.tag
-            pm_ssu.value = pm_data.value.eh?.ssu
+            pm_ssu.value = pm_data.value.ssu
             skeleton.value = false
 
 
@@ -483,7 +477,7 @@ const getEngineersData = async () => {
     try {
         const response = await apiRequest.get('get-engineers-data')
         if (response.data && response.data.engineers) {
-            const filteredEngineersData = response.data.engineers.filter(data => data.SSU === pm_data.value?.eh?.ssu)
+            const filteredEngineersData = response.data.engineers.filter(data => data.SSU === pm_ssu.value)
             const engineersValue = filteredEngineersData.map(data => {
                 return {
                     title: data.users.first_name + ' ' + data.users.last_name,

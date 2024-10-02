@@ -17,7 +17,7 @@
                 <p style="color: orange;">* Internal Processing Still in Progress</p>
             </div>
             <div v-else>
-                <template v-if="user.user.approval_level === status">
+                <template v-if="can('approve', 'Equipment Handling') && user.user.approval_level === status">
                     <v-dialog v-model="dialog" max-width="400" persistent>
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="tonal"
@@ -91,13 +91,14 @@
 
                 <!-- dialogApproveNonApprover Button -->
                 <template
-                    v-if="(pub_var.INSTALLATION_ENGINEER === status && user_current_ssu === updatedSSU && currentUserRole === pub_var.engineerRole) || (pub_var.INSTALLATION_TL === status && user_current_ssu === updatedSSU && currentUserRole === pub_var.TLRole)">
+                    v-if="(pub_var.INSTALLATION_ENGINEER === status && user_current_ssu === updatedSSU && can('installer', 'Equipment Handling')) || (pub_var.INSTALLATION_TL === status && user_current_ssu === updatedSSU && can('delegate', 'Equipment Handling'))">
                     <v-dialog v-model="dialogApproveNonApprover" max-width="600" persistent>
                         <template v-slot:activator="{ props: activatorProps }">
 
                             <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable" color="primary"
                                 variant="flat" class="text-none btnSubmit"><v-icon class="mr-2">mdi-check</v-icon>
-                                Approve </v-btn>
+                                {{ can('delegate', 'Equipment Handling') ? 'Delegate Installation' : 'Installation Complete'}}
+                            </v-btn>
                             <!-- {{ pub_var.INSTALLATION_ENGINEER }} {{  status  }}   {{  user_current_ssu }} {{  updatedSSU }} -->
                         </template>
                         <v-card text="" title="Approve">
@@ -146,59 +147,78 @@
             <RequestDetails :service_id="parseInt(service_id)"
                 :showInternalRequest="user.user.approval_level === pub_var.SERVICE_TL ? true : false"
                 @set-status="getStatus" @set-updated-ssu="getUpdatedSSU"
-                @get-installation-engineer="getInstallationEngineer" 
-                :internalStatus="getInternalStatus"
-                :internalDelegatedTo = "CurrentlyDelegatedTo"
-                :internalID = "internalID"
-                :internalServicing = "internalServicing"
-                 />
+                @get-installation-engineer="getInstallationEngineer" :internalStatus="getInternalStatus"
+                :internalDelegatedTo="CurrentlyDelegatedTo" :internalID="internalID"
+                :internalServicing="internalServicing"/>
 
-            <RequestedEquipments :service_id="parseInt(service_id)" @set-serial="getSerialNumber"
-                @get-serials="getSerials" :editSerial="true" />
+                <v-card class="mt-10">
+                        <v-tabs v-model="tab" density="compact" class="border-b-sm" bg-color="grey-lighten-5">
+                            <v-tab value="request_type" class="text-none" color="primary"><v-icon class="mr-2">mdi-tooltip-text-outline</v-icon> Request Type</v-tab>
+                            <v-tab value="equipments" class="text-none" color="primary"><v-icon
+                                    class="mr-2">mdi-hammer-screwdriver</v-icon> Requested Equipments</v-tab>
+                            <v-tab value="history" class="text-none" color="primary"><v-icon class="mr-2">mdi-account-details</v-icon> Approval Requirements</v-tab>
+                        </v-tabs>
 
-            <ApproverHistoryLog :service_id="parseInt(service_id)" :status="status" />
-
-
-
+                    <v-card-text>
+                        <v-window v-model="tab" :disabled="true">
+                            <v-window-item value="request_type">
+                                <RequestType :service_id="parseInt(service_id)" />
+                            </v-window-item>
+                            <v-window-item value="equipments">
+                                <RequestedEquipments :service_id="parseInt(service_id)" @set-serial="getSerialNumber"
+                                    @get-serials="getSerials" :editSerial="status !== 1 ? false : true" />
+                            </v-window-item>
+                            <v-window-item value="history">
+                                <ApproverHistoryLog :service_id="parseInt(service_id)" :status="status" />
+                            </v-window-item>
+                        </v-window>
+                    </v-card-text>
+                </v-card>
+            
         </v-container>
         <!-- </v-form> -->
     </LayoutSinglePage>
 </template>
 <script setup>
-import { ref, watch, onMounted, provide } from 'vue';
+import { ref, watch, onMounted, provide, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify'
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 
-/** Vuue3 DataTable */
-import Vue3Datatable from '@bhplugin/vue3-datatable'
-import '@bhplugin/vue3-datatable/dist/style.css'
+import { user_data } from '@/stores/auth/userData';
+import { getRole } from '@/stores/getRole'
+import { apiRequestAxios } from '@/api/api';
+import RequestType from '@/components/Approver/EH/RequestType.vue';
+import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vue';
+import ApproverHistoryLog from '@/components/Approver/EH/ApproverHistoryLog.vue'
+import RequestDetails from '@/components/Approver/EH/RequestDetails.vue';
+import * as pub_var from '@/global/global'
 
 /** Toast Notification */
 import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
-import { user_data } from '@/stores/auth/userData';
-import { getRole } from '@/stores/getRole'
-import { apiRequestAxios } from '@/api/api';
-import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vue';
-import ApproverHistoryLog from '@/components/Approver/EH/ApproverHistoryLog.vue'
-import RequestDetails from '@/components/Approver/EH/RequestDetails.vue';
-import * as pub_var from '@/global/global'
+/** Get Role Store */
+const role = getRole()
+const currentUserRole = role.currentUserRole
+
+
+/** CAstl Permission */
+import { permit } from '@/castl/permitted';
+const { can } = permit()
+
 
 /** data declarations */
 const router = useRouter()
 const route = useRoute()
 const { width } = useDisplay()
 const user = user_data()
-user.getUserData
 
 const apiRequest = apiRequestAxios()
 
-const role = getRole()
-const currentUserRole = role.currentUserRole
+const user_current_ssu = ref(user.user.user_roles?.filter(d => d.role_id === currentUserRole)[0]?.SSU, null)
 
-const user_current_ssu = ref(user.user.user_roles?.filter(d => d.role_name === currentUserRole)[0]?.SSU, null)
+const tab = ref('equipments') //TAB
 
 const form = ref(false)
 const dialog = ref(false)

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ApprovalConfiguration;
 use App\Http\Controllers\Admin\Designation;
 use App\Http\Controllers\Admin\PMSettings;
 use App\Http\Controllers\Admin\Roles;
+use App\Http\Controllers\Admin\SSUController;
 use App\Http\Controllers\authController;
 use App\Http\Controllers\ehController\EhMainApproverController;
 use App\Http\Controllers\ehController\EhMainController;
@@ -38,45 +39,12 @@ Route::post('/authentication', [authController::class, 'dashboardLogin']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
-        Route::get('/get-equipment-handling', [EquipmentHandlingController::class, 'showBasedOnCondition']);
-        Route::get('/get-specific-equipment-handling', [EquipmentHandlingController::class, 'getEquipmentHandlingById']);
-
-    /* Equipment Handling */
-    // Route::get('/get-equipment-handling-data', [EhMainController::class, 'show']);
-        // Internal Request
-        Route::get('/get-engineers-data', [InternalRequest::class, 'get_engineers_data']);
-        Route::get('/get-internal-request-details', [InternalRequest::class, 'get_internal_request_details']);
-        Route::post('/internal-process', [InternalRequest::class, 'add_internal_process']);
-        Route::get('/checkIfDelegated', [InternalRequest::class, 'checkIfDelegated']);
-        Route::get('/getInternalRequest', [InternalRequest::class, 'getInternalRequest']);
-        // Route::get('/detailed-internal-request', [InternalRequest::class, 'getDetailedInternalRequest']);
-        Route::post('/accept-internal-request', [InternalRequest::class, 'accept_internal_request']);
-        Route::post('/internal-servicing-completed', [InternalRequest::class, 'internal_servicing_completed']);
-        Route::post('/markPackedEndorsedToWarehouse', [InternalRequest::class, 'markPackedEndorsedToWarehouse']);
-        Route::get('/internal-servicing-get-status', [InternalRequest::class, 'internal_servicing_get_status']);
-
-
-
-    /** Approver */
-        Route::get('/approver-get-equipment-handling-data', [EhMainApproverController::class, 'index']);
-        Route::get('/get-equipments', [EhMainApproverController::class, 'get_equipments']);
-        Route::post('/approve-request', [EhMainApproverController::class, 'approve_request']);
-        Route::post('/disapprove-request', [EhMainApproverController::class, 'disapprove_request']);
-        Route::get('/get-approval-history', [ApprovalConfiguration::class, 'approval_history']);
-
-
-
-    /** Master Data and Submit Work Order*/
-    Route::get('/master-data-equipments', [EhMainController::class, 'master_data_equipments']); // List of Equipments and 
-    Route::get('/get_institution', [EhMainController::class, 'get_institution']); // List of  and Institution
-    Route::post('/submit-work-order', [WorkOrder::class, 'submit_work_order']); // Submit Work Order
-
-
-    /* Admin Account - subject to edit auth/middleware */
-    Route::get('/users', [ApprovalConfiguration::class, 'index']);
-    Route::post('/submit-approver', [ApprovalConfiguration::class, 'assign_approver']);
-    Route::get('/get-approver', [ApprovalConfiguration::class, 'get_approvers_data']);
-    Route::delete('/delete-approver', [ApprovalConfiguration::class, 'delete_approver']);
+    /** Route Middleware for Admin Account */
+    Route::middleware(['adminMiddleware'])->group(function () {
+        /* Admin Account - subject to edit auth/middleware */
+        Route::get('/users', [ApprovalConfiguration::class, 'index']);
+        Route::post('/submit-approver', [ApprovalConfiguration::class, 'assign_approver']);
+        Route::delete('/delete-approver', [ApprovalConfiguration::class, 'delete_approver']);
         //PM Settings
         Route::post('/save-pm-sched', [PMSettings::class, 'pm_schedule']);
         Route::put('/edit-pm-sched', [PMSettings::class, 'edit_pm_schedule']);
@@ -89,12 +57,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Assign Role Permission and Modules
         Route::get('/get_role_name', [Roles::class, 'get_role_name']);
-        // Route::get('/get_permissions', [Roles::class, 'get_permissions']);
         Route::get('/get_permission_per_role', [Roles::class, 'get_permission_per_role']);
-        // Route::get('/get_modules', [Roles::class, 'get_modules']);
-        // Route::put('/set_permissions', [Roles::class, 'set_permissions']);
         Route::put('/set_permissions_per_role', [Roles::class, 'set_permissions_per_role']);
-        // Route::put('/set_modules', [Roles::class, 'set_modules']);
         Route::post('/add_role_name', [Roles::class, 'add_role_name']);
         Route::delete('/delete_role_name', [Roles::class, 'delete_role_name']);
         Route::post('/assign-role', [Roles::class, 'assign_role']);
@@ -103,14 +67,54 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/get-approver-roles', [Roles::class, 'get_approver_roles']);
         Route::get('/get_designations', [Designation::class, 'get_designations']);
 
+        /** SSU and designation */
+        Route::prefix('ssu')->group(function(){
+            Route::get('/', [SSUController::class, 'index']);
+            Route::post('/store', [SSUController::class, 'store']);
+            Route::put('/edit', [SSUController::class, 'edit']);
+            Route::delete('/delete', [SSUController::class, 'delete']);
+        });
+    });
+
+
+    /* Equipment Handling */
+    Route::post('/submit-work-order', [WorkOrder::class, 'submit_work_order']); // Submit Work Order
+    Route::get('/get-equipment-handling', [EquipmentHandlingController::class, 'showBasedOnCondition']);
+    Route::get('/get-specific-equipment-handling', [EquipmentHandlingController::class, 'getEquipmentHandlingById']);
+    Route::get('/get-approver', [ApprovalConfiguration::class, 'get_approvers_data']); // use also both in Approver and admin
+
+
+    // Equipment Handling -> Internal Servicing
+    Route::get('/get-engineers-data', [InternalRequest::class, 'get_engineers_data']);
+    Route::get('/get-internal-request-details', [InternalRequest::class, 'get_internal_request_details']);
+    Route::post('/internal-process', [InternalRequest::class, 'add_internal_process']);
+    Route::get('/getInternalRequest', [InternalRequest::class, 'getInternalRequest']);
+    Route::post('/accept-internal-request', [InternalRequest::class, 'accept_internal_request']);
+    Route::post('/internal-servicing-completed', [InternalRequest::class, 'internal_servicing_completed']);
+    Route::post('/markPackedEndorsedToWarehouse', [InternalRequest::class, 'markPackedEndorsedToWarehouse']);
+    Route::get('/internal-servicing-get-status', [InternalRequest::class, 'internal_servicing_get_status']);
+
+
+
+    /** Approver */
+    // Route::get('/approver-get-equipment-handling-data', [EhMainApproverController::class, 'index']);
+    Route::get('/get-equipments', [EhMainApproverController::class, 'get_equipments']);
+    Route::post('/approve-request', [EhMainApproverController::class, 'approve_request']); //->middleware(['permission:Equipment Handling,approve']);
+    Route::post('/disapprove-request', [EhMainApproverController::class, 'disapprove_request']); //->middleware(['permission:Equipment Handling,approve']);;
+    Route::get('/get-approval-history', [ApprovalConfiguration::class, 'approval_history']);
+
+
+
+    /** Master Data and Submit Work Order*/
+    Route::get('/master-data-equipments', [EhMainController::class, 'master_data_equipments']); // List of Equipments and 
+    Route::get('/get_institution', [EhMainController::class, 'get_institution']); // List of  and Institution
+
 
     /** Team Leader */
     Route::get('/get-request-to-assign-installation', [TeamLeader::class, 'get_request_to_assign']);
-    // Route::post('/assign-engineer', [TeamLeader::class, 'assign_engineer']);
 
     /** Engineer */
     Route::get('/get-assigned-request', [Engineer::class, 'get_assigned_request']);
-    // Route::post('/accept-pm-task', [Engineer::class, '']);
 
 
     /** Preventive Maintenance */
@@ -121,11 +125,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/pm_accepted', [PreventiveMaintenance::class, 'pm_accepted']);
     Route::post('/pm_decline', [PreventiveMaintenance::class, 'pm_decline']);
     Route::post('/pm_task_processing', [PreventiveMaintenance::class, 'pm_task_processing']);
-        Route::get('/getStandardActions', [PreventiveMaintenance::class, 'getStandardActions']);
+    Route::get('/getStandardActions', [PreventiveMaintenance::class, 'getStandardActions']);
 
-        Route::get('/spareparts', [PMSparepartsUsed::class, 'view']);
-        Route::post('/sendToCM', [SendToCM::class, 'sendToCM']); //send to CM
-        Route::post('/setDaysObservation', [SendToCM::class, 'setDaysObservation']); //send to CM
+    Route::get('/spareparts', [PMSparepartsUsed::class, 'view']);
+    Route::post('/sendToCM', [SendToCM::class, 'sendToCM']); //send to CM
+    Route::post('/setDaysObservation', [SendToCM::class, 'setDaysObservation']); //send to CM
 
 
     /** Get Auth User */

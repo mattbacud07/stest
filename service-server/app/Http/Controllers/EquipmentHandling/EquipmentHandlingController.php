@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\EquipmentHandling;
 
 use App\Http\Controllers\Controller;
+use App\Models\RoleUser;
 use Illuminate\Http\Request;
 use App\Services\EquipmentHandlingService\EHBasicOperation;
 use App\Services\EquipmentHandlingService\EHTaskOperation;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Support\Facades\Auth;
 
 class EquipmentHandlingController extends Controller
 {
@@ -34,6 +36,12 @@ class EquipmentHandlingController extends Controller
      */
     public function getEquipmentHandlingById(Request $request)
     {
+        $user = Auth::user();
+        $roleUsers = RoleUser::leftjoin('roles', 'roles.roleID', '=', 'role_user.role_id')
+            ->where('role_user.user_id', $user->id)
+            ->select('role_user.*', 'roles.role_name', 'roles.roleID', 'roles.permissions') // Select the fields you need
+            ->get();
+
         $service_id = $request->service_id ?? 0;
 
         $data = $this->EHBasicOperation->getEquipmentHandlingByServiceId($service_id);
@@ -47,11 +55,12 @@ class EquipmentHandlingController extends Controller
     /**
      * Display the specified resource base on condition.
      */
-    public function showBasedOnCondition(Request $request, Guard $guard)
+    public function showBasedOnCondition(Request $request)
     {
-        $user_id = $guard->user()->id;
+        $user_id = Auth::user()->id;
         $category = $request->category ?? '';
-        $result = $this->EHTaskOperation->getEquipmentHandlingByUserId($user_id, $category);
+        $myRequest = $request->myRequest ?? false;
+        $result = $this->EHTaskOperation->getEquipmentHandlingByUserId($user_id, $category, $myRequest);
 
         // return response()->json(['equipment_handling' => $data], 200);
 
@@ -65,5 +74,4 @@ class EquipmentHandlingController extends Controller
             'count' => $count
         ]);
     }
-
 }

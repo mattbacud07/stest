@@ -100,6 +100,8 @@ class GeneratePMSched
                 'scheduled_at' => $scheduled_at,
                 'item_id' => $equipment['item_id'],
                 'serial' => $equipment['serial_number'],
+                'institution' => $equipment['institution'],
+                'ssu' => $equipment['ssu'],
                 'date_installed' => $date_installed,
                 'status' => is_null($frequency) ? PM::NotSet : PM::Scheduled,
                 'work_type' => 'PM',
