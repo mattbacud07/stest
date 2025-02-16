@@ -1,6 +1,29 @@
 import moment from "moment";
 
 
+/** Main Statuses */
+export const pending = 'Pending'
+export const disapproved = 'Disapproved'
+export const rejected = 'Rejected'
+export const completed = 'Completed'
+export const accepted = 'Accepted';
+export const inProgress = 'In Progress';
+export const declined = 'Declined';
+export const cancelled = 'Cancelled';
+export const delegated = 'Delegated';
+export const installing = 'Installing';
+export const uninstalling = 'Uninstalling';
+
+
+
+
+
+/** Type of Request use in equipment_peripherals table*/
+export const EH = 'eh'
+export const PULLOUT = 'pullout'
+
+
+
 /** Roles */
 export const adminRole = 10
 export const adminServiceRole = 'Admin'
@@ -14,8 +37,10 @@ export const adminServiceRoleID = 6
 export const approverRoleID = 1
 export const TLRoleID = 2
 export const engineerRoleID = 3
-export const wimPersonnelID = 4
+export const wimPersonnelID = 10
 export const requestorID = 5
+export const NationalServiceManagerID = 7
+export const SBUServiceAssistantID = 8
 
 export const rolesArray = [adminServiceRole, approverRole, engineerRole, TLRole, wimPersonnel]
 export const rolesObject = [
@@ -32,18 +57,20 @@ export const eh_module = 'EH'
 export const is_module = 'IS'
 export const pm_module = 'PM'
 export const cm_module = 'CM'
+export const md_module = 'MD'
 
 /** SSU */
-export const ssu = {
-    ssu1: 1,
-    ssu2: 2,
-    ssu3: 3,
-    ssu4: 4,
-    ssu5: 5,
-    ssu6: 6,
-    ssu7: 7,
+export const sbu = {
+    sbu1: 1,
+    sbu2: 2,
+    sbu3: 3,
+    sbu4: 4,
+    sbu5: 5,
+    sbu6: 6,
+    // ssu7: 7,
 }
 
+export const sbuArray = Object.values(sbu)
 
 
 
@@ -52,171 +79,123 @@ export const ssu = {
  * Declared export variables for Equipment Handling Signatories - Job Order Form.
  */
 export const IT_DEPARTMENT = 1;
-export const APM_NSM_SM = 2;
+export const SM_SER = 2;
 export const WIM = 3;
 export const SERVICE_TL = 4;
-export const SERVICE_HEAD_ENGINEER = 5;
-export const BILLING_WIM = 6;
-export const OUTBOUND = 7;
-export const AREA_WIM = 8;
-export const AREA_RSM_SPM_SNM_SM = 9;
-export const AREA_SERVICE_TL = 10
-export const AREA_BILLING_WIM = 11
+export const BILLING_WIM = 5;
+export const OUTBOUND = 6;
+export const S_IT_DEPARTMENT = 7;
+export const S_SM_SER = 8;
+export const S_WIM = 9;
+export const S_SERVICE = 10;
+export const S_BILLING_WIM = 11;
+export const S_OUTBOUND = 12;
 
 export const INSTALLATION_TL = 18;
 export const INSTALLATION_ENGINEER = 19;
 
 export const approverArray = [
-    IT_DEPARTMENT, APM_NSM_SM, WIM, SERVICE_TL, 
-    SERVICE_HEAD_ENGINEER, BILLING_WIM, OUTBOUND, 
+    IT_DEPARTMENT, SM_SER, WIM, SERVICE_TL,
+    BILLING_WIM, OUTBOUND,
     INSTALLATION_TL, INSTALLATION_ENGINEER,
-    AREA_WIM, AREA_RSM_SPM_SNM_SM, AREA_SERVICE_TL, AREA_BILLING_WIM
+    S_WIM, S_SERVICE, S_BILLING_WIM, S_OUTBOUND
 ];
 
-export const pending_approval_status = (approver) => {
-    switch (approver) {
-        case IT_DEPARTMENT:
-            return 'IT Department'
-            break
-        case APM_NSM_SM:
-            return 'APM/NSM/SM'
-            break
-        case WIM:
-            return 'Warehouse & Inventory Management'
-            break
-        case SERVICE_TL:
-            return 'Service Dept Team Leader'
-            break
-        case SERVICE_HEAD_ENGINEER:
-            return 'Service Dept Head / Service Engineer'
-            break
-        case BILLING_WIM:
-            return 'Billing / WIM'
-            break
-        case OUTBOUND:
-            return 'Outbound Personnel'
-            break
-        case AREA_WIM:
-            return 'Area Warehouse & Inventory Management'
-            break
-        case AREA_RSM_SPM_SNM_SM:
-            return 'Area RSM/APM/NSM/SM'
-            break
-        case AREA_SERVICE_TL:
-            return 'Area Service TL / Service Engineer'
-            break
-        case AREA_BILLING_WIM:
-            return 'Area Billing & Invoicing'
-            break
-        case INSTALLATION_TL:
-            return 'Delegation - Team Leader -'
-            break
-        case INSTALLATION_ENGINEER:
-            return 'Installation - Engineer'
-            break
+/** Set Config Approver Designation - Installation */
+export const approver_designation = [
+    { key: 'IT Department', value: 1 },
+    { key: 'Dept. Manager (S&M / SER)', value: 2 },
+    { key: 'Warehouse / Inventory Custodian', value: 3 },
+    { key: 'Service Manager - Strategic Business Unit', value: 4 },
+    { key: 'Billing & Invoicing', value: 5 },
+    { key: 'Operations - Outbound', value: 6 },
+    { key: '[Satellite Office] - Outbound Personnel (Receiving)', value: 7 },
+    { key: '[Satellite Office] - Warerhouse Personnel (Receiving)', value: 8 },
+    { key: '[Satellite Office] - Billing & Invoicing Staff', value: 9 },
+];
+export const getApproverByLevel = (level, category) => {
+    //EH
+    switch (category) {
+        case 1:
+            const approver = approver_designation.find(item => item.value === level)
+            if (approver) return approver.key
+            return null
+        case 2:
+            const pullout = approver_designation.find(item => item.value === level)
+            if (approver) return approver.key
+            return null
     }
 }
 
-/** Set Config Approver Designation */
-export const approver_designation = [
-    { key: 'IT DEPARTMENT', value: 1 },
-    { key: 'APM/NSM/SM', value: 2 },
-    { key: 'WAREHOUSE & INVENTORY MANAGEMENT', value: 3 },
-    { key: 'SERVICE DEPARTMENT TEAM LEADER', value: 4 },
-    { key: 'SERVICE DEPARTMENT HEAD / SERVICE ENGINEER', value: 5 },
-    { key: 'BILLING & INVOICING STAFF / WIM PERSONNEL', value: 6 },
-    { key: 'OUTBOUND PERSONNEL', value: 7 },
-    { key: 'AREA WAREHOUSE & INVENTORY MANAGEMENT', value: 8 },  
-    { key: 'AREA RSM/SPM/SNM/SM', value: 9 },  
-    { key: 'AREA SERVICE TEAM LEADER', value: 10 },  
-    { key: 'AREA BILLING/WIM', value: 11 },  
+
+/** Set Config Approver Designation - Installation */
+export const approver_pullout = [
+    { key: 'IT Department', value: 1 },
+    { key: 'Dept. Manager (S&M / SER)', value: 2 },
+    { key: 'Warehouse / Inventory Custodian', value: 3 },
+    { key: 'Service Coordinator', value: 4 },
+    { key: 'Service Manager - Strategic Business Unit', value: 5 }
+    // { key: 'Level 5 [Satellite Office] - Area Billing/WIM', value: 11 },
 ];
 
-export const approver_category = [
-    { value : 'EH' },
-]
 
+export const approver_category = [
+    { key: 'Equipment Handling / Installation', value: 1 },
+    { key: 'Equipment Handling / Pull-out', value: 2 },
+]
 
 
 
 /** 
  * Job Order Status
  */
-export const ONGOING = 1;
-// export const PARTIAL_COMPLETE = 2;
-export const ONGOING_AREA_LEVEL = 2
-export const COMPLETE = 3;
-export const DISAPPROVED = 4;
-// export const RESCHEDULE = 5;
-export const INSTALLING = 6;
+export const PENDING = 1;
+export const DISAPPROVED = 2;
+export const INTERNAL_SERVICING = 3;
+export const INSTALLING = 4;
+export const COMPLETE = 5;
+
 
 /** Set Job Order Status */
-export const setJOStatus = (status) => {
-    switch (parseInt(status)) {
-        case ONGOING_AREA_LEVEL:
-            return { text: 'Pending Approval - Area Level', color: 'blue!important' }
-            break;
-        case COMPLETE:
-            return { text: 'Completed', color: 'green!important' }
-            break;
-        case DISAPPROVED:
-            return { text: 'Disapproved', color: 'red!important' }
-            break;
-        // case RESCHEDULE:
-        //     return { text: 'Reschedule', color: 'black!important' }
-        //     break;
-        case INSTALLING:
-            return { text: 'Installation Ready', color: 'orange!important' }
-            break;
-        default:
-            return { text: 'Pending Approval', color: 'blue!important' }
-    }
+export const JOStatus = [
+    { key: PENDING, text: 'Pending', color: 'blue' },
+    { key: DISAPPROVED, text: 'Disapproved', color: 'red' },
+    { key: INTERNAL_SERVICING, text: 'Internal Servicing Ongoing', color: 'orange' },
+    { key: INSTALLING, text: 'Installing', color: 'violet' },
+    { key: COMPLETE, text: 'Completed', color: 'green' }
+]
+export const setJOStatus = (key) => {
+    return JOStatus.find(v => v.key === key) || { color: 'brown', text: ''}
 }
 
 
-
+// ===========================================================================================
 
 
 /** 
- * Internal Servicing Status
+ * Set Internal Servicing Status 
  */
-export const internalStat = {
-    'Delegated': 1,
-    // 'Accepted': 2,
-    'Declined': 3,
-    'InProgress': 4,
-    'Completed': 5,
-    'Packed': 6,
-    // 'Endorsed': 7,
-    'ConfirmedByWIM': 8,
+    export const I_DELEGATED = 'Delegated'
+    export const I_DECLINED = 'Declined'
+    export const I_INPROGRESS = 'In Progress'
+    export const I_COMPLETED = 'Completed'
+    export const I_RETURNEDHEAD = 'Returned to Head'
+    export const I_WAREHOUSE = 'Sent to Warehouse'
+
+export const internalStatus = [
+    { key: 1, text: I_DELEGATED, color: 'blue' },
+    { key: 2, text: I_DECLINED, color: 'red' },
+    { key: 3, text: I_INPROGRESS, color: 'orange' },
+    { key: 4, text: I_COMPLETED, color: 'green' },
+    { key: 5, text: I_RETURNEDHEAD, color: 'purple' },
+    { key: 6, text: I_WAREHOUSE, color: 'indigo' },
+];
+
+/** Find Internal Servicing Status */
+export const getInternalStatus = (text) => {
+    return internalStatus.find(status => status.text === text) || { text: '', color: 'blue' };
 };
 
-/** Set Internal Servicing Status */
-export const internalStatus = (status) => {
-    switch (status) {
-        case internalStat.Delegated:
-            return { text: 'Delegated', color: 'blue!important' }
-            break;
-        case internalStat.Declined:
-            return { text: 'Declined', color: 'red!important' }
-            break;
-        case internalStat.InProgress:
-            return { text: 'In Progress', color: 'orange!important' }
-            break;
-        case internalStat.Completed:
-            return { text: 'Task Completed', color: 'gray!important' }
-            break;
-        case internalStat.Packed:
-            return { text: 'Packed & Endorsed to Warehouse', color: 'violet!important' }
-            break;
-        case internalStat.ConfirmedByWIM:
-            return { text: 'Confirmed by WIM', color: 'green!important' }
-            break;
-        default:
-            return { text: '', color: 'blue!important' }
-    }
-
-}
 
 
 /** Set Job Order Form ID */
@@ -229,13 +208,16 @@ export const setReportNumber = (id, date_created) => {
 
 /** format Date to MM/DD/YYYY */
 export const formatDate = (date) => {
-    return date ? moment(date).format('MM/DD/YYYY hh:mm a') : ''
+    return date ? moment(date).format('YYYY-MM-DD hh:mm a') : ''
 }
 export const formatDateFullMonthNoTime = (date) => {
     return date ? moment(date).format('MMMM DD, YYYY') : ''
 }
+export const FullMonthWithTime = (date) => {
+    return date ? moment(date).format('MMMM DD, YYYY hh:mm a') : ''
+}
 export const formatDateNoTime = (date) => {
-    return date ? moment(date).format('MM/DD/YYYY') : '--'
+    return date ? moment(date).format('YYYY-MM-DD') : '--'
 }
 
 
@@ -263,11 +245,8 @@ export const requestType = (rtype) => {
 
 
 
-
-
-
-/***
- * Approval Category
- */
+/** Approval Category */
 export const eh_approver = 'EH'
+
+
 

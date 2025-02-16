@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PreventiveMaintenance;
 
 use App\Http\Controllers\Controller;
 use App\Models\EhServicesModel;
+use App\Models\PreventiveMaintenance\PMActions;
 use App\Models\PreventiveMaintenance\PMLogs;
 use App\Models\PreventiveMaintenance\PMOptionsAction;
 use App\Models\PreventiveMaintenance\PMPartsUsed;
@@ -12,6 +13,7 @@ use App\Models\Roles;
 use App\Models\RoleUser;
 use App\Models\WorksDone;
 use App\Services\ActionsDoneService;
+use App\Services\PM\CreatePMRequest;
 use App\Traits\GlobalVariables;
 use App\Traits\Maintenance;
 use Carbon\Carbon;
@@ -22,19 +24,23 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\PM\GeneratePMSched;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
-use function PHPSTORM_META\map;
+// use function PHPSTORM_META\map;
 
 class PreventiveMaintenance extends Controller
 {
     use Maintenance, GlobalVariables;
 
     protected $generatePMSched;
+    protected $create_pm;
 
-    public function __construct(GeneratePMSched $generatePMSched)
+    public function __construct(GeneratePMSched $generatePMSched, CreatePMRequest $create_pm)
     {
         $this->generatePMSched = $generatePMSched;
+        $this->create_pm = $create_pm;
     }
+
 
     /** Get Preventive Mantenance Schedule */
     public function get_preventive_maintenance(Request $request, Guard $guard)
@@ -43,13 +49,23 @@ class PreventiveMaintenance extends Controller
         $columnMappings = [
             'item_code' => ['table' => 'm', 'db' => 'mysqlSecond', 'column' => 'item_code'],
             'description' => ['table' => 'm', 'db' => 'mysqlSecond', 'column' => 'description'],
-            // 'serial_number' => ['table' => 'equipment_peripherals', 'db' => 'mysql', 'column' => 'serial_number'],
+
+            'serial' => ['table' => 'smd', 'db' => 'mysql', 'column' => 'serial'],
+
             'institution_name' => ['table' => 'i', 'db' => 'mysqlSecond', 'column' => 'name'],
             'address' => ['table' => 'i', 'db' => 'mysqlSecond', 'column' => 'address'],
+
             'scheduled_at' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'scheduled_at'],
+            'delegation_date' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'delegation_date'],
+            'date_accepted' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'date_accepted'],
+            'departed_date' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'departed_date'],
+            'start_date' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'start_date'],
+            'end_date' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'end_date'],
+
             'schedule' => ['table' => 'ps', 'db' => 'mysql', 'column' => 'schedule'],
-            // 'ssu' => ['table' => 'eh', 'db' => 'mysql', 'column' => 'ssu'],
-            'engineer' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'engineer'],
+            // 'SBU' => ['table' => 'eh', 'db' => 'mysql', 'column' => 'SBU'],
+            'username' => ['table' => 'user', 'db' => 'mysqlSecond', 'column' => 'first_name'],
+            'username' => ['table' => 'user', 'db' => 'mysqlSecond', 'column' => 'last_name'],
             'status_after_service' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'status_after_service'],
             'status' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'status']
         ];
@@ -66,10 +82,10 @@ class PreventiveMaintenance extends Controller
         $work_type = $request->work_type ?? '';
 
 
-        $userArea = $guard->user()->area;
-        $user_id = $guard->user()->id;
+        $userArea = Auth::user()->area;
+        $user_id = Auth::user()->id;
         $userRoleID = [Roles::TLRoleID, Roles::engineerRoleID];  //2 = 'Team Leader' 3 = 'Engineer'
-        $getUserSSU = RoleUser::where('user_id', $user_id)
+        $getUserSBU = RoleUser::where('user_id', $user_id)
             ->whereIn('role_id', $userRoleID)
             ->get();
         $area = 0;
@@ -83,24 +99,30 @@ class PreventiveMaintenance extends Controller
                     'pm.*',
                     'm.item_code',
                     'm.description',
+                    'smd.id as smd_id',
+                    'smd.master_data_id',
+                    'smd.equipment',
+                    'smd.serial',
+                    'smd.frequency',
+                    'smd.SBU',
                     // 'equipment_peripherals.serial_number',
-                    'ps.schedule',
+                    // 'ps.schedule',
                     // 'user.first_name',
                     // 'user.last_name',
                     DB::raw('CONCAT(user.first_name, " ", user.last_name) as username'),
                     // 'eh.id as eh_id',
                     'i.name as institution_name',
                     'i.address',
-                    // 'eh.ssu'
                 )
-                // Join with equipment (master_data)
-                ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.master_data as m', 'pm.item_id', '=', 'm.id')
 
-                // Join with equipment_peripherals
-                // ->leftJoin('equipment_peripherals', 'pm.equipment_peripheral_id', '=', 'equipment_peripherals.id')
+                // Join with equipment (service_master_data)
+                ->leftJoin('service_master_data as smd', 'pm.item_id', '=', 'smd.id')
+
+                // Join with equipment (master_data)
+                ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.master_data as m', 'smd.master_data_id', '=', 'm.id')
 
                 // Join with frequency (PM_Setting)
-                ->leftJoin('pm_setting as ps', 'pm.item_id', '=', 'ps.equipment')
+                // ->leftJoin('pm_setting as ps', 'pm.item_id', '=', 'ps.equipment')
 
                 // Join with users (engineer)
                 ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as user', 'pm.engineer', '=', 'user.id')
@@ -128,14 +150,14 @@ class PreventiveMaintenance extends Controller
                 if ((int) $request->category === Roles::TLRoleID) {
                     $today = Carbon::today();
                     $lastDayOfNextMonth = $today->addMonth()->endOfMonth();
-                    $getTLSSU = $getUserSSU->filter(function ($val) {
-                        return $val['role_id'] === Roles::TLRoleID;
-                    })->map(function ($val) {
-                        return $val['SSU'];
-                    });
+                    // $getTLSBU = $getUserSBU->filter(function ($val) {
+                    //     return $val['role_id'] === Roles::TLRoleID;
+                    // })->map(function ($val) {
+                    //     return $val['SBU'];
+                    // });
 
 
-                    $query->where('pm.ssu', $getTLSSU);
+                    // $query->where('smd.SBU', $getTLSBU);
                     if ($request->filled('filterOptions')) {
                         if (in_array('assign-next-month', $request->filterOptions)) {
                             $query->where('pm.scheduled_at', '<=', $lastDayOfNextMonth);
@@ -145,14 +167,13 @@ class PreventiveMaintenance extends Controller
                         }
                     }
                 } else {
-                    $getEngineerSSU = $getUserSSU->filter(function ($val) {
-                        return $val['role_id'] === Roles::engineerRoleID;
-                    })->map(function ($val) {
-                        return $val['SSU'];
-                    });
+                    // $getEngineerSBU = $getUserSBU->filter(function ($val) {
+                    //     return $val['role_id'] === Roles::engineerRoleID;
+                    // })->map(function ($val) {
+                    //     return $val['SBU'];
+                    // });
                     $arrayStatus = [PM::Delegated, PM::Accepted, PM::InTransit, PM::InProgress, PM::Completed];
-                    $query->where('pm.ssu', $getEngineerSSU)
-                        ->where(['pm.engineer' => $user_id,])
+                    $query->where(['pm.engineer' => $user_id,])
                         ->whereIn(
                             'pm.status',
                             $arrayStatus
@@ -198,6 +219,7 @@ class PreventiveMaintenance extends Controller
             return response()->json([
                 'pm_data' => $get_pm_data,
                 'area' => $area,
+                // 'SBU' => $getTLSBU,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -220,18 +242,31 @@ class PreventiveMaintenance extends Controller
                     // 'm.description',
                     'i.name as institution_name',
                     'i.address',
+                    // 'ps.schedule',
                 )
-                ->with(['equipment' => function ($q) {
-                    $q->select('id', 'item_code', 'description');
-                }])
-                // ->with(['equipment_peripherals' => function ($q) {
-                //     $q->select('id', 'serial_number');
+                // Join with frequency (PM_Setting)
+                // ->leftJoin('pm_setting as ps', 'preventive_maintenance.item_id', '=', 'ps.equipment')
+                // ->with(['equipment' => function ($q) {
+                //     $q->select('id', 'item_code', 'description');
                 // }])
+                ->with(['service_equipment' => function ($q) {
+                    $q->select(
+                        'service_master_data.id',
+                        'service_master_data.master_data_id',
+                        'service_master_data.equipment',
+                        'service_master_data.serial',
+                        'service_master_data.frequency',
+                        'service_master_data.SBU',
+                        'm.item_code',
+                        'm.description'
+                    )
+                        ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.master_data as m', 'service_master_data.master_data_id', '=', 'm.id');
+                }])
                 ->with(['user' => function ($q) {
                     $q->select('id', 'first_name', 'last_name');
                 }])
                 // ->with(['eh' => function ($q) {
-                //     $q->select('i.id', 'equipment_handling.id', 'equipment_handling.institution', 'i.name', 'i.address', 'equipment_handling.ssu')
+                //     $q->select('i.id', 'equipment_handling.id', 'equipment_handling.institution', 'i.name', 'i.address', 'equipment_handling.SBU')
                 //         ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id');
                 // }])
                 ->with(['actions' => function ($q) {
@@ -253,6 +288,35 @@ class PreventiveMaintenance extends Controller
         }
     }
 
+
+
+
+
+    /** Create PM Request */
+    public function createPMRequests(Request $request)
+    {
+        $user_id = Auth::user()->id;
+        $complaints = $request->complaints ?? [];
+        $problems = $request->problems ?? [];
+        $work_type = $request->work_type ?? '';
+
+        $data = [
+            'institution' => $request->institution,
+            'requested_by' => $user_id,
+            'item_id' => $request->item_id,
+            'work_type' => $work_type,
+            'status' => PM::Scheduled,
+        ];
+        $create_request = $this->create_pm->create_request($data, $complaints, $problems, $work_type);
+        if ($create_request) {
+            return response()->json([
+                'success' => true,
+            ]);
+        }
+        return response()->json([
+            'error' => true,
+        ]);
+    }
 
 
 
@@ -280,7 +344,7 @@ class PreventiveMaintenance extends Controller
             if ($get_latest_status === PM::Scheduled) {
                 $data = [
                     //Note ===================== -> Need to add here the serial number for updating -> very important thing ======================
-                    'serial' => $serial,
+                    // 'serial' => $serial, -> remove this (we change basement table)
                     'delegation_date' => Carbon::now(),
                     'engineer' => $engineer,
                     'status' => PM::Delegated,
@@ -359,7 +423,9 @@ class PreventiveMaintenance extends Controller
             ], 500);
         }
     }
-    /**PM Declined */
+
+
+    /** ================================PM Declined ======================================= */
     public function pm_decline(Request $request, Guard $guard)
     {
         $user_id = Auth::user()->id;
@@ -393,7 +459,7 @@ class PreventiveMaintenance extends Controller
 
 
 
-    /** PM Task Processing */
+    /** ============================= PM Task Processing ===================================== */
     public function pm_task_processing(Request $request, ActionsDoneService $action_done)
     {
         $id = $request->id ?? 0;
@@ -405,8 +471,8 @@ class PreventiveMaintenance extends Controller
 
         $pm_data = PM::find($id); //Get pm data for updating specific record
         //Get pm_data for generating next pm sched
-        $get_pm_data = PM::select('preventive_maintenance.*', 'pm_setting.schedule')
-            ->leftJoin('pm_setting', 'preventive_maintenance.item_id', '=', 'pm_setting.equipment')
+        $get_pm_data = PM::select('preventive_maintenance.*')
+            // ->leftJoin('pm_setting', 'preventive_maintenance.item_id', '=', 'pm_setting.equipment')
             ->where('preventive_maintenance.id', $id)
             ->first();
 
@@ -431,11 +497,11 @@ class PreventiveMaintenance extends Controller
                 $departedDate = Carbon::parse($pm_data->departed_date);
                 $startDate = Carbon::now();
 
-                $daysDifference = $departedDate->diffInDays($startDate);
+                // $daysDifference = $departedDate->diffInDays($startDate); $daysDifference . ' days, ' 
                 $hoursDifference = $departedDate->diffInHours($startDate) % 24; // Remaining hours after full days
                 $minutesDifference = $departedDate->diffInMinutes($startDate) % 60;
 
-                $totalDuration = $daysDifference . ' days, ' . $hoursDifference . ' hours, ' . $minutesDifference . ' minutes';
+                $totalDuration = $hoursDifference . ' hrs, ' . $minutesDifference . ' min';
 
                 $data = [
                     'start_date' => Carbon::now(),
@@ -454,7 +520,7 @@ class PreventiveMaintenance extends Controller
                         'item_id' => $get_pm_data['item_id'],
                         'serial' => $get_pm_data['serial'],
                         'institution' => $get_pm_data['institution'],
-                        'ssu' => $get_pm_data['ssu'],
+                        'SBU' => $get_pm_data['SBU'],
                         'date_installed' => $get_pm_data['date_installed'],
                         'status' => PM::Scheduled,
                         'work_type' => 'CM',
@@ -467,6 +533,17 @@ class PreventiveMaintenance extends Controller
                     $tag = PM::pm_tag_under_observation;
                 }
 
+                /********** Signature ************/
+                $signatureData = $request->signature ?? null;
+                $signatureData = str_replace('data:image/png;base64,', '', $signatureData);
+                $signatureData = str_replace(' ', '+', $signatureData);
+                //Decode
+                $signatureImage = base64_decode($signatureData);
+
+                $filename = 'signatures/' . $id . '-' . Carbon::today()->format('m-d-y') . '.png';
+
+                Storage::disk('public')->put($filename, $signatureImage);
+
                 /** Main Data to update */
                 $data = [
                     'end_date' => Carbon::now(),
@@ -474,7 +551,8 @@ class PreventiveMaintenance extends Controller
                     'tag' => $tag,
                     'remarks' => $remarks,
                     'status' => PM::Completed,
-                    'monitoring_end' => $monitoring_end
+                    'monitoring_end' => $monitoring_end,
+                    'signature' => $filename,
                 ];
 
                 //Actions Done
@@ -482,6 +560,7 @@ class PreventiveMaintenance extends Controller
                     WorksDone::insert([
                         'pm_id' => $id,
                         'action' => $action,
+                        // 'type' => 'actions',
                         'work_type' => $work_type,
                     ]);
                 }
@@ -518,7 +597,7 @@ class PreventiveMaintenance extends Controller
                         'item_id' => $get_pm_data['item_id'],
                         'serial' => $get_pm_data['serial'],
                         'institution' => $get_pm_data['institution'],
-                        'ssu' => $get_pm_data['ssu'],
+                        'SBU' => $get_pm_data['SBU'],
                         'date_installed' => $get_pm_data['date_installed'],
                         'status' => PM::Scheduled,
                         'work_type' => 'PM',

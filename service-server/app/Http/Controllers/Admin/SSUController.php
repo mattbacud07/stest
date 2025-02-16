@@ -10,9 +10,9 @@ class SSUController extends Controller
 {
     public function index()
     {
-        $ssus = SSU::all(); // Fetch all SSUs
+        $items = SSU::all(); // Fetch all SSUs
         return response()->json([
-            'ssu' => $ssus,
+            'item' => $items,
         ]);
     }
 
@@ -20,10 +20,10 @@ class SSUController extends Controller
     // Store a newly created SSU
     public function store(Request $request)
     {
-        $checkExist = SSU::where('ssu', $request->ssu)->exists();
+        $checkExist = SSU::where('item', $request->item)->exists();
         if (!$checkExist) {
             SSU::create([
-                'ssu' => $request->ssu,
+                'item' => $request->item,
             ]);
 
             return response()->json([
@@ -40,11 +40,11 @@ class SSUController extends Controller
     // Update the specified SSU
     public function edit(Request $request)
     {
-        $checkExist = SSU::where('ssu', $request->ssu)->where('id','!=',$request->id)->exists();
+        $checkExist = SSU::where('item', $request->item)->where('id','!=',$request->id)->exists();
         if (!$checkExist) {
-            $ssu = SSU::findOrFail($request->id); // Find the SSU by ID
-            $ssu->update([
-                'ssu' => $request->ssu, // Update the SSU field
+            $item = SSU::findOrFail($request->id); // Find the SSU by ID
+            $item->update([
+                'item' => $request->item, // Update the SSU field
             ]);
 
             return response()->json([

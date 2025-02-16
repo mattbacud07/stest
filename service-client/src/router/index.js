@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import { EH, PM, IS, CM } from '@/global/modules'
+import { EH, PM, IS, CM, MD, PR } from '@/global/modules'
 import {
   canAccess,
   adminGuard
@@ -8,6 +8,7 @@ import {
 import { workOrderMainRequest } from './equipmentHandlingGuard'
 import { preventiveMaintenanceRequest } from './preventiveMaintenanceGuard'
 import { internalServicingRequest } from './internalServicingGuard'
+import PulloutRequest from '@/views/PulloutRequest/PulloutRequest.vue'
 
 
 const router = createRouter({
@@ -64,21 +65,11 @@ const router = createRouter({
       beforeEnter: adminGuard()
     },
     {
-      path: '/ssu-designation',
-      name: 'SSUDesignation',
-      component: () => import('../views/Admin/SetSSUDesignation.vue'),
+      path: '/checklist',
+      name: 'ChecklistItem',
+      component: () => import('../views/Admin/ChecklistItem.vue'),
       meta: {
-        title: 'SSU & Designation',
-        requiresAuth: true,
-      },
-      beforeEnter: adminGuard()
-    },
-    {
-      path: '/pm-settings',
-      name: 'PMSettings',
-      component: () => import('../views/Admin/PMSettings.vue'),
-      meta: {
-        title: 'PM Settings',
+        title: 'Standard Checklist Item',
         requiresAuth: true,
       },
       beforeEnter: adminGuard()
@@ -92,6 +83,58 @@ const router = createRouter({
         requiresAuth: true,
       },
       beforeEnter: adminGuard()
+    },
+    {
+      path: '/logs', // =========== Service Logs and Actions
+      name: 'ServiceLogs',
+      component: () => import('../views/ServiceLogs.vue'),
+      meta: {
+        title: 'Action Logs'
+      },
+      beforeEnter: adminGuard()
+    },
+
+
+    /** Master Data */
+    {
+      path: '/master-data',
+      name: 'MasterData',
+      component: () => import('../views/MasterData/MasterData.vue'),
+      meta: {
+        title: 'Master Data',
+        requiresAuth: true,
+      },
+      beforeEnter: canAccess('read', MD)
+    },
+    {
+      path: '/create-master-data',
+      name: 'CreateMasterData',
+      component: () => import('../views/MasterData/CreateMasterData.vue'),
+      meta: {
+        title: 'Master Data',
+        requiresAuth: true,
+      },
+      beforeEnter: canAccess('create', MD)
+    },
+    {
+      path: '/edit-master-data/:id',
+      name: 'EditMasterData',
+      component: () => import('../views/MasterData/EditMasterData.vue'),
+      meta: {
+        title: 'Master Data',
+        requiresAuth: true,
+      },
+      beforeEnter: canAccess('edit', MD)
+    },
+    {
+      path: '/view-master-data/:id',
+      name: 'ViewMasterData',
+      component: () => import('../views/MasterData/ViewMasterData.vue'),
+      meta: {
+        title: 'Master Data',
+        requiresAuth: true,
+      },
+      beforeEnter: canAccess('read', MD)
     },
 
 
@@ -141,6 +184,42 @@ const router = createRouter({
     },
 
 
+
+
+
+    /** ========================= Pull Out Request Routes ===================================== */
+    {
+      path: '/pull-out-request',
+      name: 'PullOut',
+      component : () => import('../views/PulloutRequest/PulloutRequest.vue'),
+      meta: {
+        title: 'Pullout Request',
+        requiresAuth: true
+      },
+      beforeEnter: canAccess('read', PR)
+    },
+    {
+      path: '/pull-out-request-form',
+      name: 'PullOutRequestForm',
+      component : () => import('../views/PulloutRequest/PullOutRequestForm.vue'),
+      meta: {
+        title: 'Pullout Request',
+        requiresAuth: true
+      },
+      beforeEnter: canAccess('create', PR)
+    },
+    {
+      path: '/pull-out-request-view/:id',
+      name: 'PullOutRequestView',
+      component : () => import('../views/PulloutRequest/PulloutRequestApproval.vue'),
+      meta: {
+        title: 'Pullout Request',
+        requiresAuth: true
+      },
+      beforeEnter: canAccess('read', PR)
+    },
+
+
     /** ========================================== Internal Servicing Routes =================================================== */
     {
       path: '/internal-servicing',
@@ -155,7 +234,7 @@ const router = createRouter({
     },
 
     {
-      path: '/internal-servicing-process/:id/:service_id',
+      path: '/internal-servicing-process/:id',
       name: 'InternalServicingProcess',
       component: () => import('../views/InternalServicing/InternalRequestProcess.vue'),
       props: true,
@@ -184,7 +263,7 @@ const router = createRouter({
     },
 
     {
-      path: '/create-request',
+      path: '/create-request/:work_type',
       name: 'CreatePM',
       component: () => import('../views/PreventiveMaintenance/CreatePM.vue'),
       props: true,
@@ -222,7 +301,6 @@ const router = createRouter({
         requiresAuth: true
       }
     },
-
 
 
 

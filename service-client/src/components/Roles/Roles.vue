@@ -17,8 +17,9 @@
                                     <v-card-text class="px-4">
                                         <v-text-field v-model="role_name" :rules="rule.role" density="compact"
                                             variant="outlined" label="Role Name"></v-text-field>
-                                            <v-select v-model="roleID" :items="roleOptions" class="mt-3" :rules="[v=> !!v || 'Required']" density="compact"
-                                            variant="outlined" label="Role ID"></v-select>
+                                        <v-select v-model="roleID" :items="roleOptions" class="mt-3"
+                                            :rules="[v => !!v || 'Required']" density="compact" variant="outlined"
+                                            label="Role ID"></v-select>
                                         <v-textarea v-model="description" density="compact" rows="5" label="Description"
                                             variant="outlined" color="primary" class="mt-5"></v-textarea>
                                     </v-card-text>
@@ -39,10 +40,44 @@
                         </template>
                     </v-dialog>
 
+                    <!-- Edit Role -->
+                    <v-dialog width="400" scrollable v-model="isUpdate">
+                        <template v-slot:activator="{ props: activatorProps }">
+                            <v-btn color="primary" variant="tonal" :disabled="btnDisable"
+                                prepend-icon="mdi-shield-edit-outline" text="Edit" class="text-none ml-2"
+                                v-bind="activatorProps"></v-btn>
+                        </template>
 
-                    <v-btn color="primary" :disabled="btnDisable" prepend-icon="mdi-shield-edit-outline" text="Edit"
-                        class="text-none ml-2" variant="tonal"></v-btn>
+                        <template v-slot:default="{ isActive }">
+                            <v-card prepend-icon="mdi-shield-edit-outline" title="Edit Role">
 
+                                <v-form @submit.prevent="editRole" ref="form">
+                                    <v-divider class="mt-1"></v-divider>
+                                    <v-card-text class="px-4">
+                                        <v-text-field v-model="role_name" :rules="rule.role" density="compact"
+                                            variant="outlined" label="Role Name"></v-text-field>
+                                        <v-select v-model="roleID" disabled :items="roleOptions" class="mt-3"
+                                            :rules="[v => !!v || 'Required']" density="compact" variant="outlined"
+                                            label="Role ID"></v-select>
+                                        <v-textarea v-model="description" density="compact" rows="5" label="Description"
+                                            variant="outlined" color="primary" class="mt-5"></v-textarea>
+                                    </v-card-text>
+
+                                    <v-divider></v-divider>
+
+                                    <v-card-actions>
+                                        <v-btn text="Close" prependIcon="mdi-arrow-left" class="text-none"
+                                            @click="isActive.value = false"></v-btn>
+                                        <v-spacer></v-spacer>
+
+                                        <v-btn type="submit" color="primary"
+                                            prependIcon="mdi-content-save-check-outline" class="text-none" text="Save"
+                                            variant="flat" :loading="loadingSave"></v-btn>
+                                    </v-card-actions>
+                                </v-form>
+                            </v-card>
+                        </template>
+                    </v-dialog>
 
                     <v-dialog width="400" scrollable v-model="deleteRoleDialog">
                         <template v-slot:activator="{ props: activatorProps }">
@@ -74,16 +109,17 @@
                         label="Search all fields" variant="outlined"></v-text-field>
                 </v-col>
             </v-row>
-            <p class="text-danger" style="font-size: .8em;">* Please consult your IT administrator before making any changes</p>
+            <p class="text-danger" style="font-size: .8em;">* Please consult your IT administrator before making any
+                changes</p>
             <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading" :search="params.search"
-                :selectRowOnClick="true" :hasCheckbox="true" :sortable="true" :sortColumn="params.sort_column" :sortDirection="params.sort_direction" skin="bh-table-compact bh-table-bordered"
-                class="mt-5" @rowSelect="isChecked">
+                :selectRowOnClick="true" :hasCheckbox="true" :sortable="true" :sortColumn="params.sort_column"
+                :sortDirection="params.sort_direction" skin="bh-table-compact bh-table-bordered" class="mt-5"
+                @rowSelect="isChecked" @rowClick="rowClickEvent">
                 <template #created_at="data">
                     <span>{{ pub_var.formatDate(data.value.created_at) }}</span>
                 </template>
             </vue3-datatable>
         </v-col>
-        <alertMessage v-if="messageDetails.show" :details="messageDetails" />
     </v-row>
 </template>
 <script setup>
@@ -91,7 +127,6 @@ import { ref, reactive, onMounted, watch, provide } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global.js'
-import alertMessage from '@/components/PopupMessage/alertMessage.vue'
 
 
 /** Vuue3 DataTable */
@@ -99,7 +134,7 @@ import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
 /** ToastPlugin Notifcation */
-import {useToast} from 'vue-toast-notification'
+import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
 
@@ -111,14 +146,14 @@ const role_name = ref('')
 const description = ref('')
 const datatable = ref(null)
 const isActive = ref(false)
+const isUpdate = ref(false)
 const deleteRoleDialog = ref(false)
 const btnDisable = ref(true)
 const loadingSave = ref(false)
 const refreshKey = ref(0)
-const messageDetails = ref({})
 const rowId = ref(null)
 const roleID = ref('')
-const roleOptions = ref(Array.from({length: 20}, (_, i) => i + 1))
+const roleOptions = ref(Array.from({ length: 20 }, (_, i) => i + 1))
 
 const rule = ref({
     role: [
@@ -139,6 +174,15 @@ const isChecked = () => {
     rowId.value = selectedRows.map(v => v.id)[0]
 }
 
+/** RowCllick Event */
+const id = ref(null)
+const rowClickEvent = (data) => {
+    id.value = data.id
+    role_name.value = data.role_name
+    roleID.value = data.roleID
+    description.value = data.description
+}
+
 /** Add Role */
 const saveRole = async () => {
     loadingSave.value = true
@@ -154,13 +198,42 @@ const saveRole = async () => {
             description: description.value,
         })
         if (response.data && response.data.success) {
+            form.value.reset()
             toast.success('Successfully created')
             isActive.value = false
-            getRoleName()
-            getPermission()
-            getModules();
+            getRoles()
+        } else if (response.data && response.data.role_id_exist) {
+            toast.error('Role ID or role name exist')
+        }
+    } catch (error) {
+        console.log(error);
+    } finally {
+        loadingSave.value = false
+    }
+}
+
+
+/** Edit Role */
+const editRole = async () => {
+    loadingSave.value = true
+    const { valid } = await form.value.validate()
+    if (!valid) {
+        loadingSave.value = false
+        return
+    }
+    try {
+        const response = await apiRequest.put('edit_role_name', {
+            id: id.value,
+            role_name: role_name.value,
+            // roleID: roleID.value,
+            description: description.value,
+        })
+        if (response.data && response.data.success) {
             form.value.reset()
-        }else if(response.data && response.data.role_id_exist) {
+            toast.success('Updated successfully')
+            isUpdate.value = false
+            getRoles()
+        } else if (response.data && response.data.role_id_exist) {
             toast.error('Role ID or role name exist')
         }
     } catch (error) {
@@ -182,7 +255,7 @@ const deleteRole = async () => {
         if (response.data && response.data.success) {
             toast.success('Successfully deleted')
             deleteRoleDialog.value = false
-            getRoleName()
+            getRoles()
         }
     } catch (error) {
         console.log(error)
@@ -202,27 +275,26 @@ const loading = ref(true);
 const total_rows = ref(0);
 
 
-const params = reactive({ current_page: 1, pagesize: 10, sort_column : 'roleID', sort_direction : 'asc' });
+const params = reactive({ current_page: 1, pagesize: 10, sort_column: 'id', sort_direction: 'asc' });
 const rows = ref(null);
 
 const cols =
     ref([
         { field: 'id', title: 'ID', isUnique: true, type: 'number', hide: true },
-        { field: 'roleID', title: 'Role ID', sortable: true },
+        { field: 'roleID', title: 'Role ID' },
         { field: 'role_name', title: 'Role' },
         { field: 'description', title: 'Description' },
         { field: 'created_at', title: 'Created_at' },
-        // { field: 'id', title: 'Permission' },
     ]) || [];
 
 
 /**
  * Get RoleS
  */
-const getRoleName = async () => {
+const getRoles = async () => {
     try {
         loading.value = true;
-        const response = await apiRequest.get('get_role_name');
+        const response = await apiRequest.get('get_roles');
         const data = response.data.role_name
 
         rows.value = data
@@ -233,99 +305,9 @@ const getRoleName = async () => {
     loading.value = false;
 };
 
-/************************** Get Permissions and Save Permission ***********************************/
-const permission = ref([])
-const permissionStatus = ref({})
-const getPermissionByRole = (role_id) => {
-    return permission?.value.filter(data => data.role_id === role_id)
-}
-// Get Permission
-// const getPermission = async () => {
-//     try {
-//         loading.value = true;
-//         const response = await apiRequest.get('get_permissions');
-//         permission.value = response.data.permission
-
-//         permissionStatus.value = permission.value.reduce((collection, permission) => {
-//             collection[permission.id] = permission.status === 1
-//             return collection
-//         }, {})
-
-
-//     } catch (error) {
-//         console.log(error)
-//     }
-
-//     loading.value = false;
-// };
-
-// Save Permission
-// const savePermission = async (id, isChecked) => {
-//     const value = isChecked ? 1 : 0
-//     try {
-//         loading.value = true;
-//         const response = await apiRequest.put('set_permissions',{
-//             id : id, status : value
-//         });
-//         if(response.data && response.data.success){
-//             await getPermission()
-//             messageDetails.value = { show: true, color: 'success', text: 'Successfully set permission' }
-//         }
-//     } catch (error) {
-//         console.log(error)
-//     }
-// }
-
-
-
-/************************** Get Modules and Save Modules ***********************************/
-const modules = ref([])
-const moduleStatus = ref({})
-const getModuleByRole = (role_id) => {
-    return modules?.value.filter(data => data.role_id === role_id)
-}
-// Get Modules
-// const getModules = async () => {
-//     try {
-//         loading.value = true;
-//         const response = await apiRequest.get('get_modules');
-//         modules.value = response.data.modules
-
-//         moduleStatus.value = modules.value.reduce((collection, modules) => {
-//             collection[modules.id] = modules.status === 1
-//             return collection
-//         }, {})
-
-
-//     } catch (error) {
-//         console.log(error)
-//     }
-
-//     loading.value = false;
-// };
-
-// Save Modules
-// const saveModules = async (id, isChecked) => {
-//     const value = isChecked ? 1 : 0
-//     try {
-//         loading.value = true;
-//         const response = await apiRequest.put('set_modules',{
-//             id : id, status : value
-//         });
-//         if(response.data && response.data.success){
-//             await getModules();
-//             messageDetails.value = { show: true, color: 'success', text: 'Successfully set module' }
-//         }
-//     } catch (error) {
-//         console.log(error)
-//     }
-// }
-
 
 
 onMounted(() => {
-    getRoleName();
-    // getPermission();
-    // getModules();
+    getRoles();
 });
 </script>

@@ -7,6 +7,7 @@ use App\Models\authLogin\UserModel;
 use App\Models\EhServicesModel;
 use App\Models\MasterData;
 use App\Models\MasterDataInstitution;
+use App\Models\ServiceMasterData;
 use App\Models\WorkOrder\EquipmentPeripherals;
 use App\Models\WorksDone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,17 +26,14 @@ class PreventiveMaintenance extends Model
         'equipment_peripheral_id',
         'service_id',
         'item_id',
-        'serial',
+        'requested_by',
         'institution',
-        'ssu',
         'date_installed',
         'scheduled_at',
         'list_scheduled',
         'next_at',
-        'customer_complaint',
         'date_received',
         'work_type',
-        'cs_actions',
         'engineer',
         'departed_date',
         'start_date',
@@ -48,6 +46,7 @@ class PreventiveMaintenance extends Model
         'status_after_service',
         'tag',
         'monitoring_end',
+        'signature',
     ];
 
 
@@ -96,8 +95,13 @@ class PreventiveMaintenance extends Model
         return $this->hasOne(UserModel::class, 'id', 'engineer');
     }
     
-    
+    public function service_equipment(){
+        return $this->hasOne(ServiceMasterData::class, 'id','item_id');
+    }
     public function actions(){
         return $this->hasMany(WorksDone::class, 'pm_id', 'id');
+    }
+    public function pm_actions(){
+        return $this->hasMany(PMActions::class, 'maintenance_id', 'id');
     }
 }

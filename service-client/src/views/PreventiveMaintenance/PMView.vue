@@ -31,13 +31,10 @@
                                     Delegate Engineer</v-btn>
                             </template>
                             <v-card text="" title="Delegate Engineer" prepend-icon="mdi-account">
-                                <v-col>
-                                    <p class="text-danger">* Please confirm the serial number before proceeding</p>
-                                </v-col>
                                 <v-form @submit.prevent="delegateEngineer" ref="form">
                                     <v-col cols="12">
                                         <v-select color="primary" v-model="selectedEngineer" class="mr-2 ml-2 mt-5"
-                                            :label="pm_ssu + ' Engineer'" placeholder="" density="compact"
+                                            label="Service Engineer" placeholder="" density="compact"
                                             variant="outlined" :items="engineersData" item-title="title"
                                             item-value="value" :rules="[v => !!v || 'Required']" clearable></v-select>
                                     </v-col>
@@ -105,6 +102,10 @@
                         </div>
                         <div v-if="status === m_var.InProgress && getUserSSU() === pm_ssu">
                             <v-btn type="button" :loading="btnLoading" :disabled="btnDisableDone"
+                                @click="clear" color="primary" variant="text" class="text-none "><v-icon
+                                    class="mr-2">mdi-close</v-icon> Clear</v-btn>
+
+                            <v-btn type="button" :loading="btnLoading" :disabled="btnDisableDone"
                                 @click="pm_task_processing" color="primary" variant="flat" class="text-none "><v-icon
                                     class="mr-2">mdi-check</v-icon> Mark as Done</v-btn>
                         </div>
@@ -117,10 +118,12 @@
         <template #default>
             <v-skeleton-loader class="d-print-none" type="list-item-three-line@2, table@2"
                 loading-text="Prperties Loafding" :loading="skeleton">
-                <v-container class="mt-10" id="printThisA4">
+                <v-container class="mt-10">
+                    <PMPrint />
                     <OperationAfterService :pm_data="pm_data" :pm_id="parseInt(id)" :currentRole="currentRole" />
                     <ServiceProvider />
-                    <CustomerDetails @set-confirm-serial="getConfirmSerial" :status="status" />
+                    <CustomerDetails  @set-signature="setSignature"
+                        :status="status" />
                     <ActionsRemarks @actions="actions_done" @remarks="getRemarks" :status="status" />
                     <StatusAfterService @status-after-service="status_after_service" :status="status"
                         :pm_id="parseInt(id)" @sparePartsData="getSparePartsData" />
@@ -143,6 +146,7 @@ import StatusAfterService from '@/components/PreventiveMaintenance/PMComponents/
 import ActionsRemarks from '@/components/PreventiveMaintenance/PMComponents/ActionsRemarks.vue'
 import ServiceProvider from '@/components/PreventiveMaintenance/PMComponents/ServiceProvider.vue'
 import OperationAfterService from '@/components/PreventiveMaintenance/PMComponents/OperationAfterService.vue'
+import PMPrint from '@/components/Print/PMPrint.vue';
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
@@ -234,21 +238,24 @@ const selectedEngineer = ref('')
 
 // Functions
 // * Delegated Engineer**/
-const confirmedSerial = ref('nullSerial')
-const serial = ref('')
-const getConfirmSerial = (serialNumber) => {
-    confirmedSerial.value = serialNumber
-    serial.value = serialNumber
+// const confirmedSerial = ref('nullSerial')
+// const serial = ref('')
+// const getConfirmSerial = (serialNumber) => {
+//     confirmedSerial.value = serialNumber
+//     serial.value = serialNumber
+// }
+const signature = ref(null)
+const setSignature = (data) => {
+    signature.value = data
 }
 const delegateEngineer = async () => {
     btnLoading.value = true
     const { valid } = await form.value.validate()
-
-    if (confirmedSerial.value === null && confirmedSerial.value !== 'nullSerial') {
-        btnLoading.value = false
-        toast.error('Serial number is required')
-        return
-    }
+    // if (confirmedSerial.value === null && confirmedSerial.value !== 'nullSerial') {
+    //     btnLoading.value = false
+    //     toast.error('Serial number is required')
+    //     return
+    // }
     if (!valid) {
         btnLoading.value = false
         return
@@ -257,7 +264,7 @@ const delegateEngineer = async () => {
         const res = await apiRequest.post('pm_process', {
             id: id,
             engineer: selectedEngineer.value,
-            serial: serial.value,
+            // serial: serial.value,
         })
         if (res.data && res.data.success) {
             toast.success('Successfully delegated')
@@ -295,7 +302,7 @@ const pm_decline = async () => {
     try {
         const res = await apiRequest.post('pm_decline', {
             pm_id: id,
-            reason : reason_to_decline.value
+            reason: reason_to_decline.value
         })
         if (res.data && res.data.success) {
             toast.success('Reason submitted')
@@ -346,15 +353,24 @@ const pm_accepted = async () => {
 /** PM Task Proccessing*/
 const pm_task_processing = async () => {
     btnLoading.value = true
-
     if (status.value === m_var.InProgress) {
         const checkIfTheresEmpty = actions.value.some(val => {
             return typeof val === 'string' ? val.trim() === '' : val === undefined || val === null
+        })
+        const checkIfTheresOverText = actions.value.every(val => {
+            return val?.length <= 120 ? true : false
         })
 
         const checkSparePartsEmpty = spareParts.value.every(data => {
             return data.item_id && data.item_code && data.description && data.qty && data.dr && data.si
         })
+
+
+        if (!signature.value) {
+            toast.error('Client signature is required')
+            btnLoading.value = false
+            return
+        }
 
         if (actions.value.length === 0) {
             toast.error('Please submit actions taken')
@@ -363,6 +379,11 @@ const pm_task_processing = async () => {
         }
         if (checkIfTheresEmpty) {
             toast.error('Please fill in required fields')
+            btnLoading.value = false
+            return
+        }
+        if (!checkIfTheresOverText) {
+            toast.error('Please limit your input to 120 characters')
             btnLoading.value = false
             return
         }
@@ -384,11 +405,13 @@ const pm_task_processing = async () => {
     }
     try {
         const response = await apiRequest.post('pm_task_processing', {
-            id: id, actions: actions.value,
+            id: id, 
+            actions: actions.value,
             spareParts: spareParts.value,
             status_after_service: statusAfterService.value,
             remarks: remarks.value,
-            work_type: route.params.work_type
+            work_type: route.params.work_type,
+            signature : signature.value
         })
         if (response.data && response.data.success) {
             toast.success('Successfully Save')
@@ -404,6 +427,16 @@ const pm_task_processing = async () => {
     } finally {
         btnLoading.value = false
     }
+}
+
+
+
+// Clear Inputs
+const clear = () =>{
+    actions.value =  []
+    spareParts.value =  []
+    statusAfterService.value =  ''
+    remarks.value = ''
 }
 
 
@@ -477,8 +510,8 @@ const getEngineersData = async () => {
     try {
         const response = await apiRequest.get('get-engineers-data')
         if (response.data && response.data.engineers) {
-            const filteredEngineersData = response.data.engineers.filter(data => data.SSU === pm_ssu.value)
-            const engineersValue = filteredEngineersData.map(data => {
+            // const filteredEngineersData = response.data.engineers.filter(data => data.SSU === pm_ssu.value)
+            const engineersValue = response.data.engineers.map(data => {
                 return {
                     title: data.users.first_name + ' ' + data.users.last_name,
                     value: data.user_id

@@ -2,105 +2,93 @@
     <v-skeleton-loader v-if="loadingSkeleton" type="list-item, list-item, button, table-row, table-tbody"
         class="mb-2"></v-skeleton-loader>
     <v-card v-else style="padding: 1em 1em;" elevation="1">
-        <!-- OTHER REQUEST DETAILS -->
-        <v-row>
-            <v-col :cols="column">
-                <h5 class="mb-1" style="font-weight: 700;color: #191970;">Other Request Details</h5>
-                <v-checkbox v-model="ocular" color="primary" label="Request for Ocular" class="vCheckbox"
-                    readonly></v-checkbox>
-                <v-checkbox v-model="bypass" color="primary" label="Bypass Internal Servicing Procedures"
-                    class="vCheckbox" readonly></v-checkbox>
-                <v-checkbox v-model="ship" color="primary" label="Ship & Deliver direct to customer immediately"
-                    class="vCheckbox" readonly></v-checkbox>
-            </v-col>
-            <v-col :cols="column">
-                <v-textarea color="primary" label="Endorsement" v-model="endorsement" row-height="25" rows="3"
-                    variant="outlined" readonly auto-grow shaped>
-                </v-textarea>
+        <!-- Internal External Request -->
+        <v-row class="mt-3">
+            <v-col cols="12">
+                <v-row>
+                    <v-col cols="12" md="6" sm="6">
+                        <h5 class="mb-2">Type of request</h5>
+                        <p class="text-grey-darken-1">- {{ request_data.request_name }}</p>
+                    </v-col>
+                    <v-col cols="12" md="6" sm="6" v-if="request_data.request_type === 4">
+                        <p>Satellite Office</p>
+                        <p class="text-grey-darken-1">{{ request_data.satellite }}</p>
+                    </v-col>
+                </v-row>
+                <v-row v-if="request_data.request_type === 6">
+                    <p>Other request</p>
+                    <p class="text-grey-darken-1">{{ request_data.other }}</p>
+                </v-row>
+                <v-row v-if="request_data.request_type === 12">
+                    <p>Other request</p>
+                    <p class="text-grey-darken-1">{{ request_data.other }}</p>
+                </v-row>
+                <v-row>
+                    <v-col cols="12">
+                        <span>
+                            <v-icon class="mr-1 vIcon">{{ request_data.attach_gate === 1 ? 'mdi-checkbox-marked' :
+                                'mdi-checkbox-blank-outline' }}</v-icon>
+                            Attached gate/entry pass
+                        </span>
+                        <span class="ml-5">
+                            <v-icon class="mr-1 vIcon">{{ request_data.with_contract === 1 ? 'mdi-checkbox-marked' :
+                                'mdi-checkbox-blank-outline' }}</v-icon>
+                            with contract/other docs
+                        </span>
+                    </v-col>
+                </v-row>
             </v-col>
         </v-row>
 
-        <v-divider class="mb-3"></v-divider>
-        <!-- Internal External Request -->
-        <v-row class="mt-3">
-            <v-col cols="12" md="6" sm="6"> <!--v-if="externalRequest !== null"-->
-                <h5 class="mb-2" style="font-weight: 700;color: #191970;">External Request</h5>
-                <v-row>
-                    <v-col cols="12" md="6" sm="6">
-                        <v-radio-group v-model="request_type" column readonly>
-                            <v-radio color="primary" label="For Demonstration" value="1"></v-radio>
-                            <v-radio color="primary" label="Reagent Tie-up" value="2"></v-radio>
-                            <v-radio color="primary" label="Purchased" value="3"></v-radio>
-                            <v-radio color="primary" label="Shipment / Delivery" value="4"></v-radio>
-                            <v-radio color="primary" label="Service Unit" value="5"></v-radio>
-                            <v-radio color="primary" label="Others" value="6"></v-radio>
-                        </v-radio-group>
-                    </v-col>
-                    <v-col cols="12" md="6" sm="6">
-                        <v-checkbox v-model="attached_gate" class="vCheckbox" color="primary"
-                            label="Attached gate/entry pass" readonly></v-checkbox>
-                        <v-checkbox v-model="with_contract" class="vCheckbox mt-3" color="primary"
-                            label="with contract/other docs" readonly></v-checkbox>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-text-field v-if="request_type === '6'" readonly color="primary" density="compact"
-                        variant="outlined" placeholder="Other External Request" v-model="other"
-                        class="ml-5"></v-text-field>
-                </v-row>
+
+
+        <v-divider class="mb-5 mt-5"></v-divider>
+        <!-- OTHER REQUEST DETAILS -->
+        <v-row>
+            <v-col cols="12">
+                <h5 class="font-weight-medium">Other Request Details</h5>
             </v-col>
-            <v-col cols="12" md="6" sm="6"> <!-- v-if="internalRequest !== null" -->
-                <h5 class="mb-2" style="font-weight: 700;color: #191970;">Internal Request</h5>
-                <v-radio-group v-model="request_type" column readonly>
-                    <v-radio color="primary" label="For Corrective" value="7"></v-radio>
-                    <v-radio color="primary" label="For Refurbishment" value="8"></v-radio>
-                    <v-radio color="primary" label="For Quality Control" value="9"></v-radio>
-                    <v-radio color="primary" label="Training Purposes" value="10"></v-radio>
-                    <v-radio color="primary" label="For Disposal" value="11"></v-radio>
-                    <v-radio color="primary" label="Other" value="12"></v-radio>
-                </v-radio-group>
-                <v-text-field v-if="request_type === '12'" readonly density="compact" variant="outlined"
-                    placeholder="Other External Request" w-90 v-model="other"></v-text-field>
+            <v-col :cols="column">
+                <p class="mb-2">
+                    <v-icon class="mr-1 vIcon">{{ request_data.ocular === 1 ? 'mdi-checkbox-marked' :
+                        'mdi-checkbox-blank-outline' }}</v-icon>
+                    Request for Ocular
+                </p>
+                <p class="mb-2">
+                    <v-icon class="mr-1 vIcon">{{ request_data.bypass === 1 ? 'mdi-checkbox-marked' :
+                        'mdi-checkbox-blank-outline' }}</v-icon>
+                    Bypass Internal Servicing Procedures
+                </p>
+                <p class="mb-2">
+                    <v-icon class="mr-1 vIcon">{{ request_data.ship === 1 ? 'mdi-checkbox-marked' :
+                        'mdi-checkbox-blank-outline' }}</v-icon>
+                    Ship & Deliver direct to customer immediately
+                </p>
+            </v-col>
+            <v-col :cols="column">
+                <p class="mt-2">Endorsement:</p>
+                <p>{{ request_data.endorsement || '---' }}</p>
             </v-col>
         </v-row>
+
+
     </v-card>
 </template>
 
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { user_data } from '@/stores/auth/userData';
-import * as pub_var from '@/global/global'
-import { apiRequestAxios } from '@/api/api';
+import { ref, onMounted, watch, toRefs } from 'vue';
 import { useDisplay } from 'vuetify'
 const { width } = useDisplay()
 
-
-/** data declarations */
-const user = user_data()
-const apiRequest = apiRequestAxios()
-const loadingSkeleton = ref(false)
-
-const main_status = ref('')
-
-// 2nd
-const ocular = ref(false)
-const bypass = ref(false)
-const ship = ref(false)
-// 3rd
-const request_type = ref(null)
-const other = ref('')
-const attached_gate = ref(null)
-const with_contract = ref(null)
-// 4th
-const endorsement = ref('')
-
-
 const props = defineProps({
-    service_id: {
-        type: Number
-    },
+    request_data: {
+        type: Object,
+        default: () => { }
+    }
 })
+
+const { request_data } = toRefs(props)
 
 const column = ref(6)
 watch(width, (val) => {
@@ -112,43 +100,10 @@ watch(width, (val) => {
     }
 })
 
-const getDetails = async () => {
-    try {
-        loadingSkeleton.value = true
-        const response = await apiRequest.get('get-specific-equipment-handling', {
-            params: {
-                service_id: props.service_id,
-            },
-        });
-        if (response.data && response.data.equipment_handling) {
-            const data = response.data.equipment_handling
-
-            const field = data[0]
-
-            ocular.value = field.occular === 1 ? true : false
-            bypass.value = field.bypass === 1 ? true : false
-            ship.value = field.ship === 1 ? true : false
-            endorsement.value = field.endorsement ?? '.'
-            request_type.value = field.request_type.toString()
-            other.value = field.other
-            attached_gate.value = field.attach_gate === 1 ? true : false
-            with_contract.value = field.with_contract === 1 ? true : false
-            main_status.value = field.main_status
-        } else {
-            alert('Something went wrong')
-        }
-    } catch (error) {
-        console.log(error)
-    }
-    finally {
-        loadingSkeleton.value = false
-    }
-};
 const setSizeScreen = () => {
     column.value = width.value < 550 ? 12 : 6;
 };
 onMounted(() => {
-    getDetails();
     setSizeScreen()
 });
 
@@ -156,7 +111,8 @@ onMounted(() => {
 
 
 <style scoped>
-.vCheckbox {
-    height: 50px !important;
+.vIcon {
+    color: #191970;
+    font-size: 14px;
 }
 </style>

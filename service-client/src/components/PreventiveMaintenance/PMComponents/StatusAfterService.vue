@@ -1,5 +1,5 @@
 <template>
-    <v-card class="pt-3 pl-2 mt-3" elevation="0" style="border: 1px dashed #191970">
+    <v-card class="pt-3 pl-2 mt-3" elevation="1">
         <v-row>
             <v-col class="d-flex justify-content-between">
                 <h5 class="text-primary">Status After The Service</h5>

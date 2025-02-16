@@ -1,9 +1,12 @@
 <template>
 
-    <v-card density="compact" class="p-3 mt-3" elevation="0" style="border: 1px dashed #191970">
+    <v-card density="compact" class="p-3 mt-3" elevation="1">
         <v-row>
-            <v-col class="d-flex justify-content-between">
+            <v-col class="d-flex justify-content-between align-items-center">
                 <h5 class="text-primary">Actions Taken</h5>
+ 
+                <v-btn @click="addField" v-if="status === m_var.InProgress" class="text-none" color="primary" variant="text"
+                    prepend-icon="mdi-comment-plus-outline">Add Field</v-btn>
             </v-col>
         </v-row>
         <v-list>
@@ -17,64 +20,44 @@
                 </v-list-item-title>
             </v-list-item>
             <v-list-item v-else>
-                <template v-slot:prepend>
-                    <v-icon color="primary">mdi-file-document-check-outline</v-icon>
-                </template>
                 <v-list-item-title>
-                    No records found
+                    <v-icon color="grey">mdi-text-box-search-outline</v-icon> <span class="text-grey small">No records
+                        found</span>
                 </v-list-item-title>
             </v-list-item>
         </v-list>
-        <template v-if="currentRole === pub_var.engineerRoleID && status === m_var.InProgress">
+        <template v-if="can('installer', 'Preventive Maintenance') && status === m_var.InProgress">
             <v-col cols="12">
                 <v-card elevation="0">
-                    <v-btn @click="addField" class="text-none" color="primary" variant="flat"
-                        prepend-icon="mdi-comment-plus-outline">Add Field</v-btn>
-
-                    <v-table class="mt-4" style="border: none!important;">
-                        <tbody>
-                            <tr v-for="(field, index) in fields" :key="index" >
-                                <td class="d-flex align-items-center" style="border-bottom:none!important;">
-                                    <!-- <v-text-field v-model="fields[index]" label="Actions Done"
-                                        prepend-inner-icon="mdi-message-text-fast-outline"
-                                        append-inner-icon="mdi-trash-can-outline"
-                                         hide-details single-line
-                                        variant="outlined" color="primary" density="compact"
-                                        :rules="[v => !!v || 'Required']" @input="setActionsDone" @click:append-inner="removeField(index)" -->
-                                        <!-- /> -->
-
-                                    <v-combobox v-model="fields[index]" :items="actions_data" item-title="actions" item-value="actions"  label="Select an option or enter your action manually"
-                                    
-                                        append-inner-icon="mdi-trash-can-outline"
-                                         hide-details 
-                                    variant="outlined" color="primary" density="compact" clearable
-                                    :rules="[v => !!v || 'Required']" @update:modelValue="setActionsDone"  @click:append-inner="removeField(index)" 
-                                    ></v-combobox>
-                                    
-                                    <!-- <v-btn @click="removeField(index)" color="error" icon class="ml-3">
-                                        <v-icon>mdi-close</v-icon>
-                                    </v-btn> -->
-                                </td>
-                            </tr>
-                        </tbody>
-                    </v-table>
+                    <v-row>
+                        <v-col cols="12" v-for="(field, index) in fields" :key="index">
+                            <v-combobox v-model="fields[index]" :items="actions_data" item-title="actions"
+                                item-value="actions" label="Select an option or enter your action manually"
+                                append-inner-icon="mdi-trash-can-outline" variant="outlined" color="primary" class="mt-3"
+                                density="compact" clearable :rules="[
+                                    v => !!v || 'Required',
+                                    v => (v && v.length <= 120) || 'Please limit your input to 120 characters'
+                                ]" @update:modelValue="setActionsDone"
+                                @click:append-inner="removeField(index)"></v-combobox>
+                        </v-col>
+                    </v-row>
                 </v-card>
             </v-col>
         </template>
     </v-card>
 
-    <v-card class="p-3 mt-3" elevation="0" style="border: 1px dashed #191970">
+    <v-card class="p-3 mt-3" elevation="1">
         <v-row>
             <v-col class="d-flex justify-content-between">
                 <h5 class="text-primary">Remarks & Recommendation</h5>
             </v-col>
         </v-row>
         <v-col col="12">
-                <v-textarea v-model="formData.remarks" @input="inputRemarks" color="primary"
-                    :variant="currentRole === pub_var.engineerRoleID && status === m_var.InProgress ? 'underlined' : 'plain'"
-                    placeholder="Type your remarks & recommendations here ..."
-                    :readonly="currentRole === pub_var.engineerRoleID && status === m_var.InProgress ? false : true"></v-textarea>
-           
+            <v-textarea v-model="formData.remarks" @input="inputRemarks" color="primary"
+                :variant="currentRole === pub_var.engineerRoleID && status === m_var.InProgress ? 'underlined' : 'plain'"
+                placeholder="Type your remarks & recommendations here ..."
+                :readonly="currentRole === pub_var.engineerRoleID && status === m_var.InProgress ? false : true"></v-textarea>
+
         </v-col>
     </v-card>
 
@@ -97,12 +80,20 @@ const currentRole = role.currentUserRole
 
 const instance = getCurrentInstance()
 
+import { useActions } from '@/helpers/getActionsTaken';
+const { actions_data } = useActions()
+
 
 const textDisable = ref(true)
 
 const formData = ref({
     remarks: '',
 })
+
+/** Permissions */
+import { permit } from '@/castl/permitted';
+const { can } = permit()
+
 
 const props = defineProps({
     status: {
@@ -133,7 +124,9 @@ watch(pm_data, (pm) => {
 
 const fields = ref([]);
 const addField = () => {
-    fields.value.push('');
+    if (fields.value.length < 8) {
+        fields.value.push('');
+    }
 };
 
 const removeField = (index) => {
@@ -149,30 +142,11 @@ const inputRemarks = () => {
     instance.emit('remarks', formData.value.remarks)
     // console.log(fields.value)
 }
-
-
-
-/** Get Standard Actions */
-const actions_data = ref([])
-const getStandardActions = async () => {
-    try {
-        const response = await apiRequest.get('getStandardActions')
-        if (response.data && response.data.actions) {
-            actions_data.value = response.data.actions.map(val => val.actions)
-        }
-    } catch (error) {
-        console.log(error)
-    }
-}
-
-onMounted(() => {
-    getStandardActions()
-})
 </script>
 
 
 <style scoped>
-.v-list-item-title{
+.v-list-item-title {
     white-space: collapse;
 }
 </style>

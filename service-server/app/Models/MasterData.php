@@ -12,4 +12,9 @@ class MasterData extends Model
     protected $connection = 'mysqlSecond';
 
     protected $table = 'master_data';
+
+    protected $fillable = [
+        'item_code',
+        'description'
+    ];
 }

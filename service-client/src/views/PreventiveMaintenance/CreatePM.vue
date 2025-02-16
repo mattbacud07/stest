@@ -26,121 +26,135 @@
             </template>
 
             <template #default>
-                <v-container class="container-form mt-10">
-                    <v-card>
+                <v-container class="container-form mt-15">
+                    <v-card class="p-3 mb-5" elevation="1">
                         <v-row>
                             <v-col cols="12" lg="6" md="6" sm="6">
-                            <v-text-field color="primary" density="compact" label="Requested by"
-                                placeholder="Requested by" variant="outlined" readonly v-model=""
-                                hide-details></v-text-field>
-                        </v-col>
-                        <v-col cols="12" lg="6" md="6" sm="6">
-                            <v-combobox color="primary" v-model="institutionValue" clearable label="Institution"
-                                density="compact" :items="institutionData" variant="outlined" itemValue="value"
-                                itemTitle="key" :rules="rule.institutionValue" :close-on-content-click="false"
-                                hide-details></v-combobox>
-                        </v-col>
-                        </v-row>
-                    </v-card>
-
-
-                    <!-- Equipment & Peripherals -->
-                    <v-card class="mt-3 p-3" elevation="0" style="border: 1px dashed #191970;">
-                        <v-row>
-                            <h5 class="p-3" style="font-weight: 500;color: #191970;">EQUIPMENTS</h5>
-                            <v-col cols="12">
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-bordered">
-                                        <thead style="background: #afafaf2e;">
-                                            <tr>
-                                                <th scope="col">Item Code</th>
-                                                <th scope="col">Item Description</th>
-                                                <th scope="col">Serial Number</th>
-                                                <th scope="col">Remarks</th>
-                                                <th scope="col"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody v-if="selectedEquipment.length > 0">
-                                            <tr v-for="(equipment, index) in selectedEquipment" :key="index">
-                                                <td>
-                                                    {{ equipment.item_code }}
-                                                    <v-text-field class="hideID">{{ equipment.id }}</v-text-field>
-                                                    <!-- <input type="text" class="myInputText" v-model="equipment.id"> -->
-                                                </td>
-                                                <td>{{ equipment.description }}</td>
-                                                <td><v-text-field clearable density="compact" variant="plain"
-                                                        placeholder="Serial number ...." w-100
-                                                        v-model="equipment.equipmentSerial"
-                                                        :rules="rule.ruleEquipmentSerial"></v-text-field>
-                                                </td>
-                                                <td><v-text-field clearable density="compact" variant="plain"
-                                                        placeholder="Remarks..." w-100
-                                                        v-model="equipment.equipmentRemark"></v-text-field>
-                                                </td>
-                                                <td><v-icon @click="removeSelectedEquipment(index)"
-                                                        class="text-danger">mdi-trash-can-outline</v-icon>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                        <tbody v-else>
-                                            <tr>
-                                                <td colspan="5" class="text-center p-1" style="opacity: .2;">
-                                                    <v-icon class="mb-3"
-                                                        style="font-size: 50px">mdi-file-document-alert-outline</v-icon><br>
-                                                    No records found
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- Overlay box for Equipment Peripherals -->
-                                <div class="d-flex justify-content-center">
-                                    <v-btn color="primary" size="medium" flat class="text-none mt-3 p-2"
-                                        @click="overlayMasterData = !overlayMasterData">
-                                        <v-icon class="mr-3">mdi-database-cog</v-icon>
-                                        Select Equipment & Peripherals
-                                    </v-btn>
-                                    <v-overlay v-model="overlayMasterData"
-                                        class="d-flex align-items-center justify-content-center"
-                                        :width="width <= 600 ? 400 : 600" location-strategy="connected">
-                                        <v-card class="pa-7" min-height="500">
-                                            <v-row>
-                                                <v-col cols="10" xl="4" md="4" sm="5">
-                                                    <v-text-field v-model="params.search" clearable density="compact"
-                                                        label="Search all fields" variant="outlined"
-                                                        color="primary"></v-text-field>
-                                                </v-col>
-                                                <v-spacer></v-spacer>
-                                                <v-btn @click="overlayMasterData = false" icon variant="plain"
-                                                    color="primary"><v-icon>mdi-close</v-icon></v-btn>
-                                            </v-row>
-                                            <vue3-datatable ref="datatable" :rows="rows" :columns="cols"
-                                                :loading="loading" :selectRowOnClick="true" :sortable="true"
-                                                :search="params.search" :isServerMode="true" :totalRows="total_rows"
-                                                :pageSize="params.pagesize" :hide="true" :filter="true"
-                                                skin="bh-table-compact bh-table-bordered bh-table-responsive" class=""
-                                                @rowClick="rowClickEquipment" @change="changeServer"></vue3-datatable>
-                                            <v-divider></v-divider>
-                                            <p class="text-danger"><b>List of Selected Row</b><br>
-                                                <span v-if="selectedEquipment.length > 0">
-                                                    <span v-for="(itemRow, index) in selectedEquipment"
-                                                        :key="itemRow.id">
-                                                        [ {{ itemRow.item_code }} - <v-icon
-                                                            @click="removeSelectedEquipment(index)"
-                                                            class="text-danger">mdi-trash-can-outline</v-icon>] &nbsp;
-                                                    </span>
-                                                </span>
-                                                <span v-else class="small">No data selected</span>
-                                            </p>
-                                        </v-card>
-                                    </v-overlay>
-                                </div>
+                                <v-combobox color="primary" v-model="institutionValue" clearable label="Institution"
+                                    density="compact" :items="institutionData" variant="outlined" itemValue="value"
+                                    itemTitle="key" :rules="rule.institutionValue" :close-on-content-click="false" :loading="loadingInstitution"
+                                    hide-details></v-combobox>
+                            </v-col>
+                            <v-col cols="12" lg="6" md="6" sm="6">
+                                <v-text-field color="primary" v-model="formData.address" label="Address"
+                                    density="compact" variant="outlined" readonly
+                                    onUpdate:Item="(newVal) => { address.value = newVal.key }" :rules="rule.address"
+                                    hide-details></v-text-field>
                             </v-col>
 
                         </v-row>
+                        <v-row>
+                            <v-col cols="12" lg="6" md="6" sm="6">
+                                <v-text-field color="primary" v-model="formData.item_code" label="Item Code" clearable
+                                    density="compact" variant="outlined" readonly :rules="rule.item_code"
+                                    @click="overlayMasterData = !overlayMasterData"></v-text-field>
+                            </v-col>
+                            <v-col cols="12" lg="6" md="6" sm="6">
+                                <v-text-field color="primary" v-model="formData.equipment" label="Equipment" clearable
+                                    density="compact" variant="outlined" :rules="[v => !!v || 'Required']" readonly></v-text-field>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="12" lg="6" md="6" sm="6">
+                                <v-text-field color="primary" v-model="formData.serial" label="Serial Number" clearable
+                                    density="compact" variant="outlined" :rules="rule.serial" readonly></v-text-field>
+                            </v-col>
+                            <v-col cols="12" lg="6" md="6" sm="6">
+                                <v-text-field color="primary" v-model="formData.IRNo" label="ID/IR No." clearable
+                                    density="compact" variant="outlined" :rules="rule.IRNo"></v-text-field>
+                            </v-col>
+                        </v-row>
+                    </v-card>
+                    <v-card class="p-3" elevation="0" style="border: 1px dashed #191970;">
+                        <v-row>
+                            <!-- Customer Complain -->
+                            <v-col cols="12" lg="12" md="12" sm="12">
+                                <v-col class="d-flex justify-space-between align-items-center">
+                                    <p class="text-primary"><b>Customer Complaint</b></p>
+                                    <v-btn @click="addComplaintField" class="text-none" color="primary" variant="text"
+                                        prepend-icon="mdi-comment-plus">Add Field</v-btn>
+                                </v-col>
+
+                                <v-table class="mt-4" style="border: none!important;">
+                                    <tbody>
+                                        <tr v-if="complaint_fields.length > 0"
+                                            v-for="(field, index) in complaint_fields" :key="index">
+                                            <td class="d-flex align-items-center" style="border-bottom:none!important;">
+
+                                                <v-text-field v-model="complaint_fields[index]" label="Complaint"
+                                                    append-inner-icon="mdi-trash-can-outline" hide-details
+                                                    variant="outlined" color="primary" density="compact" clearable
+                                                    :rules="[v => !!v || 'Required']"
+                                                    @click:append-inner="removeComplaintField(index)"></v-text-field>
+                                            </td>
+                                        </tr>
+                                        <tr v-else>
+                                            <td class="text-grey text-center">
+                                                <v-icon
+                                                    style="font-size: 5em;opacity: .3;">mdi-file-search-outline</v-icon><br />
+                                                No records found
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </v-table>
+                            </v-col>
+                            <v-divider></v-divider>
+                            <!-- Cause of Problem -->
+                            <v-col cols="12" lg="12" md="12" sm="12">
+                                <v-col class="d-flex justify-space-between align-items-center">
+                                    <p class="text-primary"><b>Cause of Problem</b></p>
+                                    <v-btn @click="addProblemField" class="text-none" color="primary" variant="text"
+                                        prepend-icon="mdi-comment-plus">Add Field</v-btn>
+                                </v-col>
+                                <v-table class="mt-4" style="border: none!important;">
+                                    <tbody>
+                                        <tr v-if="problem_fields.length > 0" v-for="(field, index) in problem_fields"
+                                            :key="index">
+                                            <td class="d-flex align-items-center" style="border-bottom:none!important;">
+
+                                                <v-text-field v-model="problem_fields[index]" label="Cause of Problem"
+                                                    append-inner-icon="mdi-trash-can-outline" hide-details
+                                                    variant="outlined" color="primary" density="compact" clearable
+                                                    :rules="[v => !!v || 'Required']"
+                                                    @click:append-inner="removeProblemField(index)"></v-text-field>
+                                            </td>
+                                        </tr>
+                                        <tr v-else>
+                                            <td class="text-grey text-center">
+                                                <v-icon
+                                                    style="font-size: 5em;opacity: .3;">mdi-file-search-outline</v-icon><br />
+                                                No records found
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </v-table>
+                            </v-col>
+                        </v-row>
                     </v-card>
                 </v-container>
+
+                <v-col cols="12">
+                    <!-- Overlay box for Equipment Peripherals -->
+                    <v-overlay v-model="overlayMasterData" class="d-flex align-items-center justify-content-center"
+                        :width="width <= 600 ? 400 : 1000" location-strategy="connected">
+                        <v-card class="pa-7" min-height="500">
+                            <v-row>
+                                <v-col cols="10" xl="4" md="4" sm="5">
+                                    <v-text-field v-model="params.search" clearable density="compact"
+                                        label="Search all fields" variant="outlined" color="primary"></v-text-field>
+                                </v-col>
+                                <v-spacer></v-spacer>
+                                <v-btn @click="overlayMasterData = false" icon variant="plain"
+                                    color="primary"><v-icon>mdi-close</v-icon></v-btn>
+                            </v-row>
+                            <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading"
+                                :selectRowOnClick="true" :sortable="true" :hasCheckbox="true" :search="params.search"
+                                :isServerMode="true" :totalRows="total_rows" :pageSize="params.pagesize" :hide="true" skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" class=""
+                                @rowClick="rowClickEquipment" @change="changeServer"></vue3-datatable>
+
+                        </v-card>
+                    </v-overlay>
+                </v-col>
             </template>
         </LayoutSinglePage>
     </v-form>
@@ -151,7 +165,7 @@ import { ref, reactive, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment';
-import { onBeforeRouteLeave, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRouter, useRoute } from 'vue-router';
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 
 /** Vuue3 DataTable */
@@ -176,6 +190,7 @@ import { apiRequestAxios } from '@/api/api';
 
 /** data declarations */
 const router = useRouter()
+const route = useRoute()
 const user = user_data()
 const apiRequest = apiRequestAxios()
 
@@ -187,10 +202,12 @@ const btnDisable = ref(false)
 const btnLoading = ref(false)
 const institutionData = ref([])
 
+const work_type = ref(null)
+const currentWorkType = ref(route.params.work_type === 'PM' ? '/preventive-maintenance' : '/corrective-maintenance')
 const breadcrumbItems = [
-    { title: 'Back', disabled: false, href: '#', display: 'block' },
-    { title: 'Create Maintenance', disabled: true, href: '', display: 'none' },
-    { title: '', disabled: true, href: '', display: 'none' },
+    { title: 'Back', disabled: false, href: currentWorkType.value },
+    { title: route.params.work_type === 'PM' ? 'Preventive Maintenance' : 'Corrective Maintenance', disabled: true, href: '' },
+    { title: route.params.work_type === 'PM' ? 'PM-Details' : 'CM-Details', disabled: true, href: '' },
 ]
 const navigateTo = (item) => {
     if (!item.disabled && item.href) {
@@ -198,34 +215,101 @@ const navigateTo = (item) => {
     }
 };
 
-/** Declarations */
+
 const institutionValue = ref('')
+/** Declarations */
+const formData = ref({
+    institutionValue: '',
+    address: '',
+    item_code: '',
+    equipment: '',
+    item_id: '',
+    serial: '',
+    IRNo: '',
+})
+
+/** Auto Populate Addresss base on Institution */
+watch(institutionValue, (newVal) => {
+    formData.value.address = newVal ? newVal.value : ''
+})
 
 
 /** Input Form Rules */
 const rule = ref({
-    ruleEquipmentSerial: [
-        v => !!v || 'Required'
-    ],
     institutionValue: [
         v => !!v || 'Required'
     ],
+    address: [
+        v => (v && v.trim() !== '') || 'Required'
+    ],
+    item_code: [
+        v => (v && v.trim() !== '') || 'Required'
+    ],
+    serial: [
+        v => (v && v.trim() !== '') || 'Required'
+    ],
+    IRNo: [
+        // v => !!v || 'Required'
+    ],
 })
 
+/**Complaint Fields */
+const complaint_fields = ref([]);
+const addComplaintField = () => {
+    complaint_fields.value.push('');
+};
+const removeComplaintField = (index) => {
+    complaint_fields.value.splice(index, 1);
+};
+
+/** Problem Fields */
+const problem_fields = ref([]);
+const addProblemField = () => {
+    problem_fields.value.push('');
+};
+const removeProblemField = (index) => {
+    problem_fields.value.splice(index, 1);
+};
+
+/** Wathc Item Code */
+watch(() => formData.value.item_code,(newVal) => {
+    if(!newVal){
+        formData.value.serial = ''
+        formData.value.equipment = ''
+        formData.value.item_id = ''
+    }
+})
 
 const submitMaintenance = async () => {
+    // console.log(complaint_fields.value)
     btnLoading.value = true
+    btnDisable.value = true
     const { valid } = await form.value.validate()
     if (!valid) {
         toast.error('Please ensure that required fields are not left blank')
         btnLoading.value = false
+        btnDisable.value = false
         return
     }
 
     try {
-
+        const response = await apiRequest.post('createPMRequest',
+            {
+                ...formData.value,
+                complaints: complaint_fields.value,
+                problems: problem_fields.value,
+                work_type: work_type.value,
+                institution: institutionValue.value.institutionId,
+            })
+        if (response.data && response.data.success) {
+            toast.success('Request successfully created')
+            btnDisable.value = false
+            router.push(currentWorkType.value)
+        } else {
+            toast.error('Something went wrong')
+        }
     } catch (error) {
-
+        console.error(error)
     } finally {
         btnLoading.value = false
     }
@@ -241,37 +325,36 @@ const total_rows = ref(0);
 const cols =
     ref([
         { field: 'id', title: 'ID', isUnique: true, type: 'number', hide: true },
+        { field: 'master_data_id', title: 'Master Data ID', type : 'number', hide : true },
         { field: 'item_code', title: 'Item Code' },
+        { field: 'equipment', title: 'Equipment' },
+        { field: 'serial', title: 'Serial No.' },
         { field: 'description', title: 'Item Description' },
-        { field: 'name', title: 'Category' },
+        { field: 'status', title: 'Status' },
+        // { field: 'name', title: 'Category' },
     ]) || [];
 
+// const searchColumn = cols.value.map(f => f.field)
+const params = reactive({ current_page: 1, pagesize: 10, search: '', sort_column: 'id', sort_direction: 'desc', serviceStatus : '' });
+
 const searchColumn = cols.value.map(f => f.field)
-const params = reactive({ current_page: 1, pagesize: 10, search: '' });
 const rows = ref(null);
 
 /*** Row Click Selection of Equipment and get Data */
-const selectedEquipment = ref([])
 const rowClickEquipment = (data) => {
-    selectedEquipment.value.push({
-        id: data.id,
-        item_code: data.item_code,
-        description: data.description,
-        equipmentSerial: '',
-        equipmentRemark: ''
-    })
-}
-const removeSelectedEquipment = (index) => {
-    selectedEquipment.value.splice(index, 1)
+    formData.value.item_id = data.id
+    formData.value.item_code = data.item_code
+    formData.value.equipment = data.equipment
+    formData.value.serial = data.serial
 }
 
 const getMasterData = async () => {
     try {
         loading.value = true;
-        const response = await apiRequest.get('master-data-equipments', {
+        const response = await apiRequest.get('get_master_data', {
             params: { ...params, searchColumn: searchColumn },
         });
-        const data = response.data.equipments
+        const data = response.data.md_data
 
         rows.value = data.data
         // console.log(searchColumn)
@@ -284,9 +367,10 @@ const getMasterData = async () => {
 };
 
 // Instittuition
+const loadingInstitution = ref(false)
 const get_institution = async () => {
     try {
-        loading.value = true;
+        loadingInstitution.value = true;
         const response = await apiRequest.get('get_institution');
 
         institutionData.value = response.data.institutions.map(institution => {
@@ -300,7 +384,7 @@ const get_institution = async () => {
         console.log(error)
     }
 
-    loading.value = false;
+    loadingInstitution.value = false;
 };
 
 // debounce initialization
@@ -319,55 +403,16 @@ const changeServer = (data) => {
     }
 };
 
-
-const setSizeScreen = () => {
-    column.value = width.value < 550 ? 12 : 6;
-};
-
-
-const column = ref(6)
-// watch(width, (val) => {
-//     if (val < 550) {
-//         column.value = 12
-//     } else if (val < 768) {
-//         cols.value.forEach((col) => {
-//             if (col.field === 'description') {
-//                 col.hide = true
-//             }
-//         })
-//     }
-//     else {
-//         column.value = 6
-//         cols.value.forEach((col) => {
-//             if (col.field === 'description') {
-//                 col.hide = false
-//             }
-//         })
-//     }
-// })
-
-// onBeforeRouteLeave(async (to, from, next) => {
-//     const { valid } = await form.value.validate()
-//     if (!valid) {
-//         const confirm = window.confirm('Discard Changes?')
-//         if (confirm) next()
-//         else next(false)
-//     }
-//     else next()
-
-// })
-
 /** Discard button */
 const discard = () => {
-    // router.push('/equipment-handling')
+    router.push(currentWorkType)
 }
 
 
 onMounted(() => {
     getMasterData();
     get_institution()
-    setSizeScreen()
-    // console.log(total_rows)
+    work_type.value = route.params.work_type
 });
 </script>
 

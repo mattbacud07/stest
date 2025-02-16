@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\authLogin\UserModel;
+use App\Models\WorkOrder\EquipmentPeripherals;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\WorkOrder\InternalRequest;
@@ -16,7 +18,7 @@ class EhServicesModel extends Model
         'report_number',
         'requested_by',
         'institution',
-        'address',
+        'satellite',
         'proposed_delivery_date',
         'with_contract',
         'attach_gate',
@@ -31,10 +33,12 @@ class EhServicesModel extends Model
         'final_installation_date',
         'driver',
         'tl_assigned',
+        'SBU',
         'assigned_date',
+        'receiving_option',
         'installer',
         'date_installed',
-        'status',
+        'level',
         'main_status',
         'created_at',
         'updated_at'
@@ -44,47 +48,99 @@ class EhServicesModel extends Model
     
     /**
      * Declared public variables for Equipment Handling Signatories - Job Order Form.
+     * S -> Satellite Level of Offices
      */
     public const IT_DEPARTMENT = 1;
-    public const APM_NSM_SM = 2;
+    public const SM_SER = 2;
     public const WIM = 3;
-    public const SERVICE_TL = 4;
-    public const SERVICE_HEAD_ENGINEER = 5;
-    public const BILLING_WIM = 6;
-    public const OUTBOUND = 7;
-    public const AREA_WIM = 8;
-    public const AREA_RSM_SPM_SNM_SM = 9;
-    public const AREA_SERVICE_TL = 10;
-    public const AREA_BILLING_WIM = 11;
+    public const SERVICE = 4;
+    public const BILLING_WIM = 5;
+    public const OUTBOUND = 6;
+    public const S_IT_DEPARTMENT = 7;
+    public const S_SM_SER = 8;
+    public const S_WIM = 9;
+    public const S_SERVICE = 10;
+    public const S_BILLING_WIM = 11;
+    public const S_OUTBOUND = 12;
 
     public const INSTALLATION_TL = 18;
     public const INSTALLATION_ENGINEER = 19;
     public const EH_SIGNATORY_COMPLETE = 20;
 
 
-    // public const TL = 8;
-    // public const INSTALLATION_ENGINEER = 9;
-
     /** 
      * Work Order Status
      */
     public const ONGOING = 1;
-    public const ONGOING_AREA_LEVEL = 2;
-    public const COMPLETE = 3;
-    public const DISAPPROVED = 4;
-    public const RESCHEDULE = 5;
-    public const INSTALLING = 6;
+    public const DISAPPROVED = 2;
+    public const INTERNAL_SERVICING = 3;
+    public const INSTALLING = 4;
+    public const COMPLETE = 5;
+
+    /** External Request Option */
+    public const REQUEST_TYPE = 4; //Shipment/Delivery
 
 
-    public function equipments()
-    {
-        return $this->hasMany('equipment');
+    /**
+     * Approver Category
+     */
+    public const EH_INSTALLATION = 1;
+    public const EH_PULLOUT = 2;
+
+
+
+    /**
+     * Satellite Offices
+     */
+    public const makatiWarehouse = 'Makati-Warehouse';
+    public const cdo = 'CDO';
+    public const davao = 'Davao';
+    public const zamboanga = 'Zamboanga';
+    public const iloilo = 'Iloilo';
+    public const cebu = 'Cebu';
+    public const tacloban = 'Tacloban';
+    public const dumaguete = 'Dumaguete';
+
+
+
+
+    /**
+     * Receiving Options
+     */
+    public const door_to_door = "door";
+    public const pickup = "pickup";
+
+
+    /** Departments */
+    public const sm_department = 8; //Sales & Marketing Dept.
+    public const service_department = 9; // Service Department
+    public const operation_department = 6 ;// Operation Dept.
+
+
+
+
+
+    // public function equipments()
+    // {
+    //     return $this->hasMany('equipment');
+    // }
+
+    public function equipments(){
+        return $this->hasMany(EquipmentPeripherals::class, 'service_id', 'id');
+    }
+    
+    // public function institutions(){
+    //     return $this->hasOne(MasterDataInstitution::class, 'id', 'institution');
+    // }
+
+    // public function users(){
+    //     return $this->hasOne(UserModel::class, 'id', 'requested_by');
+    // }
+    public function combineName(){
+        if($this->users) return " { $this->users->first_name} {$this->users->last_name}";
+        return null;
     }
 
-    public function internal_servicing()
-    {
-        return $this->belongsTo(InternalRequest::class, 'service_id', 'id');
-    }
     public function internal_servicing_request()
     {
         return $this->hasOne(InternalRequest::class, 'service_id', 'id');

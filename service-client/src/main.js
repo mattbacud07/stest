@@ -11,6 +11,9 @@ import '@/assets/js/app.js'
 // Material Design Icons
 import '@mdi/font/css/materialdesignicons.css'
 
+// Satoshi Font Style
+import '@/assets/fonts/satoshi/css/satoshi.css'
+
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -40,6 +43,9 @@ import { ref } from 'vue'
 
 /** Printing */
 import Print from 'vue3-print-nb'
+
+/** Signature Pad */
+import { VueSignaturePad } from 'vue-signature-pad'
 
 
 
@@ -81,10 +87,8 @@ const abilityStored = abilityStore(pnia)
 let ability = ref(abilityStored.abilities)
 app.use(abilitiesPlugin, ability.value)
 
+app.component('VueSignaturePad', VueSignaturePad);
 
-// role.$subscribe(() => {
-//   ability.value = role.abilities
-// })
 app.use(vuetify)
 app.use(ToastPlugin)
 app.use(Print)

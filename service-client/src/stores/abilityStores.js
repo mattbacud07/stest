@@ -21,13 +21,6 @@ export const abilityStore = defineStore('abilityStored', {
             const role = getRole()
             const api = apiRequestAxios()
 
-            // try {
-            //     const response = await api.get('get_role_permissions')
-            //     console.log(response.data.user_roles_permission)
-            // } catch (error) {
-                
-            // }
-
             // this.rules = userData -> for testing
             const { can, build, rules } = new AbilityBuilder(createMongoAbility)
 

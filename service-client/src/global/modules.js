@@ -1,4 +1,6 @@
+export const MD = 'Master Data'
 export const EH = 'Equipment Handling'
+export const PR = 'PullOut Request'
 export const IS = 'Internal Servicing'
 export const PM = 'Preventive Maintenance'
 export const CM = 'Corrective Maintenance'

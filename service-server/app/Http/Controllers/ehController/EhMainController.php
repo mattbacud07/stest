@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EhServicesModel;
 use App\Models\MasterData;
 use App\Models\MasterDataInstitution;
+use App\Models\MasterDataSupplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -64,6 +65,15 @@ class EhMainController extends Controller
         $institutions = MasterDataInstitution::get();
         return response()->json([
             'institutions' => $institutions,
+        ]);
+    }
+
+
+    /** Master Data Supplier */
+    public function get_supplier(){
+        $supplier = MasterDataSupplier::get();
+        return response()->json([
+            'supplier' => $supplier,
         ]);
     }
 }

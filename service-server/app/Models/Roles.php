@@ -41,5 +41,5 @@ class Roles extends Model
     public const TLRoleID = 2;
     public const engineerRoleID = 3;
     public const OutboundRoleID = 4;
-    public const WIMRoleID = 5;
+    public const requestorID = 5;
 }

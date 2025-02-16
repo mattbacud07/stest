@@ -28,7 +28,7 @@
                                     <th>Delete</th>
                                     <th>Approve</th>
                                     <th>Delegate</th>
-                                    <th>Installer</th>
+                                    <th>Install</th>
                                     <th>Report</th>
                                 </tr>
                             </thead>
@@ -82,7 +82,9 @@ const selected_role_id = ref(null)
 
 /** Permissions */
 const permissions = ref([
+    { "module": "Master Data", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "MasterData", "icong" : "mdi-list-box" },
     { "module": "Equipment Handling", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "EquipmentHandling", "icong" : "mdi-file-document-edit" },
+    { "module": "PullOut Request", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "PullOut", "icong" : "mdi-tab-minus" },
     { "module": "Internal Servicing", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "InternalServicing", "icong" : "mdi-file-compare" },
     { "module": "Preventive Maintenance", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "PreventiveMaintenance", "icong" : "mdi-calendar-cursor-outline" },
     { "module": "Corrective Maintenance", "create": false, "read": false, "edit": false, "delete": false, "approve": false, "delegate": false, "installer": false, "report": false, "name": "CorrectiveMaintenance", "icong" : "mdi-calendar-clock" },
@@ -123,7 +125,18 @@ const getPermission = async (selected_role) => {
         if (response.data && response.data.permission) {
             const permissionData = response.data.permission
             if(permissionData && permissionData.permissions){
-                permissions.value = JSON.parse(permissionData.permissions)
+                // permissions.value = JSON.parse(permissionData.permissions)
+                const fetchPermission = JSON.parse(permissionData.permissions)
+                console.log(fetchPermission)
+                fetchPermission.forEach(fetchPermission => {
+                    const existingPermission = permissions.value.find(p => p.name === fetchPermission.name)
+
+                    if(existingPermission){
+                        Object.assign(existingPermission, fetchPermission)
+                    }else{
+                        permissions.value.push(fetchPermission)
+                    }
+                })
             }else{
                 permissions.value.forEach(v => {
                     v.create = false
@@ -149,7 +162,7 @@ const getPermission = async (selected_role) => {
 const getRoleData = async () => {
     try {
         // loading.value = true;
-        const response = await apiRequest.get('get_role_name');
+        const response = await apiRequest.get('get_roles');
         if (response.data && response.data.role_name) {
             roles.value = response.data.role_name
             .filter(v => v.roleID !== 6)

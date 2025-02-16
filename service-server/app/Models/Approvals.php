@@ -18,7 +18,9 @@ class Approvals extends Model
         'user_id',
         'level',
         'status',
-        'remarks'
+        'type',
+        'remarks',
+        'acted_at',
     ];
 
     public function users(){

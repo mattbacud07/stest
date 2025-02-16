@@ -27,32 +27,33 @@
 
             <template #default>
                 <v-container class="container-form mt-10">
-                    <v-card class="p-2 border-sm pt-7 border-dashed" elevation="0">
+                    <v-card class="pa-5 border-sm pt-7 border-dashed" elevation="0">
                         <v-row>
                             <v-col :cols="column">
-                                <v-combobox color="primary" v-model="institutionValue" clearable label="Institution"
-                                    density="compact" :items="institutionData" variant="outlined" itemValue="value"
-                                    itemTitle="key" :rules="rule.ruleInstitution" :close-on-content-click="false"
+                                <v-combobox color="primary" v-model="formData.institution" clearable
+                                    :loading="loadingInstitution" label="Institution" density="compact"
+                                    :items="institutionData" variant="outlined" itemValue="value" itemTitle="key"
+                                    :rules="rule.ruleInstitution" :close-on-content-click="false"
                                     hide-details></v-combobox>
                             </v-col>
                             <v-col :cols="column">
                                 <v-text-field color="primary" density="compact" label="Requested by"
-                                    placeholder="Requested by" variant="outlined" readonly v-model="requested_by"
-                                    :rules="rule.ruleRequestedBy" hide-details></v-text-field>
+                                    placeholder="Requested by" variant="outlined" readonly
+                                    v-model="formData.requested_by" :rules="rule.ruleRequestedBy"
+                                    hide-details></v-text-field>
                             </v-col>
                         </v-row>
                         <v-row class="mb-2">
                             <v-col :cols="column">
-                                <v-text-field color="primary" v-model="address" label="Address" density="compact"
-                                    variant="outlined" readonly
+                                <v-text-field color="primary" v-model="formData.address" label="Address"
+                                    density="compact" variant="outlined" readonly
                                     onUpdate:Item="(newVal) => { address.value = newVal.key }" :rules="rule.ruleAddress"
                                     hide-details></v-text-field>
                             </v-col>
                             <v-col :cols="column">
-                                <VueDatePicker v-model="proposed_delivery_date" auto-apply :min-date="new Date()"
-                                    :enable-time-picker="false" placeholder="Propose Delivery Date" />
-                                <!-- <input type="date" class="form-control" v-model="proposed_delivery_date" placeholder="Propose Delivery Date"> -->
-                                <p class="text-danger" v-if="deliveryDateError !== ''">{{ deliveryDateError }}</p>
+                                <VueDatePicker v-model="formData.proposed_delivery_date" auto-apply
+                                    :min-date="new Date()" :enable-time-picker="false" :state="dateState"
+                                    placeholder="Propose Delivery Date" />
                             </v-col>
                         </v-row>
                         <v-divider></v-divider>
@@ -61,18 +62,18 @@
                         <v-row class="mt-3">
                             <v-col :cols="column">
                                 <h5 class="mb-1" style="font-weight: 500;color: #191970;">Other Request Details</h5>
-                                <v-checkbox v-model="ocular" color="primary" label="Request for Ocular" value="1"
-                                    class="vCheckbox" density="compact"></v-checkbox>
-                                <v-checkbox v-model="bypass" color="primary"
+                                <v-checkbox v-model="formData.ocular" color="primary" label="Request for Ocular"
+                                    value="1" class="vCheckbox" density="compact"></v-checkbox>
+                                <v-checkbox v-model="formData.bypass" color="primary"
                                     label="Bypass Internal Servicing Procedures" value="1" class="vCheckbox"
                                     :disabled="disableExternalCheckbox" density="compact"></v-checkbox>
-                                <v-checkbox v-model="ship" color="primary"
+                                <v-checkbox v-model="formData.ship" color="primary"
                                     label="Ship & Deliver direct to customer immediately" class="vCheckbox" value="1"
                                     density="compact"></v-checkbox>
                             </v-col>
                             <v-col :cols="column">
-                                <v-textarea color="primary" label="Endorsement" v-model="endorsement" row-height="25"
-                                    rows="3" variant="outlined" auto-grow shaped>
+                                <v-textarea color="primary" label="Endorsement" v-model="formData.endorsement"
+                                    row-height="25" rows="3" variant="outlined" auto-grow shaped>
                                 </v-textarea>
                             </v-col>
                         </v-row>
@@ -82,7 +83,7 @@
                         <v-row class="mt-3">
                             <v-col cols="12" md="6" sm="6">
                                 <h5 class="mb-2" style="font-weight: 500;color: #191970;">External Request</h5>
-                                <v-radio-group v-model="externalRequest" :rules="rule.ruleExternal" column
+                                <v-radio-group v-model="formData.externalRequest" :rules="rule.ruleExternal" column
                                     density="compact">
                                     <v-radio color="primary" label="For Demonstration" value="1"></v-radio>
                                     <v-radio color="primary" label="Reagent Tie-up" value="2"></v-radio>
@@ -91,19 +92,24 @@
                                     <v-radio color="primary" label="Service Unit" value="5"></v-radio>
                                     <v-radio color="primary" label="Other" value="6"></v-radio>
                                 </v-radio-group>
-                                <v-text-field v-if="externalRequest === '6'" density="compact" variant="outlined"
-                                    placeholder="Other External Request" w-90 v-model="other"
+                                <v-text-field v-if="formData.externalRequest === '6'" density="compact"
+                                    variant="outlined" placeholder="Other External Request" w-90 v-model="other"
                                     :rules="rule.otherRule"></v-text-field>
-                                <v-checkbox v-model="attached_gate" :disabled="disableExternalCheckbox"
+                                <v-checkbox v-model="formData.attached_gate" :disabled="disableExternalCheckbox"
                                     class="vCheckbox" color="primary" label="Attached gate/entry pass"
                                     value="1"></v-checkbox>
-                                <v-checkbox v-model="with_contract" :disabled="disableExternalCheckbox"
+                                <v-checkbox v-model="formData.with_contract" :disabled="disableExternalCheckbox"
                                     class="vCheckbox" color="primary" label="with contract/other docs"
                                     value="1"></v-checkbox>
+
+                                <v-select v-if="formData.externalRequest === '4'" color="primary" density="compact"
+                                    class="mt-3" clearable variant="outlined" label="Satellite Office"
+                                    placeholder="Satellite Office" w-90 v-model="formData.satellite"
+                                    :rules="[v => !!v || 'Required']" :items="satellite"></v-select>
                             </v-col>
                             <v-col cols="12" md="6" sm="6">
                                 <h5 class="mb-2" style="font-weight: 500;color: #191970;">Internal Request</h5>
-                                <v-radio-group v-model="internalRequest" :rules="rule.ruleInternal" column
+                                <v-radio-group v-model="formData.internalRequest" :rules="rule.ruleInternal" column
                                     density="compact">
                                     <v-radio color="primary" label="For Corrective" value="7"></v-radio>
                                     <v-radio color="primary" label="For Refurbishment" value="8"></v-radio>
@@ -112,9 +118,9 @@
                                     <v-radio color="primary" label="For Disposal" value="11"></v-radio>
                                     <v-radio color="primary" label="Other" value="12"></v-radio>
                                 </v-radio-group>
-                                <v-text-field v-if="internalRequest === '12'" density="compact" variant="outlined"
-                                    placeholder="Other External Request" w-90 v-model="other"
-                                    :rules="rule.otherRule"></v-text-field>
+                                <v-text-field v-if="formData.internalRequest === '12'" density="compact"
+                                    variant="outlined" placeholder="Other External Request" w-90
+                                    v-model="formData.other" :rules="rule.otherRule"></v-text-field>
                             </v-col>
                         </v-row>
                     </v-card>
@@ -143,14 +149,10 @@
                                                     <!-- <input type="text" class="myInputText" v-model="equipment.id"> -->
                                                 </td>
                                                 <td>{{ equipment.description }}</td>
-                                                <td><v-text-field clearable density="compact" variant="plain"
-                                                        placeholder="Serial number ...." w-100
-                                                        v-model="equipment.equipmentSerial"
-                                                        :rules="rule.ruleEquipmentSerial"></v-text-field>
-                                                </td>
+                                                <td>{{ equipment.serial }}</td>
                                                 <td><v-text-field clearable density="compact" variant="plain"
                                                         placeholder="Remarks..." w-100
-                                                        v-model="equipment.equipmentRemark"></v-text-field>
+                                                        v-model="equipment.remarks"></v-text-field>
                                                 </td>
                                                 <td><v-icon @click="removeSelectedEquipment(index)"
                                                         class="text-danger">mdi-trash-can-outline</v-icon>
@@ -178,24 +180,30 @@
                                     </v-btn>
                                     <v-overlay v-model="overlayMasterData"
                                         class="d-flex align-items-center justify-content-center"
-                                        :width="width <= 600 ? 400 : 600" location-strategy="connected">
+                                        :width="width <= 600 ? 400 : 1000" location-strategy="connected">
                                         <v-card class="pa-7" min-height="500">
                                             <v-row>
-                                                <v-col cols="10" xl="4" md="4" sm="5">
-                                                    <v-text-field v-model="params.search" clearable density="compact"
+                                                <v-col cols="5" xl="4" md="4" sm="5">
+                                                    <v-text-field v-model="params_md.search" clearable density="compact"
                                                         label="Search all fields" variant="outlined"
                                                         color="primary"></v-text-field>
+                                                </v-col>
+                                                <v-col cols="5" xl="4" md="4" sm="5">
+                                                    <v-select v-model="serviceStatusSelected" clearable
+                                                        density="compact" label="Status" variant="outlined"
+                                                        :items="serviceStatus" color="primary"></v-select>
                                                 </v-col>
                                                 <v-spacer></v-spacer>
                                                 <v-btn @click="overlayMasterData = false" icon variant="plain"
                                                     color="primary"><v-icon>mdi-close</v-icon></v-btn>
                                             </v-row>
-                                            <vue3-datatable ref="datatable" :rows="rows" :columns="cols"
-                                                :loading="loading" :selectRowOnClick="true" :sortable="true"
-                                                :search="params.search" :isServerMode="true" :totalRows="total_rows"
-                                                :pageSize="params.pagesize" :hide="true" :filter="true"
-                                                skin="bh-table-compact bh-table-bordered bh-table-responsive" class=""
-                                                @rowClick="rowClickEquipment" @change="changeServer"></vue3-datatable>
+                                            <vue3-datatable ref="datatable" :rows="rows_md" :columns="cols_md"
+                                                :loading="loading_md" :selectRowOnClick="true" :sortable="true"
+                                                :hasCheckbox="false" :search="params_md.search" :isServerMode="true"
+                                                :totalRows="total_rows_md" :pageSize="params_md.pagesize" :hide="true"
+                                                :filter="true" skin="bh-table-compact bh-table-bordered" class=""
+                                                @rowClick="rowClickEquipment"
+                                                @change="changeServer_md"></vue3-datatable>
                                             <v-divider></v-divider>
                                             <p class="text-danger"><b>List of Selected Row</b><br>
                                                 <span v-if="selectedEquipment.length > 0">
@@ -217,7 +225,7 @@
                     </v-card>
 
                     <!-- Additional Peripherals -->
-                    <v-card class="mt-3 p-3" elevation="0" style="border: .5px dashed #191970;" >
+                    <v-card class="mt-3 p-3" elevation="0" style="border: .5px dashed #191970;">
 
                         <v-row>
                             <h5 class="p-3 mt-2" style="font-weight: 500;color: #191970;">ADDITIONAL PERIPHERALS <span
@@ -248,7 +256,7 @@
                                                 </td> -->
                                                 <td><v-text-field clearable density="compact" variant="plain"
                                                         placeholder="Remarks..." w-100
-                                                        v-model="peripheral.peripheralRemark"></v-text-field>
+                                                        v-model="peripheral.remarks"></v-text-field>
                                                 </td>
                                                 <td><v-icon @click="removeSelectedPeripherals(index)"
                                                         class="text-danger">mdi-trash-can-outline</v-icon>
@@ -276,7 +284,7 @@
                                     </v-btn>
                                     <v-overlay v-model="overlayMasterDataPeripherals"
                                         class="d-flex align-items-center justify-content-center"
-                                        :width="width <= 600 ? 400 : 600" location-strategy="connected">
+                                        :width="width <= 600 ? 400 : 1000" location-strategy="connected">
                                         <v-card class="pa-7" min-height="600">
                                             <v-row>
                                                 <v-col cols="10" xl="4" md="4" sm="5">
@@ -317,7 +325,7 @@
             </template>
         </LayoutSinglePage>
     </v-form>
-    
+
 </template>
 <script setup>
 import { ref, reactive, onMounted, watch, onBeforeUnmount, computed } from 'vue';
@@ -342,10 +350,16 @@ import debounce from 'lodash/debounce'
 import { useDisplay } from 'vuetify'
 const { name, width } = useDisplay()
 
-// console.log(name.value)
+
+/** Import Institution Data */
+import { useInstitutionData } from '@/helpers/getInstitution';
+const { institutionData } = useInstitutionData()
 
 import { user_data } from '@/stores/auth/userData';
 import { apiRequestAxios } from '@/api/api';
+import { master_data_status } from '@/global/master_data';
+import * as pub_var from '@/global/global'
+import { satellite } from '@/global/satellite';
 
 /** data declarations */
 const router = useRouter()
@@ -362,9 +376,7 @@ const dialog = ref(false)
 const btnDisable = ref(false)
 const disableExternalCheckbox = ref(false)
 const btnLoading = ref(false)
-const institutionData = ref([])
-const errorMessage = ref('')
-const deliveryDateError = ref('')
+const loadingInstitution = ref(false)
 
 const breadcrumbItems = [
     { title: 'Back', disabled: false, href: '/equipment-handling', display: 'block' },
@@ -398,26 +410,29 @@ watch(width, (val) => {
     }
 })
 
+const formData = ref({
+    // 1st
+    requested_by: user.user.first_name + ' ' + user.user.last_name,
+    institution: '',
+    address: '',
+    proposed_delivery_date: '',
 
-// 1st
-const requested_by = ref('')
-const institutionValue = ref('')
-const address = ref('')
-const proposed_delivery_date = ref('')
+    // 2nd
+    ocular: '',
+    bypass: '',
+    ship: '',
+    // 3rd
+    internalRequest: null,
+    externalRequest: null,
+    other: '',
+    request_type: '',
+    attached_gate: '',
+    with_contract: '',
+    // 4th
+    endorsement: '',
+    satellite: '',
+})
 
-// 2nd
-const ocular = ref('')
-const bypass = ref('')
-const ship = ref('')
-// 3rd
-const internalRequest = ref(null)
-const externalRequest = ref(null)
-const other = ref('')
-const request_type = ref('')
-const attached_gate = ref('')
-const with_contract = ref('')
-// 4th
-const endorsement = ref('')
 
 /** Input Form Rules */
 const rule = ref({
@@ -438,73 +453,71 @@ const rule = ref({
     ruleRequestedBy: [
         v => !!v || 'Field is required',
     ],
-
-    ruleEquipmentSerial: [
-        v => !!v || 'Required'
-    ],
     otherRule: [
         v => !!v || 'Required'
     ],
 })
 
-watch(internalRequest, (val) => {
+watch(() => formData.value.internalRequest, (val) => {
     if (val !== null) {
-        externalRequest.value = null
+        formData.value.externalRequest = null
         rule.value.ruleExternal = []
         disableExternalCheckbox.value = true
-        attached_gate.value = ''
-        with_contract.value = ''
-        bypass.value = ''
+        formData.value.attached_gate = ''
+        formData.value.with_contract = ''
+        formData.value.bypass = ''
+        formData.value.satellite = ''
     } else {
         disableExternalCheckbox.value = false
     }
 
 
     if (val !== 12) {
-        other.value = ''
+        formData.value.other = ''
     }
 })
-watch(externalRequest, (val) => {
+watch(() => formData.value.externalRequest, (val) => {
     if (val !== null) {
-        internalRequest.value = null
+        formData.value.internalRequest = null
         rule.value.ruleInternal = []
     }
 
     if (val !== 6) {
-        other.value = ''
+        formData.value.other = ''
     }
 })
 
-requested_by.value = user.user.first_name + ' ' + user.user.last_name
 
 /** Auto Populate Addresss base on Institution */
-watch(institutionValue, (newVal) => {
-    address.value = newVal ? newVal.value : ''
+watch(() => formData.value.institution, (newVal) => {
+    formData.value.address = newVal ? newVal.value : ''
 })
 
 
+const dateState = ref(null)
+watch(() => formData.value.proposed_delivery_date, (newVal) => {
+    dateState.value = newVal ? null : false
+})
+
 
 /** Submit Equipment Hnadling Job Order */
-const countDown = ref(5)
 const submitWorkOrder = async () => {
     const peripheral = Array.from(selectedPeripherals.value)
     const equipment = Array.from(selectedEquipment.value)
-    const formatted_delivery_date = moment(proposed_delivery_date.value).format('YYYY-MM-DD')
+    const formatted_delivery_date = moment(formData.value.proposed_delivery_date).format('YYYY-MM-DD')
     btnLoading.value = true
     const { valid } = await form.value.validate()
     if (!valid) {
         toast.error('Please ensure that required fields are not left blank')
+        if (!formData.value.proposed_delivery_date) dateState.value = false
         btnLoading.value = false
         return
     }
 
 
-    if (!proposed_delivery_date.value) {
-        deliveryDateError.value = 'Required field'
-        setTimeout(() => {
-            deliveryDateError.value = ''
-        }, 3000)
-        toast.error('Please enter the proposed delivery date')
+    if (!formData.value.proposed_delivery_date) {
+        dateState.value = false
+        toast.error('Please ensure that required fields are not left blank')
         btnLoading.value = false
     }
     else if (!selectedEquipment.value || selectedEquipment.value.length === 0) {
@@ -515,17 +528,9 @@ const submitWorkOrder = async () => {
         try {
             const response = await apiRequest.post('submit-work-order',
                 {
-                    requested_by: user.user.id,
-                    institution: institutionValue.value.institutionId,
+                    ...formData.value,
                     proposed_delivery_date: formatted_delivery_date,
-                    with_contract: with_contract.value,
-                    attach_gate: attached_gate.value,
-                    ship: ship.value,
-                    bypass: bypass.value,
-                    ocular: ocular.value,
-                    request_type: externalRequest.value ?? internalRequest.value,
-                    other: other.value,
-                    endorsement: endorsement.value,
+                    request_type: formData.value.externalRequest ?? formData.value.internalRequest,
                     equipments: equipment,
                     peripherals: peripheral,
                 })
@@ -533,12 +538,6 @@ const submitWorkOrder = async () => {
                 toast.success('Request successfully created')
                 btnDisable.value = true
                 router.push('/equipment-handling')
-                // const countDownInterval = setInterval(() => {
-                //     countDown.value--
-                //     if (countDown.value === 0) {
-                //         router.push('/equipment-handling')
-                //     }
-                // }, 1000);
             } else {
                 toast.error('Something went wrong')
             }
@@ -571,6 +570,24 @@ const searchColumn = cols.value.map(f => f.field)
 const params = reactive({ current_page: 1, pagesize: 10, search: '' });
 const rows = ref(null);
 
+/** Get Service MASTER DATA */
+const loading_md = ref(true);
+const total_rows_md = ref(0);
+const cols_md =
+    ref([
+        { field: 'id', title: 'ID', isUnique: true, type: 'number', hide: true },
+        { field: 'master_data_id', title: 'Master Data ID', type: 'number', hide: true },
+        { field: 'item_code', title: 'Item Code' },
+        { field: 'serial', title: 'Serial No.' },
+        { field: 'description', title: 'Item Description' },
+        { field: 'status', title: 'Status' },
+        // { field: 'name', title: 'Category' },
+    ]) || [];
+
+// const searchColumn = cols.value.map(f => f.field)
+const params_md = reactive({ current_page: 1, pagesize: 10, search: '', sort_column: 'id', sort_direction: 'desc', serviceStatus: '' });
+const rows_md = ref(null);
+
 const selectedEquipment = ref([])
 const selectedPeripherals = ref([])
 
@@ -579,23 +596,28 @@ const selectedPeripherals = ref([])
 
 /*** Row Click Selection of Equipment and get Data */
 const rowClickEquipment = (data) => {
-    selectedEquipment.value.push({
-        id: data.id,
-        item_code: data.item_code,
-        description: data.description,
-        equipmentSerial: '',
-        equipmentRemark: ''
-    })
+    const checkIfExist = selectedEquipment.value.some(v => v.service_master_data_id === data.id)
+    if(!checkIfExist) {
+        selectedEquipment.value.push({
+            service_master_data_id: data.id,
+            item_id: data.master_data_id,
+            item_code: data.item_code,
+            description: data.description,
+            serial: data.serial,
+            remarks: ''
+        })
+    }else toast.info('Equipment is already in the list')
 }
 
 /*** Row Click Selection pf Peripherals and get Data */
 const rowClickPeripherals = (data) => {
     selectedPeripherals.value.push({
-        id: data.id,
+        service_master_data_id: null,
+        item_id: data.id,
         item_code: data.item_code,
         description: data.description,
-        peripheralSerial: '',
-        peripheralRemark: ''
+        serial: '',
+        remarks: ''
     })
 }
 const removeSelectedEquipment = (index) => {
@@ -633,38 +655,82 @@ const getMasterData = async () => {
     loading.value = false;
 };
 
-const get_institution = async () => {
+const serviceStatusSelected = ref(null)
+const statusInStock = 'In-stock'
+watch(serviceStatusSelected, (newVal) => {
+    getServiceMasterData()
+})
+const serviceStatus = computed(() => {
+    return master_data_status.filter(v => v.includes(statusInStock))
+})
+const getServiceMasterData = async () => {
     try {
-        loading.value = true;
-        const response = await apiRequest.get('get_institution');
+        loading_md.value = true;
+        const response = await apiRequest.get('get_master_data', {
+            params: {
+                ...params_md,
+                status: serviceStatusSelected.value,
+                statusInStock: statusInStock
+            },
+        });
+        const data = response.data.md_data
 
-        institutionData.value = response.data.institutions.map(institution => {
-            return {
-                key: institution.name,
-                value: institution.address,
-                institutionId: institution.id,
-            }
-        })
+        rows_md.value = data.data
+        // console.log(searchColumn)
+        total_rows_md.value = data.total;
     } catch (error) {
         console.log(error)
     }
 
-    loading.value = false;
+    loading_md.value = false;
 };
+
+// const get_institution = async () => {
+//     try {
+//         loadingInstitution.value = true;
+//         const response = await apiRequest.get('get_institution');
+
+//         institutionData.value = response.data.institutions.map(institution => {
+//             return {
+//                 key: institution.name,
+//                 value: institution.address,
+//                 institution_id: institution.id,
+//             }
+//         })
+//     } catch (error) {
+//         console.log(error)
+//     }
+
+//     loadingInstitution.value = false;
+// };
 
 // debounce initialization
 const debounceSearch = debounce(getMasterData, 300)
+const debounceSearch_md = debounce(getServiceMasterData, 300)
 
 /** Server Mode */
 const changeServer = (data) => {
     params.current_page = data.current_page;
     params.pagesize = data.pagesize;
     params.search = data.search
+    params.serviceStatus = data.serviceStatus
 
     if (data.change_type === 'search') {
         debounceSearch()
     } else {
         getMasterData();
+    }
+};
+// Service Master Data
+const changeServer_md = (data) => {
+    params_md.current_page = data.current_page;
+    params_md.pagesize = data.pagesize;
+    params_md.search = data.search
+
+    if (data.change_type === 'search') {
+        debounceSearch_md()
+    } else {
+        getServiceMasterData();
     }
 };
 
@@ -692,9 +758,8 @@ const discard = () => {
 
 onMounted(() => {
     getMasterData();
-    get_institution()
+    getServiceMasterData()
     setSizeScreen()
-    // console.log(total_rows)
 });
 </script>
 

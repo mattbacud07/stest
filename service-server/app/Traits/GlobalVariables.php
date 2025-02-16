@@ -4,7 +4,36 @@ namespace App\Traits;
 
 trait GlobalVariables
 {
+
+    /** Main Statuses */
+    public const PENDING = 'Pending';
+    public const REJECTED = 'Rejected';
+    public const COMPLETED = 'Completed';
+    public const APPROVED = 'Approved';
+    public const DISAPPROVED = 'Disapproved';
+    public const DECLINED = 'Declined';
+    public const ACCEPTED = 'Accepted';
+    public const AGREED = 'Agreed';
+    public const IN_PROGRESS = 'In Progress';
+    public const CANCELLED = 'Cancelled';
+    public const DELEGATED = 'Delegated';
+    public const INSTALLING = 'Installing';
+    public const UNINSTALLING = 'Uninstalling';
+    public const RETURNEDHEAD = 'Returned to Head';
+    public const SENTWAREHOUSE = 'Sent to Warehouse';
+
+
+
+
+
+    /** Type of Request use in equipment_peripherals table*/
+    public const EH = 'eh';
+    public const PULLOUT = 'pullout';
+    public const IS = 'is';
+    public const PM = 'pm';
+    public const CM = 'cm';
     
+
     /** 
      * Internal Servicing Status
      */
@@ -24,45 +53,14 @@ trait GlobalVariables
         //  I_DISAPPROVED = 4;
         //  I_RESCHEDULE = 5;
     
-// Delegated: The request has been assigned to a specific engineer.
-// Accepted: The engineer has accepted the request and will start processing it.
-// Declined: The engineer has declined the request, and it needs to be re-delegated to another engineer.
-// In Progress: The engineer has accepted the request and is currently processing it.
-// Completed: The engineer has finished processing the request and has confirmed its completion.
-// Packed: The request has been packed and is ready to be endorsed to the WIM personnel.
-// Endorsed to WIM: The request has been handed over to the WIM personnel.
-// Confirmed by WIM: The WIM personnel have confirmed receipt and completion of the request.
 
-    /**
-     * Institution Area
-     */
-    public const LUZON = 'Luzon';
-    public const VISAYAS = 'Visayas';
-    public const MINDANAO = 'Mindanao';
-    
-    public function institutionAreaToWords($institution){
-        switch($institution){
-            case self::LUZON:
-            case 'LUZON':
-                return 1;
-                break;
-            case self::VISAYAS:
-            case 'VISAYAS':
-                return 2;
-                break;
-            case self::MINDANAO:
-            case 'MINDANAO':
-                return 3;
-                break;
-            default:
-                return 0; // Handle default case if necessary
-                break;
-        }
-    }
-    
 
     /**
      * Job Order Form Report Number Prefix.
      */
     public const REPORT_NUMBER_PREFIX = 'JOF';
+    public const REPORT_NUMBER_SR = 'SR';
+    public const REPORT_NUMBER_PR = 'PR';
+
+
 }

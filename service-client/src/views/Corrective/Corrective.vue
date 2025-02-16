@@ -144,39 +144,23 @@
                 <template #id="data">{{ 'PM-' + data.value.id }}</template>
                 <template #scheduled_at="data">
                     <div>
-                        <!-- <v-dialog v-model="viewScheduledDialog[data.value.id]" max-width="400" persistent>
-                                <template v-slot:activator="{ props: activatorProps }">
-                                    <a href="#" v-bind="activatorProps"><v-icon v-if="data.value.scheduled_at !== null"
-                                            color="primary">mdi-calendar-range</v-icon>
-                                        <b>{{ pub_var.formatDateNoTime(data.value.scheduled_at) }}</b></a>
-                                </template>
-<v-card>
-    <p class="ml-3 mt-3 mb-0"><b>Scheduled Dates</b></p><v-divider></v-divider>
-    <v-list lines="one">
-        <v-list-item
-            v-for="list in data.value.list_scheduled.split(',').map(dateString => moment(dateString.trim()).format('MMMM DD, YYYY'))">
-            <template v-slot:prepend>
-                                                <v-icon>mdi-calendar-outline</v-icon>
-                                            </template>
-            <v-list-item-title color="primary">{{ list }}</v-list-item-title>
-        </v-list-item>
-
-    </v-list>
-    <span class="mt-5 ml-4">End of the Year : <b>{{
-            moment().endOf('year').format('YYYY-MM-DD') }}</b> </span>
-    <template v-slot:actions>
-                                        <v-row justify="end" class="mb-3">
-                                            <v-divider></v-divider>
-                                            <v-btn elevation="2" @click="viewScheduledDialog[data.value.id] = false"
-                                                background-color="red" size="small" color="#191970"
-                                                class="text-none mr-5"><v-icon>mdi-close</v-icon>
-                                                Close</v-btn>
-                                        </v-row>
-                                    </template>
-</v-card>
-</v-dialog> -->
-                        {{ moment(data.value.scheduled_at).format('MMMM DD, YYYY') }}
+                        {{ pub_var.formatDate(data.value.scheduled_at) }}
                     </div>
+                </template>
+                <template #delegation_date="data">
+                    {{ pub_var.formatDate(data.value.delegation_date) }}
+                </template>
+                <template #date_accepted="data">
+                    {{ pub_var.formatDate(data.value.date_accepted) }}
+                </template>
+                <template #departed_date="data">
+                    {{ pub_var.formatDate(data.value.departed_date) }}
+                </template>
+                <template #start_date="data">
+                    {{ pub_var.formatDate(data.value.start_date) }}
+                </template>
+                <template #end_date="data">
+                    {{ pub_var.formatDate(data.value.end_date) }}
                 </template>
                 <template #service_id="data">
                     <span color="primary">{{ pub_var.setReportNumber(data.value.service_id) }}</span>
@@ -385,7 +369,7 @@ const cols =
         // { field: 'date_installed', title: 'Date Installed', hide: true, },
         // { field: 'scheduled_at', title: 'Scheduled at' },
         // { field: 'schedule', title: 'Frequency' },
-        { field: 'ssu', title: 'SSU' },
+        { field: 'SBU', title: 'SBU' },
         { field: 'username', title: 'Delegated to' },
         { field: 'delegation_date', title: 'Delegation Date' },
         { field: 'date_accepted', title: 'Date Accepted' },

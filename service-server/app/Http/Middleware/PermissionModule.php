@@ -26,7 +26,7 @@ class PermissionModule
 
         $roleUsers = RoleUser::leftjoin('roles', 'roles.roleID', '=', 'role_user.role_id')
             ->where('role_user.user_id', $user->id)
-            ->select('role_user.*', 'roles.role_name', 'roles.roleID', 'roles.permissions') // Select the fields you need
+            ->select('role_user.*', 'roles.role_name', 'roles.roleID', 'roles.permissions') // Select the fields needed
             ->get();
 
         if(!$roleUsers){

@@ -2,13 +2,20 @@
     <v-row>
         <v-col cols="12">
             <v-row>
+                <v-col>
+                    <v-alert color="warning" class="small" closable density="compact" variant="tonal" prominent>
+                        <v-icon class="mr-2">mdi-information-outline</v-icon> Easily assign roles by selecting multiple users
+                    </v-alert>
+                </v-col>
+            </v-row>
+            <v-row>
                 <v-col lg="8" md="8" sm="6" cols="3">
                     <v-dialog width="400" scrollable v-model="isActive">
                         <template v-slot:activator="{ props: activatorProps }">
-                            <v-btn color="primary" :disabled="btnDisable" variant="tonal"
-                                class="text-none" v-bind="activatorProps">
-                                <v-icon class="mr-2">mdi-lock-plus</v-icon> {{ width <= 500 ?  '' : ' Assign Role' }}
-                            </v-btn>
+                            <v-btn color="primary" :disabled="btnDisable" variant="flat" class="text-none"
+                                v-bind="activatorProps">
+                                <v-icon class="mr-2">mdi-lock-plus</v-icon> {{ width <= 500 ? '' : ' Assign Role' }}
+                                    </v-btn>
                         </template>
 
                         <template v-slot:default="{ isActive }">
@@ -17,13 +24,13 @@
                                 <v-form @submit.prevent="saveRole" ref="form">
                                     <v-divider class="mt-1"></v-divider>
                                     <v-card-text class="px-4">
-                                        <v-select color="primary" v-model="selectedRole" :rules="rule.role" @click="refreshRoles"
-                                            :items="get_role_name" item-title="role_name" item-value="roleID"  density="compact" variant="outlined"
-                                            label="Roles" hint="Assign roles to the selected users"
-                                            persistent-hint></v-select>
-                                        <v-select v-if="showSSU" color="primary" v-model="SSU" :rules="rule.SSU"
-                                            :items="convertSSUToArray(pub_var.ssu)" item-title="text" item-value="value"
-                                            density="compact" variant="outlined" label="SSU" class="mt-5"></v-select>
+                                        <v-select color="primary" v-model="selectedRole" :rules="rule.role"
+                                            :items="get_role_name" item-title="role_name" item-value="roleID"
+                                            density="compact" variant="outlined" label="Roles"
+                                            hint="Assign roles to the selected users" persistent-hint></v-select>
+                                        <v-select v-if="showSBU" color="primary" v-model="sbu" :rules="rule.sbu"
+                                            :items="pub_var.sbuArray" item-title="text" item-value="value"
+                                            density="compact" variant="outlined" label="SBU" class="mt-5"></v-select>
                                     </v-card-text>
 
                                     <v-divider></v-divider>
@@ -50,9 +57,7 @@
             </v-row>
             <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading" :search="params.search"
                 :selectRowOnClick="true" :hasCheckbox="true" :sortable="true" :hide="true" :filter="true"
-                skin="bh-table-compact bh-table-bordered" class="mt-4"
-                :rowClass="getRowClass"
-                @rowSelect="isChecked">
+                skin="bh-table-compact bh-table-bordered" class="mt-4" :rowClass="getRowClass" @rowSelect="isChecked">
 
                 <template #first_name="data">
                     <span>{{ data.value.first_name }} {{ data.value.last_name }}</span>
@@ -60,14 +65,11 @@
             </vue3-datatable>
         </v-col>
 
-        <v-snackbar color="error" v-model="snackbarErrorGeneral" location="right bottom" :timeout="3000">
-            <v-icon class="ml-3">mdi-account-alert</v-icon> Please select one option
-        </v-snackbar>
         <v-snackbar color="#19197000" variant="outlined" v-model="userExistDisplay" location="right bottom"
             :timeout="3000">
             <v-card v-if="userExist.length > 0" color="error" class="p-3">
                 <div v-for="(userName, index) in userExist" :key="index" class="mt-4">
-                    <v-icon class="ml-3">mdi-account-tag</v-icon> {{ userName }} already has a role
+                    <v-icon class="ml-3">mdi-account-tag</v-icon> {{ userName }} already has that role assigned
                 </div>
             </v-card>
             <v-card v-if="userSucceed.length > 0" color="success" class="p-3">
@@ -80,7 +82,7 @@
 
 </template>
 <script setup>
-import { ref, reactive, onMounted, watch, inject } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import { user_data } from '@/stores/auth/userData'
 import { apiRequestAxios } from '@/api/api';
 import * as pub_var from '@/global/global.js'
@@ -89,24 +91,24 @@ import * as pub_var from '@/global/global.js'
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
-import {useDisplay} from 'vuetify'
+import { useDisplay } from 'vuetify'
 const { width } = useDisplay()
+
 
 const user = user_data()
 user.getUserData
 const apiRequest = apiRequestAxios()
 const form = ref(false)
 const selectedRole = ref(null)
-const selectedRoleText = ref(null)
-const SSU = ref(null)
-const showSSU = ref(false)
+const selectedRoleID = ref(null)
+const sbu = ref(null)
+const showSBU = ref(false)
 const getUserId = ref([])
 const datatable = ref(null)
 const isActive = ref(false)
 const btnDisable = ref(true)
 const userExist = ref([])
 const userSucceed = ref([])
-const snackbarErrorGeneral = ref(false)
 const userExistDisplay = ref(false)
 const loadingSave = ref(false)
 const refreshKey = ref(0)
@@ -115,21 +117,21 @@ const rule = ref({
     role: [
         v => !!v || 'Required'
     ],
-    SSU: [
+    sbu: [
         v => !!v || 'Required'
     ]
 })
 
-const convertSSUToArray = (obj) => {
-    return Object.keys(obj).map(data => ({ text: 'SSU' + obj[data], value: 'SSU' + obj[data] }))
-}
+// const convertSBUToArray = (obj) => {
+//     return Object.keys(obj).map(data => ({ text: 'SBU' + obj[data], value: 'SBU' + obj[data] }))
+// }
 watch(selectedRole, (val) => {
-    selectedRoleText.value = get_role_name.value.find(v => v.roleID === val)
-    if (selectedRoleText.value?.role_name === pub_var.engineerRole || selectedRoleText.value?.role_name === pub_var.TLRole) {
-        showSSU.value = true
+    selectedRoleID.value = get_role_name.value.find(v => v.roleID === val)
+    if (selectedRoleID.value?.roleID === pub_var.engineerRoleID || selectedRoleID.value?.roleID === pub_var.TLRoleID || selectedRoleID.value?.roleID === pub_var.SBUServiceAssistant) {
+        showSBU.value = true
     } else {
-        showSSU.value = false
-        SSU.value = ''
+        showSBU.value = false
+        sbu.value = ''
     }
 })
 
@@ -161,8 +163,8 @@ const saveRole = async () => {
         const response = await apiRequest.post('assign-role', {
             user: selectedUser,
             role_id: selectedRole.value,
-            // role_name: selectedRoleText.value.role_name,
-            ssu: SSU.value
+            // role_name: selectedRoleID.value.role_name,
+            sbu: sbu.value
         })
         if (response.data && response.data.success) {
             userExist.value = response.data.userExist
@@ -204,6 +206,7 @@ const cols =
         { field: 'id', title: 'ID', isUnique: true, type: 'number', hide: true },
         { field: 'first_name', title: 'Name' },
         { field: 'email', title: 'Email' },
+        { field: 'position_name', title: 'Position' },
         { field: 'name', title: 'Department' },
     ]) || [];
 
@@ -235,11 +238,11 @@ const get_role_name = ref([])
 const getRoleName = async () => {
     try {
         loading.value = true;
-        const response = await apiRequest.get('get_role_name');
+        const response = await apiRequest.get('get_roles');
         const data = response.data.role_name
 
-        get_role_name.value = data.map(v => ({ roleID : v.roleID, role_name : v.role_name}))
-        
+        get_role_name.value = data.map(v => ({ roleID: v.roleID, role_name: v.role_name }))
+
     } catch (error) {
         console.log(error)
     }
@@ -247,9 +250,9 @@ const getRoleName = async () => {
     loading.value = false;
 };
 
-const refreshRoles = () => {
-    getRoleName()
-}
+// const refreshRoles = () => {
+//     getRoleName()
+// }
 
 
 onMounted(() => {

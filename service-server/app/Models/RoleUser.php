@@ -17,9 +17,9 @@ class RoleUser extends Model
     protected $fillable = [
         'user_id',
         'role_id',
-        // 'role_name',
-        // 'description',
-        'SSU',
+        'supervisor_id',
+        'sbu',
+        'satellite',
     ];
 
     public function roles(){
@@ -29,4 +29,13 @@ class RoleUser extends Model
     public function users(){
         return $this->belongsTo(UserModel::class, 'user_id', 'id');
     }
+
+    public function supervisor(){
+        return $this->belongsTo(UserModel::class, 'supervisor_id', 'id');
+    }
+
+    public function approver(){
+        return $this->hasMany(ApprovalConfigModel::class, 'role_user_id', 'id');
+    }
+
 }

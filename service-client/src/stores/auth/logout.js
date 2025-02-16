@@ -22,6 +22,7 @@ export const logout = defineStore('Logout', {
                 if (response.data && response.data.isLogout) {
                     localStorage.clear()
                 } else {
+                    localStorage.clear()
                     return 'Something wrong'
                 }
             } catch (error) {

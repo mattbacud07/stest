@@ -14,7 +14,7 @@
             </v-chip>
         </v-col>
     </v-row>
-    <v-card class="mt-3" elevation="0" style="border: 1px dashed #191970">
+    <v-card class="mt-3 mb-10" elevation="1">
         <v-col cols="12">
             <v-row>
                 <v-col cols="12">

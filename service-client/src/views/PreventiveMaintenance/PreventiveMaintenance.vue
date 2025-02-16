@@ -22,9 +22,10 @@
                                     <v-col cols="12">
                                         <!-- Filter by Status  -->
                                         <v-menu v-model="filterByStatusDropDown" :close-on-content-click="false"
-                                             height="auto" location="bottom" min-width="auto">
+                                            height="auto" location="bottom" min-width="auto">
                                             <template v-slot:activator="{ props }">
-                                                <v-btn color="primary" variant="tonal" v-bind="props" class="text-none w-50 text-left">
+                                                <v-btn color="primary" variant="tonal" v-bind="props"
+                                                    class="text-none w-50 text-left">
                                                     <v-badge color="primary" :content="filter.filterStatus.length"
                                                         v-if="filter.filterStatus.length > 0"
                                                         class="mr-3 ml-2"></v-badge>
@@ -40,8 +41,8 @@
                                         </v-menu>
                                         <span class="ml-2"></span>
 
-                                         <!-- Filter by Tag as -->
-                                         <v-menu v-model="filterByTag" :close-on-content-click="false" min-width="400"
+                                        <!-- Filter by Tag as -->
+                                        <v-menu v-model="filterByTag" :close-on-content-click="false" min-width="400"
                                             width="400" height="auto" location="bottom" class="ml-3">
                                             <template v-slot:activator="{ props }">
                                                 <v-btn color="primary" variant="tonal" v-bind="props" class="text-none">
@@ -61,7 +62,8 @@
                                         <v-menu v-model="filterByStatusAfterService" :close-on-content-click="false"
                                             min-width="400" width="400" height="auto" location="bottom" class="ml-3">
                                             <template v-slot:activator="{ props }">
-                                                <v-btn color="primary" variant="tonal" v-bind="props" class="text-none w-100 mt-5">
+                                                <v-btn color="primary" variant="tonal" v-bind="props"
+                                                    class="text-none w-100 mt-5">
                                                     <v-badge color="primary"
                                                         :content="filter.filterStatusAfterService.length"
                                                         v-if="filter.filterStatusAfterService.length > 0"
@@ -78,7 +80,7 @@
                                         </v-menu>
                                         <span class="ml-2"></span>
 
-                                       
+
 
                                     </v-col>
 
@@ -93,8 +95,8 @@
 
                                     <v-col cols="12">
                                         <VueDatePicker v-model="filter.filterSchedule_at" auto-apply range
-                                            model-type="yyyy-MM-dd" :enable-time-picker="false" :month-change-on-scroll="false"
-                                            placeholder="Schedule at" />
+                                            model-type="yyyy-MM-dd" :enable-time-picker="false"
+                                            :month-change-on-scroll="false" placeholder="Schedule at" />
                                     </v-col>
 
 
@@ -124,14 +126,15 @@
                 </v-col>
 
                 <!-- Filter Chips -->
-                <v-col cols="12" sm="8" md="8" lg="8" class="d-flex justify-end" :style="{'margin-top' : width <= 595 ? '-20px' : '', 'margin-bottom' : width <= 595 ? '20px' : ''}">
-                    <v-chip color="primary" variant="text" label v-if="can('delegate','Preventive Maintenance')"
+                <v-col cols="12" sm="8" md="8" lg="8" class="d-flex justify-end"
+                    :style="{ 'margin-top': width <= 595 ? '-20px' : '', 'margin-bottom': width <= 595 ? '20px' : '' }">
+                    <v-chip color="primary" variant="text" label v-if="can('delegate', 'Preventive Maintenance')"
                         :prepend-icon="filterChip.filterOptions.includes('assign-next-month') ? 'mdi-checkbox-marked' : 'mdi-checkbox-blank-outline'"
                         @click="filterStatusClick('assign-next-month')">Next Month Assignment</v-chip>
 
-                    <v-chip color="primary" variant="text" label :disabled="disableOptions" v-if="can('delegate','Preventive Maintenance')"
+                    <!-- <v-chip color="primary" variant="text" label :disabled="disableOptions" v-if="can('delegate','Preventive Maintenance')"
                         :prepend-icon="filterChip.filterOptions.includes('not-set') ? 'mdi-checkbox-marked' : 'mdi-checkbox-blank-outline'"
-                        @click="filterStatusClick('not-set')">Not Set</v-chip>
+                        @click="filterStatusClick('not-set')">Not Set</v-chip> -->
 
                     <!-- Download Excel Data -->
                     <download-excel :data="rows" type="xlsx" :fields="colField"
@@ -152,7 +155,7 @@
                 style="border: 1px solid #99999926;border-radius: 3px;"
                 skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true"
                 :selectRowOnClick="true" @rowDBClick="doubleClickViewPM" :rowClass="getRowClass">
-                <template #id="data">{{ 'PM-'+ data.value.id }}</template>
+                <template #id="data">{{ 'PM-' + data.value.id }}</template>
                 <template #scheduled_at="data">
                     <div>
                         <!-- <v-dialog v-model="viewScheduledDialog[data.value.id]" max-width="400" persistent>
@@ -186,8 +189,23 @@
                                     </template>
 </v-card>
 </v-dialog> -->
-                        {{ moment(data.value.scheduled_at).format('MMMM DD, YYYY') }}
+                        {{ pub_var.formatDate(data.value.scheduled_at) }}
                     </div>
+                </template>
+                <template #delegation_date="data">
+                    {{ pub_var.formatDate(data.value.delegation_date) }}
+                </template>
+                <template #date_accepted="data">
+                    {{ pub_var.formatDate(data.value.date_accepted) }}
+                </template>
+                <template #departed_date="data">
+                    {{ pub_var.formatDate(data.value.departed_date) }}
+                </template>
+                <template #start_date="data">
+                    {{ pub_var.formatDate(data.value.start_date) }}
+                </template>
+                <template #end_date="data">
+                    {{ pub_var.formatDate(data.value.end_date) }}
                 </template>
                 <template #service_id="data">
                     <span color="primary">{{ pub_var.setReportNumber(data.value.service_id) }}</span>
@@ -327,13 +345,13 @@ const service_id = ref(null)
 const btnDisable = ref(true)
 const selectedId = ref(null)
 
-if(can('create','Preventive Maintenance')) createRequest.value = 'CreatePM'
+if (can('create', 'Preventive Maintenance')) createRequest.value = 'CreatePM'
 
 const actions = {
     selectedId: selectedId,
     btnDisable: btnDisable,
     routeView: routeView,
-    createRequest : createRequest.value,
+    createRequest: createRequest.value,
     work_type: 'PM',
 }
 
@@ -361,7 +379,7 @@ const getRowClass = (row) => {
  * Double Click View PM
  */
 const doubleClickViewPM = (row) => {
-    router.push({ name: 'PMView', params: { id: row.id, work_type : 'PM' } })
+    router.push({ name: 'PMView', params: { id: row.id, work_type: 'PM' } })
 }
 
 
@@ -388,8 +406,8 @@ const cols =
         { field: 'address', title: 'Address', hide: true, },
         { field: 'date_installed', title: 'Date Installed', hide: true, },
         { field: 'scheduled_at', title: 'Scheduled at' },
-        { field: 'schedule', title: 'Frequency' },
-        { field: 'ssu', title: 'SSU', hide: true },
+        { field: 'frequency', title: 'Frequency' },
+        { field: 'SBU', title: 'SBU', hide: true },
         { field: 'username', title: 'Delegated to' },
         { field: 'delegation_date', title: 'Delegation Date' },
         { field: 'date_accepted', title: 'Date Accepted' },
@@ -412,9 +430,6 @@ const colField = cols.value.reduce((acc, v) => {
 }, {})
 // console.log(colField)
 
-// const searchColumnMap = cols.value.map(v => v.field);
-// const searchColumn = searchColumnMap.filter(v => v !== 'id')
-
 provide('column', cols)
 
 const getPM = async () => {
@@ -423,16 +438,12 @@ const getPM = async () => {
     try {
         loading.value = true;
         const response = await apiRequest.get('get-preventive-maintenance', {
-            params: { ...params, category: category.value, ...filter.value, ...filterChip.value, work_type : 'PM' }
+            params: { ...params, category: category.value, ...filter.value, ...filterChip.value, work_type: 'PM' }
         });
         if (response.data && response.data.pm_data) {
             const result = response.data.pm_data
             rows.value = result.data
             total_rows.value = result.total
-            // list_scheduled.value = data.map((data) => { return data.list_scheduled.split(',').map(dateString => moment(dateString.trim()).format('MMMM DD, YYYY')) })
-            viewSerialDialog.value = result.data.map((data) => { return data.item_id })
-            viewScheduledDialog.value = result.data.map((data) => { return data.item_id })
-            // console.log(list_scheduled.value)
         }
     } catch (error) {
         console.log(error)
@@ -510,14 +521,15 @@ onMounted(() => {
 
 <style scoped>
 * {
-  user-select: none;
+    user-select: none;
 }
+
 .v-chip--label {
     font-size: 12px !important;
 }
 
 /* Calendar Vue Dtewpicker */
-.dp--menu-wrapper{
-  position: static!important;
+.dp--menu-wrapper {
+    position: static !important;
 }
 </style>

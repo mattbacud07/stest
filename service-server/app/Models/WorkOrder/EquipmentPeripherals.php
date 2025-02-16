@@ -15,8 +15,10 @@ class EquipmentPeripherals extends Model
     protected $fillable = [
         'service_id',
         'item_id',
+        'service_master_data_id',
         'item_code',
         'serial_number',
+        'SBU',
         'remarks',
         'description',
         'category',
