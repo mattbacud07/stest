@@ -1,7 +1,5 @@
 <template>
-    <v-skeleton-loader v-if="loadingSkeleton" type="list-item, list-item, button, table-row, table-tbody"
-        class="mb-2"></v-skeleton-loader>
-    <v-card v-else style="padding: 1em 1em;" elevation="1">
+    <v-card style="padding: 1em 1em;" elevation="1">
         <!-- Internal External Request -->
         <v-row class="mt-3">
             <v-col cols="12">

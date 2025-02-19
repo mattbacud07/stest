@@ -6,13 +6,14 @@ use App\Traits\GlobalVariables;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Pullout extends Model
+class Pullout extends LogsBaseModel
 {
     use HasFactory;
     use GlobalVariables;
 
 
     protected $table = 'pullout';
+    const model_name = 'Pullout Request';
 
     public $timestamps = true;
 

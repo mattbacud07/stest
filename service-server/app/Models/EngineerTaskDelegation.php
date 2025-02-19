@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class EngineerTaskDelegation extends Model
+class EngineerTaskDelegation extends LogsBaseModel
 {
     use GlobalVariables;
     use HasFactory;
 
     protected $table = 'engineer_task_delegation';
+    const model_name = 'Engineer Task Delegation';
 
     public $timestamps = true;
 
@@ -37,13 +38,11 @@ class EngineerTaskDelegation extends Model
 
 
     public function task_activity(){
-        return $this->hasMany(EngineerActivities::class, 'service_id', 'id')
-                    ->where('type', self::IS);
+        return $this->hasMany(EngineerActivities::class, 'service_id', 'id');
     }
 
 
     public function actions_taken(){
-        return $this->hasMany(WorksDone::class, 'service_id', 'id')
-                    ->where('work_type', self::IS);
+        return $this->hasMany(WorksDone::class, 'service_id', 'id');
     }
 }

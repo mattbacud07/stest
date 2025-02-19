@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ehController;
 
 use App\Http\Controllers\Controller;
 use App\Models\EhServicesModel as EH;
+use App\Models\WorkOrder\EquipmentPeripherals;
 use App\Traits\GlobalVariables;
 use App\Traits\InfoMessage;
 use Carbon\Carbon;
@@ -102,11 +103,13 @@ class WorkOrder extends Controller
                 'status' => 'Active',
             ];
         })->all();
-
-        $insert_equipment = DB::table('equipment_peripherals')->insert($equipment_collections);
-
-        if(!$insert_equipment){
-            throw new Exception('Error adding to the database, '. $category .' batch file');
+        
+        // Insert each item using Eloquent to trigger logs
+        foreach ($equipment_collections as $data) {
+            EquipmentPeripherals::create($data);
         }
+        // if(!$insert_equipment){
+        //     throw new Exception('Error adding to the database, '. $category .' batch file');
+        // }
     }
 }

@@ -300,8 +300,7 @@ class Pullout extends Controller
                     $latest_service && $latest_outbound
                     && $latest_service->scheduled_date === $latest_outbound->scheduled_date
                 ) {
-                    PM::where('id', $service_id)
-                        ->update([
+                    PM::where('id', $service_id)->first()?->update([
                             'final_schedule' => $latest_service->scheduled_date,
                             'status' => self::UNINSTALLING
                         ]);

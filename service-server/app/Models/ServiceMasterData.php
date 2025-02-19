@@ -13,6 +13,7 @@ class ServiceMasterData extends LogsBaseModel
     use SoftDeletes;
 
     protected $table = 'service_master_data';
+    const model_name = 'Service Master Data';
 
     public $timestamps = true;
 

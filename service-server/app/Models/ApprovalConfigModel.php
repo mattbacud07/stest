@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ApprovalConfigModel extends Model
+class ApprovalConfigModel extends LogsBaseModel
 {
     use HasFactory;
 
     protected $table = 'approval_configuration';
+    const model_name = 'Approval Configuration';
 
     public $timestamps = true;
 

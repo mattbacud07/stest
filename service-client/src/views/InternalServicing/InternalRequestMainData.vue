@@ -52,11 +52,17 @@
                     :rowClass="getRowClass" @change="changeServer" :totalRows="total_rows" cellClass="internalCell"
                     class="tableLimitText">
                     <template #equipments_data="data">
-                        <v-tooltip activator="parent">
+                        <!-- <v-tooltip activator="parent">
                             <div
                                 v-for="(e, index) in data.value.equipment_handling.equipments.filter(v => v.category === 'Equipment')">
                                 <v-icon>mdi-arrow-right-thin</v-icon> Serial No: {{ e.serial_number }}
                             </div>
+                        </v-tooltip> -->
+                        <v-tooltip activator="parent" color="primary">
+                            <p class="mb-1 mt-1" v-for="(item) in data.value.equipment_handling?.equipments?.filter(v => v.category === 'Equipment')">
+                                <v-icon>mdi-circle-medium</v-icon> {{ item.master_data?.equipment }}
+                                <span v-if="item.master_data?.sbu">[ SBU - {{ item.master_data?.sbu }} ] </span>
+                            </p>
                         </v-tooltip>
                     </template>
                     <template #status="data">

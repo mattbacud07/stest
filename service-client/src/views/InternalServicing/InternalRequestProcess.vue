@@ -573,7 +573,7 @@ const getInternalRowById = async () => {
             internalData.value = data
             actions_taken.value = data?.task_delegation[0]?.actions_taken
             task_delegation.value = data?.task_delegation[0]
-            delegation_id.value = data?.task_delegation?.find(v => v.active === 1).id
+            delegation_id.value = data?.task_delegation?.find(v => v.active === 1)?.id
             service_id.value = data.service_id
             equipment_handling.value = data.equipment_handling
         }

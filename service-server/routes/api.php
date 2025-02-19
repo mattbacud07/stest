@@ -11,6 +11,7 @@ use App\Http\Controllers\authController;
 use App\Http\Controllers\ehController\ChecklistItem;
 use App\Http\Controllers\ehController\EhMainApproverController;
 use App\Http\Controllers\ehController\EhMainController;
+use App\Http\Controllers\ehController\EquipmentHandlingInstallation;
 use App\Http\Controllers\ehController\InternalRequest;
 use App\Http\Controllers\ehController\WorkOrder;
 use App\Http\Controllers\Engineer\ServiceActionController;
@@ -97,6 +98,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     /** Master Data */
     Route::get('/get_master_data', [MasterData::class, 'get_master_data']);
     Route::post('/createMasterData', [MasterData::class, 'createMasterData']);
+    Route::put('/editMasterData', [MasterData::class, 'editMasterData']);
     Route::get('/viewMasterDataByRowID', [MasterData::class, 'viewMasterDataByRowID']);
     Route::delete('/delete_master_data', [MasterData::class, 'delete_master_data']);
 
@@ -131,6 +133,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get('/getChecklistItem', [ChecklistItem::class, 'getChecklistItem']);
         Route::get('/getChecklistItemAcquired', [ChecklistItem::class, 'getChecklistItemAcquired']);
+
+    /** == Equipment Handling - Delegation & Installation ===== */
+    Route::post('/delegate-engineer', [EquipmentHandlingInstallation::class, 'delegate_engineer']);
+    Route::post('/accept-decline-delegate', [EquipmentHandlingInstallation::class, 'accept_decline_delegate']);
 
 
 

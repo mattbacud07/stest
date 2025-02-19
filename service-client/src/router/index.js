@@ -161,16 +161,6 @@ const router = createRouter({
       },
       beforeEnter: canAccess('create', EH),
     },
-    // {
-    //   path: '/view-work-order/:id',
-    //   name: 'ViewWorkOrder',
-    //   component: () => import('../views/EquipmentHandling/ViewWorkOrder.vue'),
-    //   props: true,
-    //   meta: {
-    //     title: 'Work Order',
-    //     requiresAuth: true
-    //   }
-    // },
     {
       path: '/work-order/:id',
       name: 'WorkOrderApprover',
@@ -181,6 +171,17 @@ const router = createRouter({
         requiresAuth: true
       },
       beforeEnter: workOrderMainRequest(['read', 'approve', 'installer', 'delegate'], EH),
+    },
+    {
+      path: '/work-order-installation/:id',
+      name: 'WorkOrderInstallation',
+      component: () => import('../views/EquipmentHandling/WorkOrderInstallation.vue'),
+      props: true,
+      meta: {
+        title: 'Work Order',
+        requiresAuth: true
+      },
+      beforeEnter: workOrderMainRequest(['installer', 'delegate'], EH),
     },
 
 

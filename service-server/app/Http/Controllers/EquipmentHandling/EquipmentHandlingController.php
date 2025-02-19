@@ -8,10 +8,8 @@ use App\Models\Roles;
 use App\Models\RoleUser;
 use Illuminate\Http\Request;
 use App\Services\EquipmentHandlingService\EHBasicOperation;
-use App\Services\EquipmentHandlingService\EHTaskOperation;
 use App\Services\Validation\UserRolesValidator;
 use App\Traits\GlobalVariables;
-use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +33,8 @@ class EquipmentHandlingController extends Controller
     {
         $user_id = Auth::user()->id;
         $user_department = Auth::user()->department;
-        $user_sbu = RoleUser::where(['user_id' => $user_id, 'role_id' => EhServicesModel::EH_INSTALLATION])->value('sbu');
+        $user_sbu = RoleUser::where(['user_id' => $user_id, 'role_id' => Roles::approverRoleID])->value('sbu');
+        $tl_assitant_sbu = RoleUser::where('user_id', $user_id)->whereIn('role_id', [Roles::TLRoleID, Roles::SBUAssistantRoleID])->value('sbu');
         $current_role = (int) $request->current_role ?? 0;
         try {
 
@@ -76,7 +75,8 @@ class EquipmentHandlingController extends Controller
                 ->with(['equipments' => function ($q) {
                     $q->where('request_type', self::EH);
                     $q->where('category', 'Equipment');
-                }]);
+                }])->with(['equipments.master_data']);
+
 
             /** Server mode Details */
             if (!empty($search)) {
@@ -123,26 +123,46 @@ class EquipmentHandlingController extends Controller
                                             });
                                     });
                                 } else if ($level === EhServicesModel::SERVICE) {
-                                    $query->orWhere(function ($subQuery) use ($user_sbu) {
+                                    $query->where(function ($subQuery) use ($user_sbu) {
                                         $subQuery->where('equipment_handling.level', EhServicesModel::SERVICE)
                                             ->whereExists(function ($existQuery) use ($user_sbu) {
                                                 $existQuery->select(DB::raw(1))
                                                     ->from('equipment_peripherals as ep')
                                                     ->join('service_master_data as md', 'md.id', '=', 'ep.service_master_data_id')
                                                     ->where('md.sbu', '=', $user_sbu)
-                                                    ->whereColumn('ep.service_id','=','equipment_handling.id');
+                                                    ->whereColumn('ep.service_id', '=', 'equipment_handling.id');
                                             });
                                     });
                                 } else {
-                                    $query->orWhere('equipment_handling.level', $level);
+                                    $query->where('equipment_handling.level', $level);
                                 }
                             }
                         });
                     } else $query->whereRaw('1 = 0');
-                } elseif ($current_role === Roles::TLRoleID) {
-                    $query->where('equipment_handling.level', EhServicesModel::INSTALLATION_TL);   //SUBJECT_TO_CHANGE
+                } elseif ($current_role === Roles::TLRoleID || $current_role === Roles::SBUAssistantRoleID) {
+                    $query->where('equipment_handling.main_status', EhServicesModel::INSTALLING);
+                    // $query->where('equipment_handling.level', EhServicesModel::INSTALLATION_TL);
+                    $query->where(function ($q) use ($tl_assitant_sbu) {
+                        $q->whereExists(function ($existQuery) use ($tl_assitant_sbu) {
+                            $existQuery->select(DB::raw(1))
+                                ->from('equipment_peripherals as ep')
+                                ->join('service_master_data as md', 'md.id', '=', 'ep.service_master_data_id')
+                                ->where('md.sbu', '=', $tl_assitant_sbu)
+                                ->whereColumn('ep.service_id', '=', 'equipment_handling.id');
+                        });
+                    });
                 } elseif ($current_role === Roles::engineerRoleID) {
-                    $query->where('equipment_handling.level', EhServicesModel::INSTALLATION_ENGINEER);   //SUBJECT_TO_CHANGE
+                    $query->where('equipment_handling.main_status', EhServicesModel::INSTALLING);
+                    $query->where(
+                        fn($q) =>
+                        $q->whereExists(
+                            fn($existQuery) =>
+                            $existQuery->select(DB::raw(1))
+                                ->from('engineer_task_delegation as etd')
+                                ->where('etd.assigned_to', '=', $user_id)
+                                ->whereColumn('etd.service_id', '=', 'equipment_handling.id')
+                        )
+                    );
                 } elseif ($current_role === Roles::requestorID) {
                     $query->where('equipment_handling.requested_by', $user_id);
                 }
@@ -170,36 +190,59 @@ class EquipmentHandlingController extends Controller
      */
     public function getEquipmentHandlingById(Request $request)
     {
-        $user = Auth::user();
-        $roleUsers = RoleUser::leftjoin('roles', 'roles.roleID', '=', 'role_user.role_id')
-            ->where('role_user.user_id', $user->id)
-            ->select('role_user.*', 'roles.role_name', 'roles.roleID', 'roles.permissions') // Select the fields you need
-            ->get();
+        try {
+            // $user = Auth::user();
+            // $roleUsers = RoleUser::leftjoin('roles', 'roles.roleID', '=', 'role_user.role_id')
+            //     ->where('role_user.user_id', $user->id)
+            //     ->select('role_user.*', 'roles.role_name', 'roles.roleID', 'roles.permissions') // Select the fields you need
+            //     ->get();
 
-        $service_id = $request->service_id ?? 0;
+            $service_id = $request->service_id ?? 0;
 
-        // $data = $this->EHBasicOperation->getEquipmentHandlingByServiceId($service_id);
-         // Find and return an equipment handling by its ID, or return null if not found
-         $data = EhServicesModel::select(
-            'equipment_handling.*', 
-            'i.name', 'i.address', 
-            'i.area', 'u.first_name', 
-            'u.last_name', 'u.department', 
-            'ui.first_name as fname', 
-            'ui.last_name as lname', 
-            'ua.first_name as assigned_tl_fname', 
-            'ua.last_name as assigned_tl_lname', 
-            'iE.name as request_name')
-            ->where(['equipment_handling.id' => $service_id])
-            ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'equipment_handling.requested_by', '=', 'u.id')
-            ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as ui', 'equipment_handling.installer', '=', 'ui.id')
-            ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as ua', 'equipment_handling.tl_assigned', '=', 'ua.id')
-            ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
-            ->leftjoin('internal_external_requests as iE', 'equipment_handling.request_type', '=', 'iE.id')
-            ->first();
+            // $data = $this->EHBasicOperation->getEquipmentHandlingByServiceId($service_id);
+            // Find and return an equipment handling by its ID, or return null if not found
+            $data = EhServicesModel::with(['task_delegation'])
+                ->with(['task_delegation_all' => function($q){
+                    $q->select(
+                        'engineer_task_delegation.*',
+                        DB::raw("CONCAT(assigned_to.first_name,' ',assigned_to.last_name) as assigned_to"),
+                    )->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as assigned_to', 'engineer_task_delegation.assigned_to', '=', 'assigned_to.id');
+                }])  // Get all task delegations
+                ->with(['task_delegation.task_activity' => function($q){
+                    $q->where('type', self::IS)->get();
+                }])
+                ->with(['task_delegation.actions_taken' => function($q){
+                    $q->where('work_type', self::IS)->get();
+                }])
+                ->select(
+                    'equipment_handling.*',
+                    'i.name',
+                    'i.address',
+                    'i.area',
+                    'u.first_name',
+                    'u.last_name',
+                    'u.department',
+                    'ui.first_name as fname',
+                    'ui.last_name as lname',
+                    'ua.first_name as assigned_tl_fname',
+                    'ua.last_name as assigned_tl_lname',
+                    'iE.name as request_name'
+                )
+                ->where(['equipment_handling.id' => $service_id])
+                ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'equipment_handling.requested_by', '=', 'u.id')
+                ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as ui', 'equipment_handling.installer', '=', 'ui.id')
+                ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as ua', 'equipment_handling.tl_assigned', '=', 'ua.id')
+                ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
+                ->leftjoin('internal_external_requests as iE', 'equipment_handling.request_type', '=', 'iE.id')
+                ->first();
 
-        return response()->json([
-            'request' => $data,
-        ], 200);
+            return response()->json([
+                'request' => $data,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ]);
+        }
     }
 }

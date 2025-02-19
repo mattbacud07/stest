@@ -71,11 +71,11 @@ class MasterData extends Controller
                 $query->where('service_master_data.status', $request->status);
             }
             if ($request->has('statusInStock')) {
-                $query->where('service_master_data.status', 'LIKE', '%'.$request->statusInStock.'%');
+                $query->where('service_master_data.status', 'LIKE', '%' . $request->statusInStock . '%');
             }
-            if($request->has('category') && $request->category === 'pullout'){
+            if ($request->has('category') && $request->category === 'pullout') {
                 $query->where('service_master_data.status', 'Active')
-                ->where('service_master_data.institution', $request->item_in_institution_id);
+                    ->where('service_master_data.institution', $request->item_in_institution_id);
             }
             $get_md_data = $query->orderBy($sortColumn, $sortDirection)->paginate(
                 $pageSize,
@@ -94,17 +94,17 @@ class MasterData extends Controller
         }
     }
 
-/** Get Master Data By Row ID */
-    public function viewMasterDataByRowID(Request $request){
+    /** Get Master Data By Row ID */
+    public function viewMasterDataByRowID(Request $request)
+    {
         $id = $request->id;
-        $data = ServiceMasterData::
-                with(['institution_data' => function($q){
-                    $q->select('id','name', 'address')->first();
-                }])
-                ->with(['users_data'])
-                ->with(['suppliers_data'])
-                ->with(['master_data'])
-                ->find($id);
+        $data = ServiceMasterData::with(['institution_data' => function ($q) {
+                $q->select('id', 'name', 'address')->first();
+            }])
+            ->with(['users_data'])
+            ->with(['suppliers_data'])
+            ->with(['master_data'])
+            ->find($id);
 
         return response()->json([
             'data' => $data,
@@ -166,10 +166,62 @@ class MasterData extends Controller
 
 
 
+    /** ==================== EDIT MASTER DATA ================================ */
+    public function editMasterData(Request $request)
+    {
+        $user_id = Auth::user()->id;
+        $id = $request->id;
+        try {
+            DB::beginTransaction();
+
+            $data = [
+                'equipment' => $request->equipment,
+                'serial' => $request->serial,
+                'sbu' => $request->sbu,
+                'dealer_name' => $request->dealer_name,
+                'area' => $request->area,
+                'operation_time' => $request->operation_time,
+                'software_version' => $request->software_version,
+                'admission_date' => $request->admission_date,
+                'date_installed' => $request->date_installed,
+                'contract_due_date' => $request->contract_due_date,
+                'region' => $request->region,
+                'frequency' => $request->frequency,
+                'analyzer_type' => $request->analyzer_type,
+                'class' => $request->class,
+                'initially_installed' => $request->initially_installed ?? null,
+                'reason_equipment_status' => $request->reason_equipment_status,
+                'email' => $request->email,
+                'institution' => $request->institution,
+                'mode' => $request->mode,
+                'supplier' => $request->supplier,
+                'status' => $request->status,
+                'added_by' => $user_id,
+            ];
+
+
+            $query = ServiceMasterData::find($id);
+            if (!$query) {
+                throw new Exception('Data not found');
+            }
+            $updated = $query->update($data);
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json(['error' => $th->getMessage()]);
+        }
+    }
+
+
+
+
 
     /** +========================== DELETE MASTER DATA ============================ */
 
-    public function delete_master_data(Request $request){
+    public function delete_master_data(Request $request)
+    {
         $id = $request->id;
 
         try {
@@ -178,7 +230,7 @@ class MasterData extends Controller
             $q = ServiceMasterData::find($id);
             $soft_delete = $q->delete();
 
-            if(!$soft_delete){
+            if (!$soft_delete) {
                 throw new Exception('Unsuccessful');
             }
 
@@ -186,7 +238,6 @@ class MasterData extends Controller
             return response()->json([
                 'success' => true,
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([

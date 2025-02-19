@@ -2,14 +2,17 @@
 
 namespace App\Models\WorkOrder;
 
+use App\Models\LogsBaseModel;
+use App\Models\ServiceMasterData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EquipmentPeripherals extends Model
+class EquipmentPeripherals extends LogsBaseModel
 {
     use HasFactory;
 
     protected $table= 'equipment_peripherals';
+    const model_name = 'Equipment Peripherals';
     public $timestamps = true;
 
     protected $fillable = [
@@ -26,4 +29,10 @@ class EquipmentPeripherals extends Model
         'created_at',
         'updated_at'
     ];
+
+
+    public function master_data(){
+        return $this->belongsTo(ServiceMasterData::class, 'service_master_data_id', 'id')
+        ->select('id', 'sbu', 'equipment');
+    }
 }

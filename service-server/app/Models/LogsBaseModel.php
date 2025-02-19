@@ -29,6 +29,9 @@ class LogsBaseModel extends Model
     {
         Logs::create([
             'model' => class_basename($model),
+            'model_name' => defined(get_class($model) . '::model_name') 
+            ? constant(get_class($model) . '::model_name') 
+            : class_basename($model),
             'model_id' => $model->id,
             'action' => $action,
             'changes' => $changes ? json_encode($changes) : null,

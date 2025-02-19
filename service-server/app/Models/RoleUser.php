@@ -6,7 +6,7 @@ use App\Models\authLogin\UserModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RoleUser extends Model
+class RoleUser extends LogsBaseModel
 {
     use HasFactory;
 

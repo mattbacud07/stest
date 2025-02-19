@@ -5,18 +5,21 @@ namespace App\Models\WorkOrder;
 use App\Models\authLogin\UserModel;
 use App\Models\EhServicesModel;
 use App\Models\EngineerTaskDelegation;
+use App\Models\LogsBaseModel;
 use App\Models\WorkOrder\InternalExternalName;
 use App\Models\WorksDone;
 use App\Traits\GlobalVariables;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
-class InternalRequest extends Model
+class InternalRequest extends LogsBaseModel
 {
     use HasFactory;
     use GlobalVariables;
 
     protected $table = 'internal_request';
+    const model_name = 'Internal Servicing Request';
     public $timestamps = true;
 
     protected $fillable = [
@@ -33,39 +36,48 @@ class InternalRequest extends Model
     // public function equipment_handling(){
     //     return $this->belongsTo(EhServicesModel::class, 'service_id', 'id');
     // }
-    
-    public function equipment_handling(){
-        return $this->belongsTo(EhServicesModel::class, 'service_id', 'id');
+
+    public function equipment_handling()
+    {
+        return $this->belongsTo(EhServicesModel::class, 'service_id', 'id')->select(
+            'id',
+            'requested_by',
+            'institution',
+            'proposed_delivery_date'
+        );
     }
-    
-    public function task_delegation(){
+
+    public function task_delegation()
+    {
         return $this->hasMany(EngineerTaskDelegation::class, 'service_id', 'id')
-                    ->where('type', self::IS)
-                    ->where('active', 1);
+            ->where('type', self::IS)
+            ->where('active', 1)
+            ->select('engineer_task_delegation.*', 'u.first_name', 'u.last_name')
+            ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'engineer_task_delegation.assigned_to', '=', 'u.id');
     }
 
-    public function task_delegation_all(){
-        return $this->hasMany(EngineerTaskDelegation::class, 'service_id', 'id')
-                    ->where('type', self::IS);
+    public function task_delegation_all()
+    {
+        return $this->hasMany(EngineerTaskDelegation::class, 'service_id', 'id')->where('type', self::IS);
     }
 
-    public function internal_external_name(){
-        return $this->hasOne(InternalExternalName::class, 'type_of_activity','id');
-    }
-   
-    public function getUser(){
-        return $this->hasOne(UserModel::class, 'delegated_to','id');
+    public function internal_external_name()
+    {
+        return $this->hasOne(InternalExternalName::class, 'type_of_activity', 'id');
     }
 
-    public function actions_done(){
+    public function getUser()
+    {
+        return $this->hasOne(UserModel::class, 'delegated_to', 'id');
+    }
+
+    public function actions_done()
+    {
         return $this->hasMany(WorksDone::class, 'work_type_id', 'id');
     }
 
-    public function equipments(){
+    public function equipments()
+    {
         return $this->hasMany(EquipmentPeripherals::class, 'service_id', 'service_id');
     }
-
-
 }
-
-

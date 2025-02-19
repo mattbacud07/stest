@@ -7,10 +7,15 @@ use App\Models\WorkOrder\EquipmentPeripherals;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\WorkOrder\InternalRequest;
+use App\Services\TaskDelegationService;
+use App\Traits\GlobalVariables;
+use Illuminate\Support\Facades\DB;
 
-class EhServicesModel extends Model
+class EhServicesModel extends LogsBaseModel
 {
     use HasFactory;
+
+    const model_name = 'Equipment Handling';
 
     protected $table = 'equipment_handling';
     public $timestamps = true;
@@ -45,7 +50,7 @@ class EhServicesModel extends Model
     ];
 
 
-    
+
     /**
      * Declared public variables for Equipment Handling Signatories - Job Order Form.
      * S -> Satellite Level of Offices
@@ -114,7 +119,7 @@ class EhServicesModel extends Model
     /** Departments */
     public const sm_department = 8; //Sales & Marketing Dept.
     public const service_department = 9; // Service Department
-    public const operation_department = 6 ;// Operation Dept.
+    public const operation_department = 6; // Operation Dept.
 
 
 
@@ -125,10 +130,11 @@ class EhServicesModel extends Model
     //     return $this->hasMany('equipment');
     // }
 
-    public function equipments(){
+    public function equipments()
+    {
         return $this->hasMany(EquipmentPeripherals::class, 'service_id', 'id');
     }
-    
+
     // public function institutions(){
     //     return $this->hasOne(MasterDataInstitution::class, 'id', 'institution');
     // }
@@ -136,13 +142,27 @@ class EhServicesModel extends Model
     // public function users(){
     //     return $this->hasOne(UserModel::class, 'id', 'requested_by');
     // }
-    public function combineName(){
-        if($this->users) return " { $this->users->first_name} {$this->users->last_name}";
+    public function combineName()
+    {
+        if ($this->users) return " { $this->users->first_name} {$this->users->last_name}";
         return null;
     }
 
     public function internal_servicing_request()
     {
         return $this->hasOne(InternalRequest::class, 'service_id', 'id');
+    }
+
+    public function task_delegation()
+    {
+        return $this->hasOne(EngineerTaskDelegation::class, 'service_id', 'id')
+            ->where('type', 'eh')
+            ->where('active', 1)
+            ->select('engineer_task_delegation.*', 'u.first_name', 'u.last_name')
+            ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'engineer_task_delegation.assigned_to', '=', 'u.id');
+    }
+    public function task_delegation_all()
+    {
+        return $this->hasMany(EngineerTaskDelegation::class, 'service_id', 'id')->where('type', 'eh');
     }
 }

@@ -5,7 +5,7 @@
         <v-row>
             <v-col cols="12" lg="4" md="4" sm="6">
                 <p>Delegated to</p>
-                <p class="text-grey-darken-1"> {{ delegated_to ?? '---' }}</p>
+                <p class="text-grey-darken-1"> {{ task_delegation.first_name ?? '--' }} {{ task_delegation.last_name ?? '--' }}</p>
             </v-col>
             <v-col cols="12" lg="4" md="4" sm="6">
                 <p>Date of delegation</p>

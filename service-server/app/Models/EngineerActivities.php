@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EngineerActivities extends Model
+class EngineerActivities extends LogsBaseModel
 {
     use HasFactory;
 
 
     protected $table = 'engineer_activities';
+    const model_name = 'Engineer Activities';
 
     public $timestamps = true;
 

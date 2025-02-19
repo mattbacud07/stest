@@ -60,10 +60,11 @@
         <template #default="{ searchText }">
             <v-card class="mx-auto">
                 <vue3-datatable ref="datatable" class="tableLimitText" :rows="rows" :columns="cols" :loading="loading"
-                    :search="params.search" :totalRows="total_rows" :pageSize="params.pageSize" :isServerMode="true" @change="changeServer"
-                    @rowSelect="rowSelect" :sortColumn="params.sort_column" :sortDirection="params.sort_direction"
-                    :sortable="true" skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover"
-                    :hasCheckbox="true" :rowClass="getRowClass" :selectRowOnClick="true" cellClass="internalCell"
+                    :search="params.search" :totalRows="total_rows" :pageSize="params.pageSize" :isServerMode="true"
+                    @change="changeServer" @rowSelect="rowSelect" :sortColumn="params.sort_column"
+                    :sortDirection="params.sort_direction" :sortable="true"
+                    skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true"
+                    :rowClass="getRowClass" :selectRowOnClick="true" cellClass="internalCell"
                     @rowDBClick="doubleClickViewData">
                     <template #id="data">
                         <span>{{ pub_var.setReportNumber(data.value.id, data.value.created_at) }}</span>
@@ -73,13 +74,15 @@
                     </template>
                     <template #request_name="data">
                         <span>{{ pub_var.requestName(data.value.request_type, data.value.request_name, data.value.other)
-                            }}</span>
+                        }}</span>
                     </template>
                     <template #equipments="data">
-                            <v-tooltip activator="parent" color="primary">
-                                <p class="mb-1 mt-1" v-for="(item) in data.value.equipments">
-                                    <v-icon>mdi-arrow-right-thin</v-icon> Serial : {{ item.serial_number }}</p>
-                            </v-tooltip>
+                        <v-tooltip activator="parent" color="primary">
+                            <p class="mb-1 mt-1" v-for="(item) in data.value.equipments?.filter(v => v.category === 'Equipment')">
+                                <v-icon>mdi-circle-medium</v-icon> {{ item.master_data?.equipment }}
+                                <span v-if="item.master_data?.sbu">[ SBU - {{ item.master_data?.sbu }} ] </span>
+                            </p>
+                        </v-tooltip>
                     </template>
                     <template #approver_name="data">
                         <span class="text-danger"
@@ -92,11 +95,11 @@
                         </span>
                     </template>
                     <template #main_status="data">
-                            <span>
-                                <v-chip label density="compact" :color="pub_var.setJOStatus(data.value.main_status).color">
-                                    {{ pub_var.setJOStatus(data.value.main_status).text }}
-                                </v-chip>
-                            </span>
+                        <span>
+                            <v-chip label density="compact" :color="pub_var.setJOStatus(data.value.main_status).color">
+                                {{ pub_var.setJOStatus(data.value.main_status).text }}
+                            </v-chip>
+                        </span>
                     </template>
                     <template #created_at="data">
                         <span>{{ pub_var.formatDateNoTime(data.value.created_at) }}</span>
@@ -211,14 +214,11 @@ provide('column', cols)
 /**
  * @ Row Select or Double Click Table Event
  */
+const rolesToAccess = [pub_var.TLRoleID, pub_var.SBUServiceAssistantID, pub_var.engineerRoleID]
 const doubleClickViewData = (row) => {
-    // if(
-
-    //     user.user.id === row.requested_by &&
-
-    // ){
-
-    // }
+    if(rolesToAccess.includes(currentUserRoleID)){
+        router.push({ name: 'WorkOrderInstallation', params: { id: row.id } })
+    }else
     router.push({ name: 'WorkOrderApprover', params: { id: row.id } })
 }
 const selectedRows = ref([])
@@ -245,7 +245,7 @@ const getRowClass = (row) => {
 
 /** Sent to Topbar */  // Subject to Change [Set Roles and Permission Dynamically]
 const category = ref(null)
-const routeView = ref('WorkOrderApprover')
+const routeView = ref(rolesToAccess.includes(currentUserRoleID) ? 'WorkOrderInstallation' : 'WorkOrderApprover')
 const createRequest = ref(null)
 const service_id = ref(null)
 

@@ -2,10 +2,11 @@
 
 namespace App\Models\PreventiveMaintenance;
 
+use App\Models\LogsBaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PM_Setting extends Model
+class PM_Setting extends LogsBaseModel
 {
     use HasFactory;
 

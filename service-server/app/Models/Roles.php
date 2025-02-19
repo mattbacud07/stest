@@ -6,7 +6,7 @@ use App\Models\authLogin\UserModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Roles extends Model
+class Roles extends LogsBaseModel
 {
     use HasFactory;
 
@@ -39,6 +39,7 @@ class Roles extends Model
     public const adminRoleID = 6;
     public const approverRoleID = 1;
     public const TLRoleID = 2;
+    public const SBUAssistantRoleID = 8;
     public const engineerRoleID = 3;
     public const OutboundRoleID = 4;
     public const requestorID = 5;

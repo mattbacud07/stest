@@ -52,7 +52,7 @@
                             </v-col>
                             <v-col :cols="column">
                                 <VueDatePicker v-model="formData.proposed_delivery_date" auto-apply
-                                    :min-date="new Date()" :enable-time-picker="false" :state="dateState"
+                                    :min-date="new Date()" :enable-time-picker="false" :teleport="true" :state="dateState"
                                     placeholder="Propose Delivery Date" />
                             </v-col>
                         </v-row>

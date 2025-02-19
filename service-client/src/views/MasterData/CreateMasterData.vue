@@ -116,17 +116,17 @@
                         <v-row>
                             <v-col cols="12" lg="6" md="6" sm="6">
                                 <VueDatePicker v-model="formData.admission_date" auto-apply :enable-time-picker="false"
-                                    placeholder="Admission Date *" :rules="[v => !!v || 'Required']" />
+                                    :teleport="true" placeholder="Admission Date *" :rules="[v => !!v || 'Required']" />
                             </v-col>
                             <v-col cols="12" lg="6" md="6" sm="6">
                                 <VueDatePicker v-model="formData.date_installed" auto-apply :enable-time-picker="false"
-                                    placeholder="Date Installed" />
+                                    :teleport="true" placeholder="Date Installed" />
                             </v-col>
                         </v-row>
                         <v-row>
                             <v-col cols="12" lg="6" md="6" sm="6">
                                 <VueDatePicker v-model="formData.contract_due_date" auto-apply
-                                    :enable-time-picker="false" placeholder="Contract Due Date" />
+                                    :enable-time-picker="false" :teleport="true" placeholder="Contract Due Date" />
                             </v-col>
                             <v-col cols="12" lg="6" md="6" sm="6">
                                 <v-select color="primary" v-model="formData.region" label="Region" clearable

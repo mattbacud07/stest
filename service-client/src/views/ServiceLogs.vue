@@ -1,67 +1,94 @@
 <template>
-    <LayoutWithActions @searchText="getSearchText">
-        <template #default>
-            <!-- <v-card class="mx-auto p-4"> -->
+
+    <BaseLayout>
+        <v-card class="pa-5">
+            <v-row class="mb-3">
+                <v-col cols="12" md="6" sm="6">
+                    <v-text-field v-model="params.search" label="Search" density="compact" single-line
+                        variant="outlined" clearable></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6" sm="6">
+                    <v-btn dense variant="plain" @click="refresh"><v-icon>mdi-refresh</v-icon>
+                        <v-tooltip activator="parent" location="bottom">Refresh Table</v-tooltip>
+                    </v-btn>
+                </v-col>
+            </v-row>
             <vue3-datatable ref="datatable" :rows="rows" :columns="cols" :loading="loading" :search="params.search"
                 :isServerMode="true" :totalRows="total_rows" :pageSize="params.pagesize" @change="changeServer"
-                @rowSelect="rowSelect" :columnFilter="false" :sortColumn="params.sort_column"
-                :sortDirection="params.sort_direction" :sortable="true"
-                style="border: 1px solid #99999926;border-radius: 3px;"
+                :columnFilter="false" :sortColumn="params.sort_column" :sortDirection="params.sort_direction"
+                :sortable="true" style="border: 1px solid #99999926;border-radius: 3px;"
                 skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true"
-                :selectRowOnClick="true" :rowClass="getRowClass">
+                :selectRowOnClick="true" cellClass="internalCell">
+                <template #changes="data">
+                   <div>
+                    <v-dialog max-width="700">
+                        <template v-slot:activator="{ props: activatorProps }">
+                            <v-btn v-bind="activatorProps" dense variant="plain">
+                                <v-icon>mdi-eye-arrow-left-outline</v-icon>
+                                <v-tooltip activator="parent" location="bottom">Click to View Original Data</v-tooltip>
+                            </v-btn>
+                        </template>
+
+                        <template v-slot:default="{ isActive }">
+                            <v-card class="pa-5">
+                                <template v-slot:default>
+                                    <pre>{{ JSON.stringify(JSON.parse(data.value.changes), null, 2) }}</pre>
+                                </template>
+                                <template v-slot:actions>
+                                    <v-btn class="ml-auto text-none" text="Close" @click="isActive.value = false"></v-btn>
+                                </template>
+                            </v-card>
+                        </template>
+                    </v-dialog>
+                   </div>
+                </template>
+                <template #original="data">
+                   <div v-if="data.value.original !== null">
+                    <v-dialog max-width="700">
+                        <template v-slot:activator="{ props: activatorProps }">
+                            <v-btn v-bind="activatorProps" dense variant="plain">
+                                <v-icon>mdi-eye-arrow-left-outline</v-icon>
+                                <v-tooltip activator="parent" location="bottom">Click to View Changes</v-tooltip>
+                            </v-btn>
+                        </template>
+
+                        <template v-slot:default="{ isActive }">
+                            <v-card class="pa-5">
+                                <template v-slot:default>
+                                    <pre>{{ JSON.stringify(JSON.parse(data.value.original), null, 2) }}</pre>
+                                </template>
+                                <template v-slot:actions>
+                                    <v-btn class="ml-auto text-none" text="Close" @click="isActive.value = false"></v-btn>
+                                </template>
+                            </v-card>
+                        </template>
+                    </v-dialog>
+                   </div>
+                </template>
+                <template #created_at="data">
+                    <span>{{ FullMonthWithTime(data.value.created_at) }}</span>
+
+                </template>
             </vue3-datatable>
-            <!-- </v-card> -->
-        </template>
-    </LayoutWithActions>
+        </v-card>
+    </BaseLayout>
 </template>
 
 <script setup>
-import { onMounted, ref, reactive, provide, watch, computed } from 'vue';
-import { user_data } from '@/stores/auth/userData'
-import { getRole } from '@/stores/getRole'
-import { useRouter } from 'vue-router';
+import { onMounted, ref, reactive, provide } from 'vue';
 import { apiRequestAxios } from '@/api/api';
 import debounce from 'lodash/debounce'
-import { useDisplay } from 'vuetify';
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
-import LayoutWithActions from '@/components/layout/MainLayout/LayoutWithActions.vue'
-
-
-/** Toast PLugin */
-import { useToast } from 'vue-toast-notification';
-const toast = useToast()
-
+import BaseLayout from '@/components/layout/MainLayout/BaseLayout.vue';
+import { FullMonthWithTime } from '@/global/global';
 
 const apiRequest = apiRequestAxios()
 
 
-/**
- * @ Row Select Table Event
- */
-const selectedRows = ref([])
-const rowSelect = (row) => {
-    selectedRows.value = datatable.value.getSelectedRows()
-    if (row.length === 1) btnDisable.value = false
-    else btnDisable.value = true
-
-    selectedId.value = row.map(v => v.id)[0]
-    // multiSelected.value = row.map(v => v.id)
-}
-const getRowClass = (row) => {
-    const rowID = selectedRows.value.map(v => v.id)
-    return rowID.includes(row.id) ? 'highlightRow' : ''
-}
-
-
-
-/** Get specific PM  */
-const getSearchText = (data) => {
-    params.search = data
-}
 const datatable = ref(null)
 const loading = ref(true);
 const total_rows = ref(0);
@@ -71,24 +98,15 @@ const rows = ref(null);
 const cols =
     ref([
         { field: 'id', title: 'ID', isUnique: true, type: 'number', hide: false },
-        { field: 'name', title: 'Institution', hide: false },
-        { field: 'master_data_id', title: 'Item No', hide: false },
-        { field: 'item_code', title: 'Item Code' },
-        { field: 'serial', title: 'Serial No.' },
-        { field: 'equipment', title: 'Equipment' },
-        { field: 'description', title: 'Description' },
-        { field: 'sbu', title: 'SBU' },
+        { field: 'model', title: 'Model', hide: false },
+        { field: 'model_name', title: 'Module Name', hide: false },
+        { field: 'model_id', title: 'Model ID', hide: false },
+        { field: 'action', title: 'Action', hide: false },
+        { field: 'changes', title: 'Changes', hide: false },
+        { field: 'original', title: 'Original', hide: false },
+        { field: 'user', title: 'User', hide: false },
+        { field: 'created_at', title: 'Created At', hide: false },
     ]) || [];
-
-
-const colField = cols.value.reduce((acc, v) => {
-    if (v.title && v.field) {
-        acc[v.title] = v.field
-    }
-    return acc
-}, {})
-
-provide('column', cols)
 
 const getLogs = async () => {
     try {
@@ -96,8 +114,8 @@ const getLogs = async () => {
         const response = await apiRequest.get('get_logs', {
             params: { ...params, }
         });
-        if (response.data?.md_data) {
-            const result = response.data.md_data
+        if (response.data?.logs) {
+            const result = response.data.logs
             rows.value = result.data
             total_rows.value = result.total
         }
@@ -109,8 +127,9 @@ const getLogs = async () => {
 };
 
 
-
-provide('refresh', getLogs)
+const refresh = () => {
+    getLogs()
+}
 
 
 

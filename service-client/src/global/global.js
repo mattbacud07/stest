@@ -87,9 +87,8 @@ export const OUTBOUND = 6;
 export const S_IT_DEPARTMENT = 7;
 export const S_SM_SER = 8;
 export const S_WIM = 9;
-export const S_SERVICE = 10;
+export const S_OUTBOUND = 10;
 export const S_BILLING_WIM = 11;
-export const S_OUTBOUND = 12;
 
 export const INSTALLATION_TL = 18;
 export const INSTALLATION_ENGINEER = 19;
@@ -98,20 +97,22 @@ export const approverArray = [
     IT_DEPARTMENT, SM_SER, WIM, SERVICE_TL,
     BILLING_WIM, OUTBOUND,
     INSTALLATION_TL, INSTALLATION_ENGINEER,
-    S_WIM, S_SERVICE, S_BILLING_WIM, S_OUTBOUND
+    S_WIM, S_BILLING_WIM, S_OUTBOUND
 ];
 
 /** Set Config Approver Designation - Installation */
 export const approver_designation = [
-    { key: 'IT Department', value: 1 },
-    { key: 'Dept. Manager (S&M / SER)', value: 2 },
-    { key: 'Warehouse / Inventory Custodian', value: 3 },
-    { key: 'Service Manager - Strategic Business Unit', value: 4 },
-    { key: 'Billing & Invoicing', value: 5 },
-    { key: 'Operations - Outbound', value: 6 },
-    { key: '[Satellite Office] - Outbound Personnel (Receiving)', value: 7 },
-    { key: '[Satellite Office] - Warerhouse Personnel (Receiving)', value: 8 },
-    { key: '[Satellite Office] - Billing & Invoicing Staff', value: 9 },
+    { key: 'IT Department', value: IT_DEPARTMENT },
+    { key: 'Dept. Manager (S&M / SER)', value: SM_SER },
+    { key: 'Warehouse / Inventory Custodian', value: WIM },
+    { key: 'Service Manager - Strategic Business Unit', value: SERVICE_TL },
+    { key: 'Billing & Invoicing', value: BILLING_WIM },
+    { key: 'Operations - Outbound', value: OUTBOUND },
+    { key: '[Satellite Office] - Warehouse Personnel (Receiving)', value: S_WIM },
+    { key: '[Satellite Office] - Outbound Personnel (Receiving)', value: S_OUTBOUND },
+    { key: '[Satellite Office] - Billing & Invoicing', value: S_BILLING_WIM },
+    { key: 'Service Engineer Delegation', value: INSTALLATION_TL },
+    { key: 'Installing', value: INSTALLATION_ENGINEER },
 ];
 export const getApproverByLevel = (level, category) => {
     //EH

@@ -59,7 +59,8 @@
                                     <template v-if="outboundSetting">
                                         <v-card class="mr-2 ml-2 mt-5">
                                             <v-radio-group v-model="outboundFinalization.receiving_option"
-                                                label="Set receiving option" color="primary">
+                                                :rules="[v => !!v || 'Required']" label="Set receiving option"
+                                                color="primary">
                                                 <v-radio label="Door to Door" value="door"></v-radio>
                                                 <v-radio label="Pickup" value="pickup"></v-radio>
                                             </v-radio-group>
@@ -68,6 +69,7 @@
                                             v-model="outboundFinalization.final_installation_date" variant="outlined"
                                             color="primary" density="compact" :rules="[v => !!v || 'Required']"
                                             label="Final Installation Date"></v-text-field>
+
                                         <v-text-field class="mr-2 ml-2 mt-5" v-model="outboundFinalization.driver"
                                             variant="outlined" color="primary" density="compact"
                                             :rules="[v => !!v || 'Required']" label="Driver"></v-text-field>
@@ -89,51 +91,6 @@
                         </v-card>
                     </v-dialog>
                 </template>
-
-
-                <!-- dialogApproveNonApprover Button -->
-                <!-- <template
-                    v-if="(pub_var.INSTALLATION_ENGINEER === level && user_current_ssu === updatedSBU && can('installer', 'Equipment Handling')) || (pub_var.INSTALLATION_TL === level && user_current_ssu === updatedSBU && can('delegate', 'Equipment Handling'))">
-                    <v-dialog v-model="dialogApproveNonApprover" max-width="600" persistent>
-                        <template v-slot:activator="{ props: activatorProps }">
-
-                            <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable" color="primary"
-                                variant="flat" class="text-none btnSubmit"><v-icon class="mr-2">mdi-check</v-icon>
-                                {{ can('delegate', 'Equipment Handling') ?
-                                    'Delegate Installation' : 'Installation Complete' }}
-                            </v-btn>
-                        </template>
-                        <v-card text="" title="Approve">
-                            <v-form @submit.prevent="approveRequest" ref="form">
-                                <v-col cols="12">
-                                    <v-textarea class="mr-2 ml-2" v-model="remark" clearable label="Remarks (optional)"
-                                        color="primary" variant="outlined"></v-textarea>
-
-                                    <template
-                                        v-if="pub_var.INSTALLATION_TL === status && user_current_ssu === updatedSBU">
-                                        <v-combobox color="primary" class="ml-2 mr-2 mt-5" v-model="Engineers"
-                                            :rules="[v => !!v || 'Required']" label="Assign Engineer"
-                                            placeholder="Assign to" density="compact" :items="engineersData"
-                                            variant="outlined" itemValue="value" itemTitle="key"></v-combobox>
-                                    </template>
-
-                                </v-col>
-
-                                <v-divider></v-divider>
-                                <v-row justify="end" class="mt-7 mb-5 pr-3">
-                                    <v-btn variant="tonal" @click="dialogApproveNonApprover = false" size="small"
-                                        color="primary" class="text-none mr-2"><v-icon>mdi-close</v-icon>
-                                        Cancel</v-btn>
-                                    <v-btn type="submit" size="small" :loading="btnLoading" :disabled="btnDisable"
-                                        color="#191970" flat class="text-none bg-primary mr-5"><v-icon
-                                            class="mr-2">mdi-check</v-icon>
-                                        Approve</v-btn>
-                                </v-row>
-
-                            </v-form>
-                        </v-card>
-                    </v-dialog>
-                </template> -->
             </div>
         </template>
         <!-- <v-form ref="form"> @submit.prevent="submitWorkOrder" ref="form" -->
@@ -168,15 +125,14 @@
                         </v-chip>
                     </v-card>
                 </transition>
-                    <InternalServicingDelegation v-if="showInternalProcess" :service_id="parseInt(id)"
-                        @refresh="refreshData" />
+                <InternalServicingDelegation v-if="showInternalProcess" :service_id="id"
+                    @refresh="refreshData" :key="refreshKey" />
 
 
 
-                    <RequestDetails :request_data="request" :key="refreshKey" />
-                    <!-- @get-EH-details="getEHDetails" -->
+                <RequestDetails :request_data="request" />
 
-                    <RequestType :request_data="request" />
+                <RequestType :request_data="request" />
             </template>
 
             <v-card class="mt-10">
@@ -192,12 +148,12 @@
                     <v-window v-model="tab" :disabled="true">
                         <!-- <v-window-item value="request_type"></v-window-item> -->
                         <v-window-item value="equipments">
-                            <RequestedEquipments :service_id="parseInt(id)" @set-serial="getSerialNumber"
-                                @get-equipment="getEquipments" :editSerial="level !== IT_DEPARTMENT ? false : true"
-                                :category="pub_var.EH" />
+                            <RequestedEquipments :service_id="id" @set-serial="getSerialNumber"
+                                @get-equipment="getEquipments"
+                                :editSerial="request.level !== IT_DEPARTMENT ? false : true" :category="pub_var.EH" />
                         </v-window-item>
                         <v-window-item value="history">
-                            <ApproverHistoryLog :service_id="parseInt(id)" :status="main_status" />
+                            <ApproverHistoryLog :service_id="id" :status="request.main_status" />
                         </v-window-item>
                     </v-window>
                 </v-card-text>
@@ -252,10 +208,10 @@ const tab = ref('equipments') //TAB
 const form = ref(false)
 const dialog = ref(false)
 const dialogApprove = ref(false)
-const dialogApproveNonApprover = ref(false)
+const delegateDialog = ref(false)
 const btnDisable = ref(false)
 const btnLoading = ref(false)
-const id = route.params.id
+const id = parseInt(route.params.id)
 // const service_id = ref(id)
 const serialNumber = ref([])
 const submmitApproveStatus = ref(false)
@@ -309,7 +265,7 @@ const approveRequest = async () => {
             serial: serialNumber.value,
             service_id: id,
             engineer: Engineers.value.value,
-            level: level.value,
+            level: request.value.level,
             remark: remark.value,
             ...outboundFinalization.value,
             // actionsDone: actionsDone ?? []
@@ -320,11 +276,11 @@ const approveRequest = async () => {
             toast.success('Approved successfully')
             router.push('/equipment-handling')
         }
-        else {
-            console.log(response.data.error)
-            toast.error('Something went wrong')
-        }
     } catch (error) {
+        if (error.response.data && error.response.data.errorMisMatch) {
+            toast.error(error.response.data.errorMisMatch)
+            getRequest()
+        }
         console.log(error)
     }
     finally {
@@ -361,139 +317,156 @@ const disapproveRequest = async () => {
 }
 
 
-
-
-/** ================================================= Get Request Data ==================================== */
-const loading = ref(false)
-const request = ref({})
-const getRequest = async () => {
-    try {
-        loading.value = true
-        const response = await apiRequest.get('get-specific-equipment-handling', {
-            params: {
-                service_id: id,
-            },
-        });
-        if (response?.data?.request) {
-            request.value = response.data.request
-
-            // institution.value = field.name ?? 0
-            // address.value = field.address
-            // requested_by.value = field.first_name + ' ' + field.last_name
-            // proposed_delivery_date.value = field.proposed_delivery_date
-            // request_type.value = field.request_type
-            // bypass.value = field.bypass === 1 ? true : false
-            // level.value = field.level
-            // main_status.value = field.main_status
-            // created_at.value = field.created_at
-
-            // console.log(!bypass.value)
-
-            // emit('get-EH-details', field)
-
-        } else {
-            alert('Something went wrong')
-        }
-
-    } catch (error) {
-        console.log(error)
-    }
-    finally {
-        loading.value = false
-    }
-};
+/** ========================== Delegation of Engineers ======================== */
+/** Fetch All Service Engineers */
+import { users_engineers } from '@/helpers/getUsers';
+const { engineers } = users_engineers()
 
 /**
- * Get Serial Number Input from Additional Peripheral Table
+ * Submit || Delegate Internal Servicing
  */
-const getSerialNumber = (serial) => {
-    serialNumber.value = Array.from(serial)
-    submmitApproveStatus.value = serialNumber.value.every(data => data.serial && data.serial.trim() !== '')
-}
-
-
-/** get Equipments in Requested Equipments Component */
-const getEquipments = (data) => {
-    equipment_sbu.value = data.map(v => v.sbu)
-}
-
-/** Show the Start of Internal Process = Delegation of Service Enginner */
-const user_sbu_as_approver = user.user.user_roles.find(v => v.role_id === pub_var.approverRoleID)?.SBU
-const equipment_sbu = ref([])
-const showInternalProcess = computed(() => { //logic for Internal process or Delegation to start servicing
-    if (level.value === pub_var.SERVICE_TL && main_status.value !== pub_var.INTERNAL_SERVICING) {
-        return equipment_sbu.value.includes(user_sbu_as_approver) && !bypassInternal.value
+// const Engineers = ref('')
+const delegateInternalServicing = async () => {
+    btnLoading.value = true
+    const { valid } = await form.value.validate()
+    if (!valid) {
+        btnLoading.value = false
+        return
     }
-    return false
-})
 
-/** Get All Equipment Handling Details */
-const department = ref(null)
-const bypassInternal = ref(null)
-// const getEHDetails = (data) => {
-//     level.value = data.level
-//     main_status.value = data.main_status
-//     department.value = data.department
-//     bypassInternal.value = data.bypass !== 1 ? false : true
-// }
+    try {
+        const response = await apiRequest.post('internal-process', {
+            service_id: props.service_id,
+            assigned_to: Engineers.value.value
+        })
+        if (response.data && response.data.success) {
+            toast.success('Successfully delegated')
+            if (typeof (disableButton) === 'function') disableButton()
+            emit('refresh')
+        } else if (response.data && response.data.exist_service_id) {
+            toast.warning('Request already exist.')
+        }
+    } catch (error) {
+        alert(error)
+    }
+    finally {
+        btnLoading.value = false
+        dialogInternalRequest.value = false
+    }
+}
 
 
-/** Check if Department is [Sales or Service] ->  */
-const canApprove = computed(() => {
-    if (user.user.approval_level.includes(level.value)) {
-        if (level.value === pub_var.SM_SER) {
-            if (user.user?.department === service_department) {
+
+    /** ================================================= Get Request Data ==================================== */
+    const loading = ref(false)
+    const request = ref({})
+    const getRequest = async () => {
+        try {
+            loading.value = true
+            const response = await apiRequest.get('get-specific-equipment-handling', {
+                params: {
+                    service_id: id,
+                },
+            });
+            if (response?.data?.request) {
+                request.value = response.data.request
+
+                // emit('get-EH-details', field)
+
+            } else {
+                alert('Something went wrong')
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+        finally {
+            loading.value = false
+        }
+    };
+
+    /**
+     * Get Serial Number Input from Additional Peripheral Table
+     */
+    const getSerialNumber = (serial) => {
+        serialNumber.value = Array.from(serial)
+        submmitApproveStatus.value = serialNumber.value.every(data => data.serial && data.serial.trim() !== '')
+    }
+
+
+    /** get Equipments in Requested Equipments Component */
+    const getEquipments = (data) => {
+        equipment_sbu.value = data.map(v => v.sbu)
+    }
+
+    /** Show the Start of Internal Process = Delegation of Service Enginner */
+    const user_sbu_as_approver = user.user.user_roles.find(v => v.role_id === pub_var.approverRoleID)?.SBU
+    const equipment_sbu = ref([])
+    const showInternalProcess = computed(() => { //logic for Internal process or Delegation to start servicing
+        if (request.value.level === pub_var.SERVICE_TL && request.value.main_status !== pub_var.INTERNAL_SERVICING) {
+            return equipment_sbu.value.includes(user_sbu_as_approver) && !request.value.bypass
+        }
+        return false
+    })
+
+
+    /** Check if Department is [Sales or Service] ->  */
+    const canApprove = computed(() => {
+        if (user.user.approval_level.includes(request.value.level)) {
+            if (request.value.level === pub_var.SM_SER) {
+                if (user.user?.department === service_department) { //for service dept.
+                    return equipment_sbu.value.includes(user_sbu_as_approver)
+                }
+                return user.user?.department === request.value.department // for sales or other department
+            }
+            if (request.value.level === pub_var.SERVICE_TL) {
                 return equipment_sbu.value.includes(user_sbu_as_approver)
             }
-            return user.user?.department === department.value
+            return true
         }
-        if (level.value === pub_var.SERVICE_TL) {
-            return equipment_sbu.value.includes(user_sbu_as_approver)
+        return false
+    })
+
+    /** Check if Status is [Internal Servicing In Progress] ->  */
+    const internalInProgress = computed(() => {
+        if (request.value.main_status === pub_var.INTERNAL_SERVICING) return true
+        return false
+    })
+
+    /** Outbound Settings [Driver, Receiving Options, Final Installation Date]  */
+    const outboundSetting = computed(() => {
+        if (request.value.level === pub_var.OUTBOUND) {
+            return true
         }
-        return true
+        return false
+    })
+
+    /** Refresh after Submitting Internal Servicing */
+    const refreshKey = ref(0)
+    const refreshData = () => {
+        getRequest()
+        refreshKey.value += 1
     }
-    return false
-})
 
-/** Check if Status is [Internal Servicing In Progress] ->  */
-const internalInProgress = computed(() => {
-    if (main_status.value === pub_var.INTERNAL_SERVICING) return true
-    return false
-})
 
-/** Outbound Settings [Driver, Receiving Options, Final Installation Date]  */
-const outboundSetting = computed(() => {
-    if (level.value === pub_var.OUTBOUND) {
-        return true
+
+
+    /** Disable Approver Button */
+    const disableButton = () => {
+        btnDisable.value = true
     }
-    return false
-})
+    provide('disableButton', disableButton)
 
-/** Refresh after Submitting Internal Servicing */
-const refreshKey = ref(0)
-const refreshData = () => {
-    refreshKey.value += 1
-}
-
-
-
-
-/** Disable Approver Button */
-const disableButton = () => {
-    btnDisable.value = true
-}
-provide('disableButton', disableButton)
-
-onMounted(async () => {
-    btnDisable.value = true
-    if (user.user.approval_level !== 1) {
+    onMounted(async () => {
+        btnDisable.value = true
+        if (user.user.approval_level !== 1) {
+            btnDisable.value = false
+        }
         btnDisable.value = false
-    }
-    btnDisable.value = false
 
 
-    getRequest()
-})
+        getRequest()
+    })
 </script>
 
 

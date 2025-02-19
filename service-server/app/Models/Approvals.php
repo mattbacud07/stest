@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Approvals extends Model
+class Approvals extends LogsBaseModel
 {
     use HasFactory;
 
     protected $table = 'approvals';
-
+    const model_name = 'Approval Logs';
     public $timestamps = true;
 
     protected $fillable = [

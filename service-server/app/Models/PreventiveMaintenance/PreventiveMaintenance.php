@@ -5,6 +5,7 @@ namespace App\Models\PreventiveMaintenance;
 use App\Models\Admin\PMSetting;
 use App\Models\authLogin\UserModel;
 use App\Models\EhServicesModel;
+use App\Models\LogsBaseModel;
 use App\Models\MasterData;
 use App\Models\MasterDataInstitution;
 use App\Models\ServiceMasterData;
@@ -13,12 +14,13 @@ use App\Models\WorksDone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PreventiveMaintenance extends Model
+class PreventiveMaintenance extends LogsBaseModel
 {
     use HasFactory;
 
 
     protected $table = 'preventive_maintenance';
+    const model_name = 'Preventive Maintenance';
     public $timestamps = true;
 
 

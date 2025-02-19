@@ -69,7 +69,7 @@ class InternalRequest extends Controller
 
 
             $query = InternalServicingModel::with([
-                'equipment_handling.equipments',
+                'equipment_handling.equipments.master_data',
             ])
                 ->select(
                     'internal_request.*',
@@ -132,8 +132,12 @@ class InternalRequest extends Controller
 
         try {
             $data = InternalServicingModel::from('internal_request as it')
-                ->with(['task_delegation.task_activity'])
-                ->with(['task_delegation.actions_taken'])
+                ->with(['task_delegation.task_activity' => function($q){
+                    $q->where('type', self::IS)->get();
+                }])
+                ->with(['task_delegation.actions_taken' => function($q){
+                    $q->where('work_type', self::IS)->get();
+                }])
                 ->with(['equipment_handling' => function ($q) {
                     $q->select(
                         'equipment_handling.*',
@@ -397,19 +401,17 @@ class InternalRequest extends Controller
             ]);
             if (!$update_internal_status) throw new Exception('Failed to update internal status');
 
-            // Task Delegation
-            $update_delegation_status = EngineerTaskDelegation::where([
-                'service_id' => $internal_id,
-                'status' => self::DELEGATED,
-                'type' => self::IS,
-                'active' => 1,
-            ])->update([
-                'status' => self::ACCEPTED,
-                'remarks' => $remarks,
-                'acted_at' => Carbon::now()
-            ]);
+ 
+            $update_delegation_status = $this->task_log->update_task_delegation_log(
+                $internal_id,
+                self::DELEGATED,
+                self::IS,
+                self::ACCEPTED,
+                $remarks
+            );
 
             if (!$update_delegation_status) throw new Exception('Failed to update delegation status');
+
             /** Create Task Log for Task Delegation */
             $this->task_log->task_activities(
                 $delegation_id,
@@ -447,18 +449,14 @@ class InternalRequest extends Controller
             ]);
             if (!$update_internal_status) throw new Exception('Failed to update internal status');
 
-            // Task Delegation
-            $update_delegation_status = EngineerTaskDelegation::where([
-                'service_id' => $internal_id,
-                'status' => self::DELEGATED,
-                'type' => self::IS,
-                'active' => 1,
-            ])->update([
-                'status' => self::DECLINED,
-                'remarks' => $remarks,
-                'acted_at' => Carbon::now(),
-                'active' => 0
-            ]);
+            $update_delegation_status = $this->task_log->update_task_delegation_log(
+                $internal_id,
+                self::DELEGATED,
+                self::IS,
+                self::DECLINED,
+                $remarks,
+                0 // set active status to 0
+            );
 
             if (!$update_delegation_status) throw new Exception('Failed to update delegation status');
 
@@ -535,7 +533,7 @@ class InternalRequest extends Controller
             }
 
 
-            $update_delegation = EngineerTaskDelegation::where('id', $delegation_id)->update([
+            $update_delegation = EngineerTaskDelegation::where('id', $delegation_id)->first()?->update([
                 'option_type' => $option_type,
                 'status_after_service' => $status_after_service,
                 'status' => self::COMPLETED,

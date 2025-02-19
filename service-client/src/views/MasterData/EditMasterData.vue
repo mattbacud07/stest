@@ -18,9 +18,9 @@
                         class="text-none mr-2">
                         Cancel
                     </v-btn>
-                    <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary" variant="flat"
+                    <v-btn type="submit" :loading="loading" :disabled="!isChanged" color="primary" variant="flat"
                         class="text-none btnSubmit">
-                        <v-icon class="mr-2">mdi-note-plus-outline</v-icon> Create
+                        <v-icon class="mr-2">mdi-content-save-check-outline</v-icon> Save
                     </v-btn>
                 </v-col>
             </template>
@@ -52,179 +52,187 @@
                     </v-row>
                 </template>
                 <transition name="slide-x-transition" v-else>
-                    <v-container class="container-form mt-15" >
-                    <!-- Details 1 -->
-                    <v-card class="pa-7 mb-5">
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-combobox v-model="formData.institution" clearable label="Institution *"
-                                    density="compact" :items="institutions" variant="outlined" itemValue="id"
-                                    itemTitle="name" :rules="rule.institutionValue" :close-on-content-click="false"
-                                    hide-details @update:modelValue="getAddress($event)">
-                                </v-combobox>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.address" label="Address *"
-                                    density="compact" variant="outlined" readonly
-                                    onUpdate:Item="(newVal) => { address.value = newVal.key }" :rules="rule.address"
-                                    hide-details></v-text-field>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.item_code" label="Item Code" readonly
-                                    density="compact" variant="outlined"></v-text-field>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.description" label="Description"
-                                    readonly density="compact" variant="outlined"></v-text-field>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <!-- <v-col cols="12" lg="6" md="6" sm="6">
+                    <v-container class="container-form mt-15">
+                        <!-- Details 1 -->
+                        <v-card class="pa-7 mb-5">
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-combobox v-model="formData.institution" clearable label="Institution *"
+                                        density="compact" :items="institutions" variant="outlined" itemValue="id"
+                                        itemTitle="name" :rules="rule.institutionValue" :close-on-content-click="false"
+                                        hide-details @update:modelValue="getAddress($event)">
+                                    </v-combobox>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.address" label="Address *"
+                                        density="compact" variant="outlined" readonly
+                                        onUpdate:Item="(newVal) => { address.value = newVal.key }" :rules="rule.address"
+                                        hide-details></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.item_code" label="Item Code"
+                                        readonly density="compact" variant="outlined"></v-text-field>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.description" label="Description"
+                                        readonly density="compact" variant="outlined"></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <!-- <v-col cols="12" lg="6" md="6" sm="6">
                                 <v-text-field color="primary" v-model="formData.item_code" label="Item Code *" clearable
                                     density="compact" variant="outlined" readonly :rules="rule.item_code"
                                     @click="overlayMasterData = !overlayMasterData"></v-text-field>
                             </v-col> -->
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.equipment" label="Equipment *" clearable
-                                    density="compact" variant="outlined" :rules="rule.equipment"></v-text-field>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.serial" label="Serial Number *"
-                                    clearable density="compact" variant="outlined" :rules="rule.serial"></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-card>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.equipment" label="Equipment *"
+                                        clearable density="compact" variant="outlined"
+                                        :rules="rule.equipment"></v-text-field>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.serial" label="Serial Number *"
+                                        clearable density="compact" variant="outlined"
+                                        :rules="rule.serial"></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-card>
 
-                    <!-- Details 2 -->
-                    <v-card class="pa-7 mb-5">
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-select color="primary" v-model="formData.mode" label="Mode *" clearable
-                                    density="compact" variant="outlined" :rules="rule.mode" :items="mode"></v-select>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-combobox v-model="formData.supplier" clearable label="Supplier *" density="compact"
-                                    :items="supplierData" variant="outlined" itemValue="id" itemTitle="name"
-                                    :rules="rule.institutionValue" :close-on-content-click="false"
-                                    hide-details></v-combobox>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-select color="primary" v-model="formData.sbu" label="SBU *" clearable
-                                    density="compact" variant="outlined" :rules="[v => !!v || 'Required']"
-                                    :items="sbuArray"></v-select>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-select color="primary" v-model="formData.status" label="Status *" clearable
-                                    density="compact" variant="outlined" :rules="rule.status"
-                                    :items="master_data_status"></v-select>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.dealer_name" label="Dealer Name"
-                                    clearable density="compact" variant="outlined"></v-text-field>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-select color="primary" v-model="formData.area" label="Area Categorization" clearable
-                                    density="compact" variant="outlined" :items="area_categorization"></v-select>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-select color="primary" v-model="formData.operation_time" label="Operation Time"
-                                    clearable density="compact" variant="outlined" :items="operation_time"></v-select>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.software_version"
-                                    label="Software Version" clearable density="compact"
-                                    variant="outlined"></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-card>
+                        <!-- Details 2 -->
+                        <v-card class="pa-7 mb-5">
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-select color="primary" v-model="formData.mode" label="Mode *" clearable
+                                        density="compact" variant="outlined" :rules="rule.mode"
+                                        :items="mode"></v-select>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-combobox v-model="formData.supplier" clearable label="Supplier *"
+                                        density="compact" :items="supplierData" variant="outlined" itemValue="id"
+                                        itemTitle="name" :rules="rule.institutionValue" :close-on-content-click="false"
+                                        hide-details></v-combobox>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-select color="primary" v-model="formData.sbu" label="SBU *" clearable
+                                        density="compact" variant="outlined" :rules="[v => !!v || 'Required']"
+                                        :items="sbuArray"></v-select>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-select color="primary" v-model="formData.status" label="Status *" clearable
+                                        density="compact" variant="outlined" :rules="rule.status"
+                                        :items="master_data_status"></v-select>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.dealer_name" label="Dealer Name"
+                                        clearable density="compact" variant="outlined"></v-text-field>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-select color="primary" v-model="formData.area" label="Area Categorization"
+                                        clearable density="compact" variant="outlined"
+                                        :items="area_categorization"></v-select>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-select color="primary" v-model="formData.operation_time" label="Operation Time"
+                                        clearable density="compact" variant="outlined"
+                                        :items="operation_time"></v-select>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.software_version"
+                                        label="Software Version" clearable density="compact"
+                                        variant="outlined"></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-card>
 
-                    <!-- Details 3 -->
-                    <v-card class="pa-7 mb-5">
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-select color="primary" v-model="formData.frequency" label="Frequency for PM *"
-                                    clearable density="compact" variant="outlined" :rules="[v => !!v || 'Required']"
-                                    :items="pmFrequency"></v-select>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <p class="mb-2 text-grey-darken-1">Admission Date</p>
-                                <VueDatePicker v-model="formData.admission_date" auto-apply :enable-time-picker="false"
-                                    placeholder="Admission Date *" :rules="[v => !!v || 'Required']" />
+                        <!-- Details 3 -->
+                        <v-card class="pa-7 mb-5">
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-select color="primary" v-model="formData.frequency" label="Frequency for PM *"
+                                        clearable density="compact" variant="outlined" :rules="[v => !!v || 'Required']"
+                                        :items="pmFrequency"></v-select>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <p class="mb-2 text-grey-darken-1">Admission Date</p>
+                                    <VueDatePicker v-model="formData.admission_date" auto-apply
+                                        :teleport="true" :enable-time-picker="false" placeholder="Admission Date *"
+                                        :rules="[v => !!v || 'Required']" />
 
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <p class="mb-2 text-grey-darken-1">Date Installed</p>
-                                <VueDatePicker v-model="formData.date_installed" auto-apply :enable-time-picker="false"
-                                    placeholder="Date Installed" />
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <p class="mb-2 text-grey-darken-1">Contract Due Date</p>
-                                <VueDatePicker v-model="formData.contract_due_date" auto-apply
-                                    :enable-time-picker="false" placeholder="Contract Due Date" />
-                            </v-col>
-                        </v-row>
-                    </v-card>
-                    <v-card class="pa-7 mb-5">
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-select color="primary" v-model="formData.region" label="Region" clearable
-                                    density="compact" variant="outlined" :items="region"></v-select>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.analyzer_type" label="Analyzer Type *"
-                                    clearable density="compact" variant="outlined"
-                                    :rules="[v => !!v || 'Required']"></v-text-field>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.class" label="Class" clearable
-                                    density="compact" variant="outlined"></v-text-field>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-combobox color="primary" v-model="formData.initially_installed" clearable
-                                    label="Initially Installed" density="compact" :items="users" variant="outlined"
-                                    itemValue="id" itemTitle="first_name" :close-on-content-click="false" hide-details>
-                                    <template v-slot:item="{ item, props }">
-                                        <p v-bind="props">
-                                            <v-hover v-slot="{ isHovering, props }">
-                                                <p v-bind="props"
-                                                    :style="{ background: isHovering ? '#f2f2f2' : 'white' }"
-                                                    class="pa-2">{{ item.raw.first_name }} {{ item.raw.last_name }}</p>
-                                            </v-hover>
-                                        </p>
-                                    </template>
-                                    <template v-slot:selection="{ item, index }">
-                                        <span>{{ item.raw.first_name }} {{ item.raw.last_name }}</span>
-                                    </template>
-                                </v-combobox>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-text-field color="primary" v-model="formData.reason_equipment_status"
-                                    label="Reason for Equipment Status" clearable density="compact"
-                                    variant="outlined"></v-text-field>
-                            </v-col>
-                            <v-col cols="12" lg="6" md="6" sm="6" class="mb-5">
-                                <v-text-field color="primary" v-model="formData.email" label="Email" clearable
-                                    density="compact" variant="outlined"></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-card>
-                </v-container>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <p class="mb-2 text-grey-darken-1">Date Installed</p>
+                                    <VueDatePicker v-model="formData.date_installed" auto-apply
+                                        :teleport="true" :enable-time-picker="false" placeholder="Date Installed" />
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <p class="mb-2 text-grey-darken-1">Contract Due Date</p>
+                                    <VueDatePicker v-model="formData.contract_due_date" auto-apply
+                                        :teleport="true" :enable-time-picker="false" placeholder="Contract Due Date" />
+                                </v-col>
+                            </v-row>
+                        </v-card>
+                        <v-card class="pa-7 mb-5">
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-select color="primary" v-model="formData.region" label="Region" clearable
+                                        density="compact" variant="outlined" :items="region"></v-select>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.analyzer_type"
+                                        label="Analyzer Type *" clearable density="compact" variant="outlined"
+                                        :rules="[v => !!v || 'Required']"></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.class" label="Class" clearable
+                                        density="compact" variant="outlined"></v-text-field>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-combobox color="primary" v-model="formData.initially_installed" clearable
+                                        label="Initially Installed" density="compact" :items="users" variant="outlined"
+                                        itemValue="id" itemTitle="first_name" :close-on-content-click="false"
+                                        hide-details>
+                                        <template v-slot:item="{ item, props }">
+                                            <p v-bind="props">
+                                                <v-hover v-slot="{ isHovering, props }">
+                                                    <p v-bind="props"
+                                                        :style="{ background: isHovering ? '#f2f2f2' : 'white' }"
+                                                        class="pa-2">{{ item.raw.first_name }} {{ item.raw.last_name }}
+                                                    </p>
+                                                </v-hover>
+                                            </p>
+                                        </template>
+                                        <template v-slot:selection="{ item, index }">
+                                            <span>{{ item.raw.first_name }} {{ item.raw.last_name }}</span>
+                                        </template>
+                                    </v-combobox>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" lg="6" md="6" sm="6">
+                                    <v-text-field color="primary" v-model="formData.reason_equipment_status"
+                                        label="Reason for Equipment Status" clearable density="compact"
+                                        variant="outlined"></v-text-field>
+                                </v-col>
+                                <v-col cols="12" lg="6" md="6" sm="6" class="mb-5">
+                                    <v-text-field color="primary" v-model="formData.email" label="Email" clearable
+                                        density="compact" variant="outlined"></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-card>
+                    </v-container>
                 </transition>
             </template>
         </LayoutSinglePage>
@@ -232,7 +240,7 @@
 
 </template>
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useRouter, useRoute } from 'vue-router';
@@ -353,21 +361,40 @@ const editMasterData = async () => {
     btnLoading.value = true
     // console.log(formData.value)
     const { valid } = await form.value.validate()
+
+    if (!isChanged.value) {
+        toast.error('No changes made')
+        btnLoading.value = false
+        return
+    }
+
     if (!valid) {
         toast.error('Please ensure that required fields are not left blank')
         btnLoading.value = false
         return
     }
-
     try {
-        const response = await apiRequest.post('editMasterData',
+        const response = await apiRequest.put('editMasterData',
             {
+                id: id,
                 ...formData.value,
+                institution: typeof formData.value.institution === 'object'
+                    ? formData.value.institution?.id
+                    : formData.value.institution,
+
+                initially_installed: typeof formData.value.initially_installed === 'object'
+                    ? formData.value.initially_installed?.id
+                    : formData.value.initially_installed,
+
+                supplier: typeof formData.value.supplier === 'object'
+                    ? formData.value.supplier?.id
+                    : formData.value.supplier
             })
         if (response.data && response.data.success) {
-            toast.success('Item successfully added')
+            toast.success('Item successfully updated')
             btnDisable.value = true
-            router.push('/master-data')
+            getMasterDataByID()
+            // router.push('/master-data')
         } else {
             toast.error('Something went wrong')
         }
@@ -375,6 +402,7 @@ const editMasterData = async () => {
         console.error(error)
     } finally {
         btnLoading.value = false
+        btnDisable.value = false
     }
 }
 
@@ -410,7 +438,7 @@ const get_supplier = async () => {
 import { all_users } from '@/helpers/getUsers';
 const { users } = all_users()
 
-
+const orginalFormData = ref({})
 const getMasterDataByID = async () => {
     try {
         loading.value = true;
@@ -424,12 +452,18 @@ const getMasterDataByID = async () => {
         formData.value.address = data.institution_data?.address
         formData.value.item_code = data.master_data?.item_code
         formData.value.description = data.master_data?.description
+
+        orginalFormData.value = JSON.parse(JSON.stringify(formData.value))
     } catch (error) {
         console.log(error)
     } finally {
         loading.value = false;
     }
 };
+
+const isChanged = computed(() => {
+    return JSON.stringify(formData.value) !== JSON.stringify(orginalFormData.value)
+})
 
 /** Discard button */
 const discard = () => {

@@ -113,7 +113,7 @@ class EhMainApproverController extends Controller
                 return response()->json(['error' => 'Approver level or status not found'], 404);
             }
             if($level != $levelFromRequest){
-                return response()->json(['error' => 'Approver level does not match'], 404);
+                return response()->json(['errorMisMatch' => 'Approver level mismatch or already approved.'], 404);
             }
 
             if ($level === EH::IT_DEPARTMENT) {
@@ -133,16 +133,6 @@ class EhMainApproverController extends Controller
                         'receiving_option' => $receiving_option,
                     ];
                 } 
-                // elseif ($level === EH::INSTALLATION_TL) {
-                //     $level = EH::INSTALLATION_TL;
-
-                //     $engineer = $request->engineer ?? null;
-
-                //     $dataArray = [
-                //         'tl_assigned' => $user_id,
-                //         'assigned_date' => $date_now,
-                //         'installer' => $engineer
-                //     ];
                 // } elseif ($level === EH::INSTALLATION_ENGINEER) {
                 //     $level = EH::INSTALLATION_ENGINEER;
 

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Approvals;
 use App\Models\EhServicesModel as EH;
+use App\Models\WorkOrder\EquipmentPeripherals;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -21,9 +22,12 @@ class ApprovalService
             throw new Exception('Empty array of equipment. Failed to update serial number');
         } else {
             foreach ($items as $item) {
-                $update_item_peripheral = DB::table('equipment_peripherals')
-                    ->whereIn('id', [$item['id']]) // Wrap $item['id'] in an array
+                // $update_item_peripheral = DB::table('equipment_peripherals')
+                //     ->whereIn('id', [$item['id']]) // Wrap $item['id'] in an array
+                //     ->update(['serial_number' => $item['serial']]);
+                $update_item_peripheral = EquipmentPeripherals::whereIn('id', [$item['id']])
                     ->update(['serial_number' => $item['serial']]);
+
 
                 if (!$update_item_peripheral) {
                     throw new Exception('IT Level - Failed to update equipment peripherals.');
@@ -32,22 +36,6 @@ class ApprovalService
         }
     }
 
-    /** Update status of Request from IT to APM */
-    // public function updateStatus($service_id, $level)
-    // {
-    //     // $updateLevel = DB::table('equipment_handling')
-    //     $query = EH::find($service_id);
-    //     if (!$query) {
-    //         throw new Exception('No records found');
-    //     }
-
-    //     $updateLevel = $query->update([
-    //             'level' => $level
-    //         ]);
-    //     if (!$updateLevel) {
-    //         throw new Exception('Failed to update level of approver');
-    //     }
-    // }
 
     /** Update Status for General Query */
     public function updateStatusGeneral($service_id, $dataArray, $next_approver, $main_status)
@@ -67,7 +55,7 @@ class ApprovalService
             throw new Exception('Failed to update approver status');
         }
 
-        return true;
+        return $updateStatus;
     }
 
     /** Log Approvals */
@@ -83,19 +71,24 @@ class ApprovalService
         if (!$logApproval) {
             throw new Exception('Failed to log approval details');
         }
-
     }
 
     /** Update Log Approvals */
     public function updateLogApproval($service_id, $current_level, $status, $type, $new_status, $remarks, $acted_at)
     {
         $user_id = Auth::user()->id;
-        $query=Approvals::where([
+        $query = Approvals::where([
             'service_id' => $service_id,
             'level' => $current_level,
             'status' => $status,
             'type' => $type,
-        ])->update([
+        ])->first();
+
+        if (!$query) {
+            throw new Exception('Failed to update approval details');
+        }
+
+        $updated = $query->update([
             'service_id' => $service_id,
             'user_id' => $user_id,
             'status' => $new_status,
@@ -103,12 +96,7 @@ class ApprovalService
             'acted_at' => $acted_at
         ]);
 
-        if (!$query) {
-            throw new Exception('Failed to update approval details');
-        }
-
-        
-        return $query > 0;
+        return $updated;
     }
 
     /** Get Next Approval */
@@ -116,13 +104,13 @@ class ApprovalService
     {
         // $basedOnRequest = $request_type === EH::REQUEST_TYPE 
         $basedOnRequest = [];
-        if ($request_type !== EH::REQUEST_TYPE) { // if request_type is not Shipment/Delivery = 4
-            $basedOnRequest = [EH::INSTALLATION_TL, EH::INSTALLING];
+        if ($request_type != EH::REQUEST_TYPE) { // if request_type is not Shipment/Delivery = 4
+            $basedOnRequest = [EH::EH_SIGNATORY_COMPLETE, EH::INSTALLING];
         } else {
-            if ($receiving_option === EH::door_to_door) { // set in OUTBOUND Level
+            if ($receiving_option == EH::door_to_door) { // set in OUTBOUND Level
                 $basedOnRequest = [EH::S_WIM, EH::ONGOING];
             }
-            if ($receiving_option === EH::pickup) { // set in OUTBOUND Level
+            if ($receiving_option == EH::pickup) { // set in OUTBOUND Level
                 $basedOnRequest = [EH::S_OUTBOUND, EH::ONGOING];
             }
         }
@@ -139,10 +127,10 @@ class ApprovalService
             EH::S_WIM => [EH::S_BILLING_WIM, EH::ONGOING],
             // EH::S_SERVICE => [EH::S_BILLING_WIM, EH::ONGOING],
             EH::S_OUTBOUND => [EH::S_WIM, EH::ONGOING],
-            EH::S_BILLING_WIM => [EH::INSTALLATION_TL, EH::INSTALLING],
+            EH::S_BILLING_WIM => [EH::EH_SIGNATORY_COMPLETE, EH::INSTALLING],
 
-            EH::INSTALLATION_TL => [EH::INSTALLATION_ENGINEER, EH::INSTALLING],
-            EH::INSTALLATION_ENGINEER => [EH::EH_SIGNATORY_COMPLETE, EH::COMPLETE]
+            // EH::INSTALLATION_TL => [EH::INSTALLATION_ENGINEER, EH::INSTALLING],
+            // EH::INSTALLATION_ENGINEER => [EH::EH_SIGNATORY_COMPLETE, EH::COMPLETE]
         ];
 
         return $levels[$current_level] ?? throw new Exception('Invalid approver');
