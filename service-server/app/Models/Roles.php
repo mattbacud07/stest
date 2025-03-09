@@ -43,4 +43,5 @@ class Roles extends LogsBaseModel
     public const engineerRoleID = 3;
     public const OutboundRoleID = 4;
     public const requestorID = 5;
+    public const NationalManagerID = 7;
 }

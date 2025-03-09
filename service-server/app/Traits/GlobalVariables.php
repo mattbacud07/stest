@@ -21,6 +21,7 @@ trait GlobalVariables
     public const UNINSTALLING = 'Uninstalling';
     public const RETURNEDHEAD = 'Returned to Head';
     public const SENTWAREHOUSE = 'Sent to Warehouse';
+    public const STORAGE_TEXT = 'For Storage';
 
 
 
@@ -32,7 +33,7 @@ trait GlobalVariables
     public const IS = 'is';
     public const PM = 'pm';
     public const CM = 'cm';
-    
+
 
     /** 
      * Internal Servicing Status
@@ -47,12 +48,18 @@ trait GlobalVariables
         // 'Endorsed' => 7,
         'ConfirmedByWIM' => 8,
     ];
-        //  Ongoing = 1;
-        //  I_PACKED_ENDORSED = 2;
-        //  I_COMPLETE = 3;
-        //  I_DISAPPROVED = 4;
-        //  I_RESCHEDULE = 5;
-    
+    //  Ongoing = 1;
+    //  I_PACKED_ENDORSED = 2;
+    //  I_COMPLETE = 3;
+    //  I_DISAPPROVED = 4;
+    //  I_RESCHEDULE = 5;
+
+
+
+    /** MODE */
+    public const PURCHASED = 2;
+    public const REAGENT = 3;
+
 
 
     /**
@@ -61,6 +68,4 @@ trait GlobalVariables
     public const REPORT_NUMBER_PREFIX = 'JOF';
     public const REPORT_NUMBER_SR = 'SR';
     public const REPORT_NUMBER_PR = 'PR';
-
-
 }

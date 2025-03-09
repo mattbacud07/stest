@@ -1,6 +1,6 @@
 <template>
     <v-row>
-        <v-col cols="12" xl="4" lg="4" md="4" sm="6" style="margin-left: 50%;transform: translateX(-50%);">
+        <v-col cols="12" xl="3" lg="3" md="3" sm="6" style="margin-left: 50%;transform: translateX(-50%);">
 
             <p class="small">Hi! Welcome back.</p>
             <v-form @submit.prevent="loginProcess" ref="form">

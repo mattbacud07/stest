@@ -20,7 +20,11 @@
                             }}</span>
                     </template>
                     <template #level="data">
-                        <span>{{ pullout_approver(data.value.level) }}</span>
+                            <span>{{ pullout_approver(data.value.level) }}
+                                <v-tooltip activator="parent" location="left" v-if="data.value.level === 1">
+                                    {{ data.value.role_user?.supervisor?.supervisor_name ?? '---' }}
+                                </v-tooltip>
+                            </span>
                     </template>
                     <template #status="data">
                             <span>
@@ -91,7 +95,7 @@ const cols =
         { field: 'id', title: 'Report Number', isUnique: true, type: 'number', hide: false },
         { field: 'name', title: 'Institution', hide: false },
         { field: 'address', title: 'Address', hide: false },
-        { field: 'requested_by', title: 'Requested by' },
+        { field: 'requestedBy', title: 'Requested by' },
         { field: 'proposed_pullout_date', title: 'Proposed Pullout Date', type: 'date', hide: false },
         { field: 'created_at', title: 'Date Requested', type: 'date', hide: false },
         { field: 'level', title: 'Pending Approval', hide: false }, //minWidth : '300px' 
@@ -154,7 +158,6 @@ const actions = {
 }
 
 provide('data', actions)
-
 
 const getRequest = async () => {
     try {

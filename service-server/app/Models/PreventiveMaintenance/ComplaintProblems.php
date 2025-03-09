@@ -6,25 +6,23 @@ use App\Models\LogsBaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PMActions extends LogsBaseModel
+class ComplaintProblems extends LogsBaseModel
 {
     use HasFactory;
 
-    protected $table = 'pm_actions';
+    protected $table = 'complaint_problem';
 
     public $timestamps = true;
 
     protected $fillable = [
-        'maintenance_id',
-        'actions',
+        'service_id',
+        'text',
         'type',
         'work_type',
     ];
 
 
     /** Actions Type */
-    public const complaint = 'Complaint';
-    public const problem = 'Problem';
-    public const actions_taken = 'ActionsTaken';
-    public const Remarks = 'Remarks';
+    public const complaint = 'complaint';
+    public const problem = 'problem';
 }

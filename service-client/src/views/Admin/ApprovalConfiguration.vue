@@ -12,14 +12,6 @@
             <v-window-item value="SetApprovalDesignation">
                 <SetApprovalDesignation class="mt-3" />
             </v-window-item>
-
-            <!-- <v-window-item value="one">
-                    <SetApprovals class="mt-3" />
-                </v-window-item>
-
-                <v-window-item value="two">
-                    <ViewApprover class="mt-3" :key="viewApproverKey"/>
-                </v-window-item> -->
         </v-window>
     </BaseLayout>
 </template>
@@ -28,14 +20,10 @@
 import { ref } from 'vue'
 import BaseLayout from '@/components/layout/MainLayout/BaseLayout.vue';
 import SetApprovalDesignation from '@/components/ApprovalConfiguration/SetApprovalDesignation.vue';
-// import SetApprovals from './SetApprovals.vue';
-// import ViewApprover from './ViewApprover.vue';
+
 
 const viewApproverKey = ref(0)
 
 const tab = ref('SetApprovalDesignation')
 
-// watch (tab, (newValue) => {
-//     viewApproverKey.value++
-// })
 </script>

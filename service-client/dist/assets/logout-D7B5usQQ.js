@@ -1,0 +1,1 @@
+import{aS as a,c as e,b as r,B as s}from"./index-C8ph-EQq.js";const n=s,u=a("Logout",{actions:{async log_me_out(){const t=e();try{const o=await r.post(n+"api/log-me-out",null,{headers:{Authorization:`Bearer ${t.tokenData}`}});if(o.data&&o.data.isLogout)localStorage.clear();else return"Something wrong"}catch(o){return"Something went wrong"+o}}}});export{u as l};

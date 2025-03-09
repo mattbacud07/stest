@@ -25,14 +25,6 @@ export const PULLOUT = 'pullout'
 
 
 /** Roles */
-export const adminRole = 10
-export const adminServiceRole = 'Admin'
-export const approverRole = 'Approver'
-export const engineerRole = 'Engineer'
-export const TLRole = 'Team Leader'
-export const wimPersonnel = 'WIM Personnel'
-
-
 export const adminServiceRoleID = 6
 export const approverRoleID = 1
 export const TLRoleID = 2
@@ -42,7 +34,6 @@ export const requestorID = 5
 export const NationalServiceManagerID = 7
 export const SBUServiceAssistantID = 8
 
-export const rolesArray = [adminServiceRole, approverRole, engineerRole, TLRole, wimPersonnel]
 export const rolesObject = [
     { title: 'Approver', value: 1 },
     { title: 'Team Leader', value: 2 },
@@ -92,6 +83,7 @@ export const S_BILLING_WIM = 11;
 
 export const INSTALLATION_TL = 18;
 export const INSTALLATION_ENGINEER = 19;
+export const OPERATION_COMPLETED = 20;
 
 export const approverArray = [
     IT_DEPARTMENT, SM_SER, WIM, SERVICE_TL,
@@ -99,6 +91,13 @@ export const approverArray = [
     INSTALLATION_TL, INSTALLATION_ENGINEER,
     S_WIM, S_BILLING_WIM, S_OUTBOUND
 ];
+export const satelliteOfficesLevel = [
+    S_IT_DEPARTMENT,
+    S_SM_SER,
+    S_WIM,
+    S_OUTBOUND,
+    S_BILLING_WIM,
+]
 
 /** Set Config Approver Designation - Installation */
 export const approver_designation = [
@@ -112,7 +111,8 @@ export const approver_designation = [
     { key: '[Satellite Office] - Outbound Personnel (Receiving)', value: S_OUTBOUND },
     { key: '[Satellite Office] - Billing & Invoicing', value: S_BILLING_WIM },
     { key: 'Service Engineer Delegation', value: INSTALLATION_TL },
-    { key: 'Installing', value: INSTALLATION_ENGINEER },
+    { key: 'Service Engineer Delegation', value: INSTALLATION_ENGINEER },
+    { key: 'Installed', value: OPERATION_COMPLETED },
 ];
 export const getApproverByLevel = (level, category) => {
     //EH
@@ -155,6 +155,7 @@ export const DISAPPROVED = 2;
 export const INTERNAL_SERVICING = 3;
 export const INSTALLING = 4;
 export const COMPLETE = 5;
+export const STORAGE = 6;
 
 
 /** Set Job Order Status */
@@ -163,10 +164,11 @@ export const JOStatus = [
     { key: DISAPPROVED, text: 'Disapproved', color: 'red' },
     { key: INTERNAL_SERVICING, text: 'Internal Servicing Ongoing', color: 'orange' },
     { key: INSTALLING, text: 'Installing', color: 'violet' },
-    { key: COMPLETE, text: 'Completed', color: 'green' }
+    { key: COMPLETE, text: 'Completed', color: 'green' },
+    { key: STORAGE, text: 'For Storage', color: 'grey' }
 ]
 export const setJOStatus = (key) => {
-    return JOStatus.find(v => v.key === key) || { color: 'brown', text: ''}
+    return JOStatus.find(v => v.key === key) || { color: 'brown', text: '' }
 }
 
 
@@ -176,12 +178,13 @@ export const setJOStatus = (key) => {
 /** 
  * Set Internal Servicing Status 
  */
-    export const I_DELEGATED = 'Delegated'
-    export const I_DECLINED = 'Declined'
-    export const I_INPROGRESS = 'In Progress'
-    export const I_COMPLETED = 'Completed'
-    export const I_RETURNEDHEAD = 'Returned to Head'
-    export const I_WAREHOUSE = 'Sent to Warehouse'
+export const I_DELEGATED = 'Delegated'
+export const I_DECLINED = 'Declined'
+export const I_INPROGRESS = 'In Progress'
+export const I_COMPLETED = 'Completed'
+export const I_RETURNEDHEAD = 'Returned to Head'
+export const I_WAREHOUSE = 'Sent to Warehouse'
+export const I_STORAGE = 'For Storage'
 
 export const internalStatus = [
     { key: 1, text: I_DELEGATED, color: 'blue' },
@@ -190,6 +193,7 @@ export const internalStatus = [
     { key: 4, text: I_COMPLETED, color: 'green' },
     { key: 5, text: I_RETURNEDHEAD, color: 'purple' },
     { key: 6, text: I_WAREHOUSE, color: 'indigo' },
+    { key: 7, text: I_STORAGE, color: 'grey' },
 ];
 
 /** Find Internal Servicing Status */
@@ -243,6 +247,8 @@ export const requestType = (rtype) => {
         return "Internal Request";
     }
 }
+
+export const requestTypeShipment = 4 //If Request is for Shipment then Process the Shipment Flow
 
 
 

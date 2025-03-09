@@ -685,24 +685,6 @@ const getServiceMasterData = async () => {
     loading_md.value = false;
 };
 
-// const get_institution = async () => {
-//     try {
-//         loadingInstitution.value = true;
-//         const response = await apiRequest.get('get_institution');
-
-//         institutionData.value = response.data.institutions.map(institution => {
-//             return {
-//                 key: institution.name,
-//                 value: institution.address,
-//                 institution_id: institution.id,
-//             }
-//         })
-//     } catch (error) {
-//         console.log(error)
-//     }
-
-//     loadingInstitution.value = false;
-// };
 
 // debounce initialization
 const debounceSearch = debounce(getMasterData, 300)

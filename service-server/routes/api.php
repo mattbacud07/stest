@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\Roles;
 use App\Http\Controllers\Admin\SSUController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\authController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\ehController\ChecklistItem;
 use App\Http\Controllers\ehController\EhMainApproverController;
 use App\Http\Controllers\ehController\EhMainController;
@@ -57,7 +58,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/save-pm-sched', [PMSettings::class, 'pm_schedule']);
         Route::put('/edit-pm-sched', [PMSettings::class, 'edit_pm_schedule']);
         Route::get('/get-pm-sched', [PMSettings::class, 'get_pm_schedule']);
-        Route::get('/getStandardActions', [PMSettings::class, 'getStandardActions']);
         Route::post('/saveAction', [PMSettings::class, 'saveAction']);
         Route::delete('/deleteAction', [PMSettings::class, 'deleteAction']);
         Route::put('/editActions', [PMSettings::class, 'editActions']);
@@ -93,6 +93,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     /** =============================== END OF ADMIN =================================== */
+    Route::get('/getStandardActions', [PMSettings::class, 'getStandardActions']); //Acccessible to Service Engineer
 
 
     /** Master Data */
@@ -117,6 +118,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     /** Service Action Controller */
     Route::get('/get-engineers-data', [ServiceActionController::class, 'get_engineers_data']);
+    // Route::update('/update_status_closed', [Controller::class, 'update_status_closed']);
 
 
     // Equipment Handling -> Internal Servicing
@@ -137,6 +139,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     /** == Equipment Handling - Delegation & Installation ===== */
     Route::post('/delegate-engineer', [EquipmentHandlingInstallation::class, 'delegate_engineer']);
     Route::post('/accept-decline-delegate', [EquipmentHandlingInstallation::class, 'accept_decline_delegate']);
+    Route::post('/mark_as_completed', [EquipmentHandlingInstallation::class, 'mark_as_completed']);
 
 
 
@@ -162,11 +165,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get-preventive-maintenance', [PreventiveMaintenance::class, 'get_preventive_maintenance']);
     Route::get('/get_pm_record_details', [PreventiveMaintenance::class, 'get_pm_record_details']);
     Route::post('/createPMRequest', [PreventiveMaintenance::class, 'createPMRequests']);
-    Route::post('/pm_process', [PreventiveMaintenance::class, 'pm_process']);
-    Route::post('/pm_accepted', [PreventiveMaintenance::class, 'pm_accepted']);
-    Route::post('/pm_decline', [PreventiveMaintenance::class, 'pm_decline']);
+    Route::post('/pm_delegate_engineer', [PreventiveMaintenance::class, 'pm_delegate_engineer']);
+    Route::post('/accept-decline-delegated', [PreventiveMaintenance::class, 'accept_decline']);
+    Route::post('/in-transit', [PreventiveMaintenance::class, 'in_transit']);
+    Route::post('/start-task', [PreventiveMaintenance::class, 'start_task']);
     Route::post('/pm_task_processing', [PreventiveMaintenance::class, 'pm_task_processing']);
-    Route::get('/getStandardActions', [PreventiveMaintenance::class, 'getStandardActions']);
+    Route::delete('/delete_pm/{id}', [PreventiveMaintenance::class, 'delete_pm']);
+    // Route::get('/getStandardActions', [PreventiveMaintenance::class, 'getStandardActions']);
 
     Route::get('/spareparts', [PMSparepartsUsed::class, 'view']);
     Route::post('/sendToCM', [SendToCM::class, 'sendToCM']); //send to CM

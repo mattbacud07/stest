@@ -51,7 +51,8 @@
 
                         <v-btn variant="tonal" :disabled="btnDisable" @click="dialogDelete = true" color="error"
                             v-if="enableDelete" class="text-none mr-1">
-                            <v-icon>mdi-trash-can</v-icon> {{ width < 768 ? '' : 'Delete' }} <v-dialog
+                            <v-icon>mdi-trash-can</v-icon> {{ width < 768 ? '' : 'Delete' }} 
+                            <v-dialog
                                 v-model="dialogDelete" max-width="340">
                                 <template v-slot:default="{ isActive }">
                                     <v-card prepend-icon="mdi-trash-can" text="Are you sure you want to delete?"
@@ -76,10 +77,11 @@
                             </v-icon>
                             {{ width < 768 ? '' : 'View' }} </v-btn>
 
-                                <v-btn @click="handleEdit" color="primary" variant="tonal" class="text-none mr-1"
-                                    :disabled="btnDisable">
+                                <v-btn @click="handleEdit" v-if="can('edit', MD) || can('edit', PM) || can('edit', CM)" color="primary"
+                                    variant="tonal" class="text-none mr-1" :disabled="btnDisable">
                                     <v-icon>mdi-pencil</v-icon>
                                     {{ width < 768 ? '' : ' Edit' }} </v-btn>
+
                                         <v-btn @click="handleCreate" v-if="details?.createRequest" color="primary"
                                             variant="flat" class="text-none"> <!--- v-if="enableCreate"-->
                                             <v-icon>mdi-plus</v-icon>
@@ -98,7 +100,6 @@
 
     </v-app>
 </template>
-
                                 <script setup>
                                 import { ref, inject, provide, watch, onMounted, defineEmits, computed } from 'vue'
                                 import BaseSidebar from '../Sidebars/BaseSidebar.vue';
@@ -109,6 +110,7 @@
 
                                 /** CAstl Permission */
                                 import { permit } from '@/castl/permitted';
+                                import { CM, EH, IS, MD, PM } from '@/global/modules';
                                 const { can } = permit()
 
                                 const router = useRouter()
@@ -132,12 +134,6 @@
                                     emits('searchText', e.target.value)
                                 }
 
-                                // const service_id = 'service_id' in details ? details.service_id.value : null
-                                // const enableCreateFunction = () => {
-                                //     if (route.name === 'EquipmentHandling') {
-                                //         return enableCreate.value = true
-                                //     }
-                                // }
 
                                 /** Handle Table Refresh */
                                 const handleRefresh = () => {
@@ -161,7 +157,7 @@
                                             dialogDelete.value = false
                                         } catch (error) {
                                             console.error('Error in deleteFunction:', error);
-                                            // Optionally show an error message to the user
+
                                             toast.error('Failed to delete. Please try again.');
                                         } finally {
                                             btnDeleteLoading.value = false; // Ensures the loading state resets
@@ -172,17 +168,11 @@
 
                                 /** Handle View Redirection */
                                 const handleView = () => {
+                                    console.log(details?.selectedId.value)
+                                    console.log(details?.routeView.value)
                                     const params = {
                                         id: details?.selectedId.value
                                     }
-                                    // alert( params.id +' '+ details.routeView.value)
-                                    // if (service_id !== null) {
-                                    //     params.service_id = service_id;
-                                    // }
-                                    // console.log(details.work_type)
-                                    // if (details.work_type !== null && details.work_type !== '') {
-                                    //     params.work_type = details.work_type
-                                    // }
 
                                     router.push({ name: details?.routeView.value, params });
                                 }
@@ -210,10 +200,6 @@
                                     }
                                 }
 
-
-                                // onMounted(() => {
-                                //     enableCreateFunction()
-                                // })
 </script>
 
 

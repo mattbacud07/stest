@@ -3,6 +3,7 @@
 namespace App\Models\WorkOrder;
 
 use App\Models\authLogin\UserModel;
+use App\Models\ChecklistItemAcquired;
 use App\Models\EhServicesModel;
 use App\Models\EngineerTaskDelegation;
 use App\Models\LogsBaseModel;
@@ -27,15 +28,15 @@ class InternalRequest extends LogsBaseModel
         'current_assigned_to',
         'current_assigned_by',
         'remarks',
+        'option_type',
         'status',
         'created_at',
         'updated_at'
     ];
 
-    /** Relationship of created work order to Internal Request servicing */
-    // public function equipment_handling(){
-    //     return $this->belongsTo(EhServicesModel::class, 'service_id', 'id');
-    // }
+    public const OPTION_TYPE_STORAGE = 'storage';
+    public const OPTION_TYPE_INSTALLATION = 'installation';
+    public const OPTION_TYPE_UNINSTALLATION = 'uninstallation';
 
     public function equipment_handling()
     {
@@ -49,7 +50,7 @@ class InternalRequest extends LogsBaseModel
 
     public function task_delegation()
     {
-        return $this->hasMany(EngineerTaskDelegation::class, 'service_id', 'id')
+        return $this->hasOne(EngineerTaskDelegation::class, 'service_id', 'id')
             ->where('type', self::IS)
             ->where('active', 1)
             ->select('engineer_task_delegation.*', 'u.first_name', 'u.last_name')
@@ -80,4 +81,7 @@ class InternalRequest extends LogsBaseModel
     {
         return $this->hasMany(EquipmentPeripherals::class, 'service_id', 'service_id');
     }
+
+
+
 }

@@ -46,7 +46,7 @@
                                         </template>
                                         <template v-slot:selection="{ item, index }">
                                             <span class="small text-primary" style="font-size: 12px;"><b>{{ item.title
-                                                    }}</b> <span class="text-disabled" v-if="item.title">- [SBU : {{
+                                            }}</b> <span class="text-disabled" v-if="item.title">- [SBU : {{
                                                         item.raw.sbu }}]</span></span>
                                         </template>
                                     </v-combobox>
@@ -54,7 +54,7 @@
                             </v-row>
                             <v-row justify="end" class="mt-7 mb-5">
                                 <v-btn variant="plain" @click="delegateDialog = false" color="primary"
-                                    class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                    class="text-none mr-2">
                                     Cancel</v-btn>
                                 <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="#191970" flat
                                     class="text-none bg-primary mr-5"><v-icon class="mr-2">mdi-check</v-icon>
@@ -69,13 +69,12 @@
                     <template v-slot:activator="{ props: activatorProps }">
 
                         <!-- Decline Button -->
-                        <v-btn type="button" v-bind="activatorProps" :loading="loading" :disabled="btnDisable"
-                            color="primary" variant="tonal" class="text-none mr-2" @click="openDialog('declined')">
-                            <v-icon class="mr-2">mdi-close</v-icon> Decline
+                        <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable" color="primary"
+                            variant="plain" class="text-none mr-2" @click="openDialog('declined')"> Decline
                         </v-btn>
 
-                        <v-btn type="button" v-bind="activatorProps" :loading="loading" :disabled="btnDisable"
-                            color="primary" variant="flat" class="text-none" @click="openDialog('accepted')">
+                        <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable" color="primary"
+                            variant="flat" class="text-none" @click="openDialog('accepted')">
                             <v-icon class="mr-2">mdi-check</v-icon> Accept
                         </v-btn>
 
@@ -95,13 +94,17 @@
                                 <v-btn variant="plain" @click="AcceptDeclineDialog = false" color="primary"
                                     class="text-none mr-2">
                                     Cancel</v-btn>
-                                <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="#191970" plain
-                                    class="text-none bg-primary mr-5">
+                                <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary"
+                                    variant="flat" class="text-none mr-5">
                                     {{ actionType === 'accepted' ? 'Accept' : 'Decline' }}</v-btn>
                             </v-row>
                         </v-form>
                     </v-card>
                 </v-dialog>
+            </template>
+            <template v-if="can('installer', EH) && canSetComplete">
+                <v-btn @click="markAsCompleted" text="Mark as Completed" :disabled="btnDisable" color="primary"
+                    variant="flat" class="text-none mr-5" />
             </template>
         </template>
         <!-- <v-form ref="form"> @submit.prevent="submitWorkOrder" ref="form" -->
@@ -125,53 +128,57 @@
             </template>
             <template v-else>
                 <transition name="slide-x-transition">
-                    <v-card class="mt-5" elevation="0">
-                        <!-- <v-chip class="ma-2" color="purple" label>
-                            <strong>&nbsp;{{ pub_var.getApproverByLevel(request.level, 1) }}</strong>
-                            <v-tooltip activator="parent" location="bottom">Pending approval</v-tooltip>
-                        </v-chip> -->
-                        <v-chip class="ma-2" color="purple" label>
-                            <v-tooltip activator="parent" location="bottom">Status</v-tooltip>
-                            <strong>&nbsp;{{ eh_installation?.status ?? 'Declined'}}</strong>
-                        </v-chip>
-                    </v-card>
+                    <v-chip class="ma-2 mt-5" color="purple" label>
+                        <v-tooltip activator="parent" location="bottom">Status of Installation</v-tooltip>
+                        &nbsp;{{ latestTaskDelegation?.status ?? '---' }}
+                    </v-chip>
                 </transition>
 
-                <RequestDetails :request_data="request" />
+                <ServiceReportForm v-model="service_report_data" ref="serviceFormRef"
+                    v-if="can('installer', IS) && canSetComplete" />
+
+                <RequestDetails :request_data="details" />
 
                 <RequestType :request_data="request" />
             </template>
 
             <v-card class="mt-10">
-                <v-tabs v-model="tab" density="compact" class="border-b-sm" bg-color="grey-lighten-5">
+                <v-tabs v-model="tab" density="compact" class="border-b-sm">
                     <div class="d-flex">
                         <v-tab value="equipments" class="text-none"><v-icon class="mr-2">mdi-hammer-screwdriver</v-icon>
-                            Requested
-                            Equipments</v-tab>
+                            Requested Equipments</v-tab>
                         <v-tab value="history" class="text-none"><v-icon class="mr-2">mdi-account-details</v-icon>
                             Approval Requirements</v-tab>
                     </div>
                     <v-spacer></v-spacer>
                     <div>
-                        <v-tab value="delegation_details" :disabled="loading" class="text-none" color="primary"><v-icon
+                        <v-tab value="delegation_details" class="text-none" color="primary"><v-icon
                                 class="mr-2">mdi-gesture-tap-button</v-icon> Delegation
                             Details</v-tab>
+                        <v-tab value="service_report" class="text-none" color="primary"><v-icon
+                                class="mr-2">mdi-poll</v-icon>
+                            Service Report</v-tab>
                     </div>
                 </v-tabs>
 
                 <v-card-text>
-                    <v-window v-model="tab" :disabled="true">
+                    <v-window v-model="tab">
                         <!-- <v-window-item value="request_type"></v-window-item> -->
                         <v-window-item value="equipments">
-                            <RequestedEquipments :service_id="id" @get-equipment="getEquipments"
-                                :editSerial="request.level !== IT_DEPARTMENT ? false : true" :category="pub_var.EH" />
+                            <RequestedEquipments :equipments="equipments" />
                         </v-window-item>
                         <v-window-item value="history">
-                            <ApproverHistoryLog :service_id="id" :status="request.main_status" />
+                            <ApproverHistoryLog :history="history" :status="request.main_status" />
                         </v-window-item>
                         <v-window-item value="delegation_details">
-                            <InternalServicingActivity :id="id" :key="refreshKey"
-                                :internalData="request" />
+                            <InternalServicingActivity :internalData="request" />
+                        </v-window-item>
+                        <v-window-item value="service_report">
+                            <ServiceReportData 
+                            :task_delegation="task_delegation" 
+                            :actions_taken="actions_taken"
+                            :spareparts="spareparts"
+                             />
                         </v-window-item>
                     </v-window>
                 </v-card-text>
@@ -182,7 +189,7 @@
     </LayoutSinglePage>
 </template>
 <script setup>
-import { ref, watch, onMounted, provide, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify'
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
@@ -195,7 +202,7 @@ import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vu
 import ApproverHistoryLog from '@/components/Approver/EH/ApproverHistoryLog.vue'
 import RequestDetails from '@/components/Approver/EH/RequestDetails.vue';
 import * as pub_var from '@/global/global'
-import { IT_DEPARTMENT } from '@/global/global';
+
 
 /** Toast Notification */
 import { useToast } from 'vue-toast-notification'
@@ -246,11 +253,10 @@ const navigateTo = (item) => {
     }
 };
 
-
 /** ========================== Delegation of Engineers ======================== */
 /** Fetch All Service Engineers */
 import { users_engineers } from '@/helpers/getUsers';
-import { EH } from '@/global/modules';
+import { A_EH, EH, IS } from '@/global/modules';
 import InternalServicingActivity from '@/components/Approver/EH/InternalServicingActivity.vue';
 const { engineers } = users_engineers()
 
@@ -273,8 +279,7 @@ const delegateEngineer = async () => {
         })
         if (response.data?.success) {
             toast.success('Successfully delegated')
-            if (typeof (disableButton) === 'function') disableButton()
-            refreshData()
+            getRequest()
         } else if (response?.data?.exist) {
             toast.warning('Request already exist.')
         }
@@ -300,13 +305,13 @@ const AcceptDeclineRequest = async () => {
     try {
         const response = await apiRequest.post('accept-decline-delegate', {
             service_id: id,
-            delegation_id: eh_installation.value.id,
+            delegation_id: task_delegation.value.id,
             status: actionType.value,
             remarks: remarks.value
         })
         if (response.data?.success) {
             toast.success('Successful')
-            refreshData()
+            getRequest()
         }
     } catch (error) {
         alert(error)
@@ -319,21 +324,146 @@ const AcceptDeclineRequest = async () => {
 
 
 
+
+/** Servie Report Details */
+// const markAsCompletedForm = ref(false)
+const serviceFormRef = ref(null)
+const service_report_data = ref({
+    status_after_service: '',
+    fields: [],
+    spareparts: [],
+    remarks : ''
+})
+
+
+/** ========================== Set as Completed ======================== */
+const delegation_id = ref(null)
+const markAsCompleted = async () => {
+    btnLoading.value = true
+    btnDisable.value = true
+    const valid = await serviceFormRef.value?.validateServiceForm()
+    if (!valid) {
+        btnLoading.value = false
+        btnDisable.value = false
+        return
+    }
+    if (service_report_data.value.fields?.length === 0) {
+        toast.error('Required actions taken')
+        btnLoading.value = false
+        btnDisable.value = false
+        return
+    }
+    const checkIfTheresEmpty = service_report_data.value?.fields?.some(val => {
+        if (typeof val.action === 'string') {
+            return val.action.trim() === '';
+        }
+        return val.action === undefined || val === null;
+    });
+    const checkIfPartsAreEmpty = computed(() => {
+        if (!service_report_data.value?.spareparts?.length) return false;  // Ensure a valid return value
+
+        return service_report_data.value.spareparts.some(part =>
+            [part.qty, part.dr, part.si].some(field =>
+                field === null || field === undefined || (typeof field === 'string' && field.trim() === '')
+            )
+        );
+    });
+
+    if (checkIfTheresEmpty || checkIfPartsAreEmpty.value) {
+        btnLoading.value = false
+        btnDisable.value = false
+        toast.error('Please fill in required fields');
+        return;
+    }
+
+
+    try {
+        const response = await apiRequest.post('mark_as_completed', {
+            id: id,
+            delegation_id: delegation_id.value,
+            ...service_report_data.value
+        })
+        if (response.data && response.data.success) {
+            toast.success('Operation completed successfully')
+            getRequest()
+        } else {
+            toast.error(response.data.error)
+        }
+    } catch (error) {
+        console.log(error)
+    } finally {
+        btnLoading.value = false
+        btnDisable.value = false
+    }
+}
+
+
+
 /** ================================================= Get Request Data ==================================== */
 const loading = ref(false)
 const request = ref({})
-const eh_installation = ref({})
+const details = ref({})
+const task_delegation = ref({})
+const latestTaskDelegation = ref({})
+const actions_taken = ref([])
+const spareparts = ref([])
+const equipments = ref([])
+const history = ref([])
 const getRequest = async () => {
     try {
         loading.value = true
         const response = await apiRequest.get('get-specific-equipment-handling', {
             params: {
                 service_id: id,
+                module_type: A_EH
             },
         });
         if (response?.data?.request) {
-            request.value = response.data?.request
-            eh_installation.value = response.data.request?.task_delegation
+            const result = response.data?.request
+            request.value = result
+
+            details.value = {
+                full_name: result.users?.full_name,
+                institution: result.institution?.name,
+                address: result.institution?.address,
+                proposed_delivery_date: result?.proposed_delivery_date,
+                created_at: result?.created_at,
+            }
+
+            task_delegation.value = result.task_delegation
+            actions_taken.value = result.task_delegation?.actions_taken
+            spareparts.value = result.task_delegation?.spareparts
+            latestTaskDelegation.value = result.latest_task_delegation
+            equipments.value = result.equipments
+
+            history.value = result.approval_logs?.filter(v => ![18, 19, 20].includes(v.level) && v.acted_at !== null)
+                .map(data => {
+                    const serviceApprover = data?.approvers?.filter(v => v.users?.department === service_department)
+                    const salesApprovers = data?.approvers?.filter(v => v.users?.department === sm_department)
+                    const approverBySatellite = data?.approvers?.filter(v => v.satellite === result?.satellite)
+                    const getEquipmentsSbu = result?.equipments.map(d => d.master_data?.sbu) || []
+                    const filteredByServiceDepartmentSBU = serviceApprover.filter(f => getEquipmentsSbu.includes(f.sbu))
+
+                    if (data.level === pub_var.OUTBOUND) {
+                        return { ...data, driver: result?.driver }
+                    }
+                    if (data.level === pub_var.SM_SER) {
+                        if (result.users?.department === service_department) {
+                            return { ...data, approvers: filteredByServiceDepartmentSBU }
+                        }
+                        return { ...data, approvers: salesApprovers }
+                    }
+                    if (data.level === pub_var.SERVICE_TL) {
+                        return { ...data, approvers: filteredByServiceDepartmentSBU }
+                    }
+                    if (pub_var.satelliteOfficesLevel.includes(data.level)) {
+                        return { ...data, approvers: approverBySatellite }
+                    }
+
+                    return data
+                });
+
+            delegation_id.value = result?.task_delegation?.id
         } else {
             alert('Something went wrong')
         }
@@ -347,37 +477,45 @@ const getRequest = async () => {
 };
 
 
-/** get Equipments in Requested Equipments Component */
-const getEquipments = (data) => {
-    equipment_sbu.value = data.map(v => v.sbu)
-}
-
 /** Show the Start of Internal Process = Delegation of Service Enginner */
 const rolesToAccess = [pub_var.TLRoleID, pub_var.SBUServiceAssistantID, pub_var.engineerRoleID]
 const user_sbu_as_approver = user.user.user_roles.find(v => rolesToAccess.includes(v.role_id))?.SBU
-const equipment_sbu = ref([])
+const equipment_sbu = computed(() => {
+    return equipments.value.map(v => v.master_data?.sbu)
+})
 
 /** Delegate Engineer ->  */
 const canDelegate = computed(() => {
-    if (eh_installation.value) return false
-    return request.value.main_status === pub_var.INSTALLING &&
-        equipment_sbu.value.includes(user_sbu_as_approver)
+    if (request.value.main_status === pub_var.INSTALLING &&
+        equipment_sbu.value.includes(user_sbu_as_approver)) {
+        if (!task_delegation.value || task_delegation.value?.status === 'Declined') return true
+    }
+    return false
 })
 
 /** Accept Decline the Delegation */
 const canAcceptDecline = computed(() => {
-    const assigned_to = eh_installation.value?.assigned_to
+    const assigned_to = task_delegation.value?.assigned_to
+    const isDelegated = task_delegation.value?.status === 'Delegated'
     const user_id = user.user.id
-    return request.value.main_status === pub_var.INSTALLING && assigned_to === user_id
+    return request.value.main_status === pub_var.INSTALLING
+        && assigned_to === user_id && isDelegated
 })
 
+const canSetComplete = computed(() => {
+    const assigned_to = task_delegation.value?.assigned_to
+    const isAccepted = task_delegation.value?.status === 'Accepted'
+    const user_id = user.user.id
+    return request.value.main_status === pub_var.INSTALLING
+        && assigned_to === user_id && isAccepted
+})
 
-/** Refresh after Submitting Internal Servicing */
-const refreshKey = ref(0)
-const refreshData = () => {
-    getRequest()
-    refreshKey.value += 1
-}
+import ServiceReportData from '@/components/Approver/EH/ServiceReportData.vue';
+import ServiceReportForm from '@/components/Approver/EH/ServiceReportForm.vue';
+import { service_department, sm_department } from '@/global/department';
+
+
+
 
 onMounted(() => {
     getRequest()

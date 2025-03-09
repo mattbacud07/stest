@@ -58,12 +58,13 @@ class Pullout extends Controller
 
             $query = PM::select(
                 'pullout.*',
-                DB::raw('CONCAT(u.first_name, " ", u.last_name) as requested_by'),
+                DB::raw('CONCAT(u.first_name, " ", u.last_name) as requestedBy'),
                 'i.name', //institution name
                 'i.address',
             )
                 ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'pullout.requested_by', '=', 'u.id')
-                ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'pullout.institution', '=', 'i.id');
+                ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'pullout.institution', '=', 'i.id')
+                ->with(['roleUser.supervisor']);
             // ->get();
 
             /** Server mode Details */
@@ -85,27 +86,27 @@ class Pullout extends Controller
                 //                     $query->orWhere(function ($subQuery) use ($user_id) {
                 //                         $subQuery->where('pullout.level', PM::SUPERVISOR)
                 //                             ->whereExists(function ($existQuery) use ($user_id) {
-                //                                 $existQuery->select(DB::raw(1))
-                //                                     ->from('role_user as ru')
-                //                                     ->join(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'ru.user_id', 'u.id')
-                //                                     ->where('ru.supervisor_id', $user_id)
-                //                                     ->whereColumn('u.id', 'pullout.requested_by');
+                //                                     $existQuery->select(DB::raw(1))
+                //                                         ->from('role_user as ru')
+                //                                         ->join(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'ru.user_id', 'u.id')
+                //                                         ->where('ru.supervisor_id', $user_id)
+                //                                         ->whereColumn('u.id', 'pullout.requested_by');
                 //                             });
                 //                     });
                 //                 } //add more if neccessary
-                //                 // elseif($level == 2){
-                //                 //     $query->orWhere(function($subQuery) use($user_id){
-                //                 //         //for Operations Dept
-                //                 //         $subQuery->whereExists(function($existQuery) use($user_id){
-                //                 //             $existQuery->select(DB::raw(1))
-                //                 //                 ->from('role_user as ru')
-                //                 //                 ->join(DB::connection('mysqlSecond')->getDatabaseName() .'.users as u','ru.user_id','u.id')
-                //                 //                 ->join('service_master_data as smd', 'smd.id', '=', 'pullout.equipment_id')
-                //                 //                 ->where('u.department', PM::operations_dept)
-                //                 //                 ->whereColumn('ru.satellite',)
-                //                 //         });
-                //                 // });
-                //                 // }
+                //                 elseif($level == 2){
+                //                     $query->orWhere(function($subQuery) use($user_id){
+                //                         //for Operations Dept
+                //                         $subQuery->whereExists(function($existQuery) use($user_id){
+                //                             $existQuery->select(DB::raw(1))
+                //                                 ->from('role_user as ru')
+                //                                 ->join(DB::connection('mysqlSecond')->getDatabaseName() .'.users as u','ru.user_id','u.id')
+                //                                 ->join('service_master_data as smd', 'smd.id', '=', 'pullout.equipment_id')
+                //                                 ->where('u.department', PM::operations_dept)
+                //                                 ->whereColumn('ru.satellite');
+                //                         });
+                //                 });
+                //                 }
                 //                 else {
                 //                     $query->orWhere('pullout.level', $level);
                 //                 }
@@ -144,7 +145,10 @@ class Pullout extends Controller
     {
         try {
             $request_id = $request->id;
-            $data = PM::with(['pullout_decision_outbound' => function ($q) {
+            $data = PM::with('equipments')
+            ->with(['equipments.general_master_data'])
+            ->with(['equipments.master_data'])
+            ->with(['pullout_decision_outbound' => function ($q) {
                 $q->latest();
             }])
                 ->with(['pullout_decision_service' => function ($q) {
@@ -241,7 +245,8 @@ class Pullout extends Controller
         $remark = $request->remark;
         $request_level = $request->level;
         $date_now = Carbon::now();
-
+        $match = false;
+        $underOperationService = false;
 
         try {
             DB::beginTransaction();
@@ -308,7 +313,11 @@ class Pullout extends Controller
                     PulloutDecisionLog::where('service_id', $service_id)
                         ->where('status', 'Pending')
                         ->update(['status' => 'Agreed']);
+                        
+                    $match = true;
                 }
+                
+                $underOperationService = true;
             } else {
                 $nextApproval = $this->pullout_service->pulloutNextApprovalLevel($level);
                 [$next_approver, $status] = $nextApproval;
@@ -339,6 +348,8 @@ class Pullout extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
+                'matched' => $match,
+                'under_operation_service' => $underOperationService,
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();

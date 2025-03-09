@@ -5,6 +5,7 @@ namespace App\Models\PreventiveMaintenance;
 use App\Models\Admin\PMSetting;
 use App\Models\authLogin\UserModel;
 use App\Models\EhServicesModel;
+use App\Models\EngineerTaskDelegation;
 use App\Models\LogsBaseModel;
 use App\Models\MasterData;
 use App\Models\MasterDataInstitution;
@@ -13,10 +14,13 @@ use App\Models\WorkOrder\EquipmentPeripherals;
 use App\Models\WorksDone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class PreventiveMaintenance extends LogsBaseModel
 {
     use HasFactory;
+    use SoftDeletes;
 
 
     protected $table = 'preventive_maintenance';
@@ -29,32 +33,22 @@ class PreventiveMaintenance extends LogsBaseModel
         'service_id',
         'item_id',
         'requested_by',
+        'delegated_by',
+        'delegated_to',
         'institution',
         'date_installed',
         'scheduled_at',
-        'list_scheduled',
         'next_at',
-        'date_received',
-        'work_type',
-        'engineer',
-        'departed_date',
-        'start_date',
-        'end_date',
-        'travel_duration',
-        'work_duration',
-        'actions_done_id',
-        'remarks',
         'status',
-        'status_after_service',
         'tag',
-        'monitoring_end',
-        'signature',
+        'deleted_at',
     ];
 
 
 
     /** Status */
     public const Scheduled = 'Scheduled';
+    public const ReadyForDelegation = 'Ready for Delegation';
     public const NotSet = 'Not Set';
     public const Delegated = 'Delegated';
     public const Accepted = 'Accepted';
@@ -74,17 +68,47 @@ class PreventiveMaintenance extends LogsBaseModel
 
     /** Status after Service */
     public const operational = 'Operational';
-    public const further_monitoring = 'For Further Monitoring';
+    public const further_monitoring = 'Further Monitoring';
     public const non_operational = 'Non-Operational';
 
 
-    public function equipment(){
-        return $this->hasOne(MasterData::class, 'id', 'item_id');
+    public function institution()
+    {
+        return $this->belongsTo(MasterDataInstitution::class, 'institution', 'id')
+            ->select('id', 'name', 'address');
     }
-    public function frequency(){
-        return $this->hasOne(PM_Setting::class, 'equipment', 'item_id');
+    public function equipment()
+    {
+        return $this->belongsTo(ServiceMasterData::class, 'item_id', 'id')
+            ->select('id', 'equipment', 'serial', 'frequency', 'sbu');
     }
 
+
+    /** Task Delegation Section  */
+    public function task_delegation()
+    {
+        return $this->hasOne(EngineerTaskDelegation::class, 'service_id', 'id')
+            ->where('type', 'pm')
+            ->where('active', 1)
+            ->select('engineer_task_delegation.*', 'u.first_name', 'u.last_name')
+            ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'engineer_task_delegation.assigned_to', '=', 'u.id');
+    }
+
+    public function task_delegation_all()
+    {
+        return $this->hasMany(EngineerTaskDelegation::class, 'service_id', 'id')->where('type', 'pm');
+    }
+
+    public function latest_task_delegation()
+    {
+        return $this->hasOne(EngineerTaskDelegation::class, 'service_id', 'id')
+            ->latest(); // Orders by created_at DESC by default
+    }
+
+
+    // public function equipment(){
+    //     return $this->hasOne(MasterData::class, 'id', 'item_id');
+    // }
     // public function eh(){
     //     return $this->hasOne(EhServicesModel::class, 'id', 'service_id');
     // }
@@ -93,17 +117,17 @@ class PreventiveMaintenance extends LogsBaseModel
     //     return $this->hasOne(EquipmentPeripherals::class, 'id','equipment_peripheral_id');
     // }
 
-    public function user(){
-        return $this->hasOne(UserModel::class, 'id', 'engineer');
-    }
-    
-    public function service_equipment(){
-        return $this->hasOne(ServiceMasterData::class, 'id','item_id');
-    }
-    public function actions(){
-        return $this->hasMany(WorksDone::class, 'pm_id', 'id');
-    }
-    public function pm_actions(){
-        return $this->hasMany(PMActions::class, 'maintenance_id', 'id');
-    }
+    // public function user(){
+    //     return $this->hasOne(UserModel::class, 'id', 'engineer');
+    // }
+
+    // public function service_equipment(){
+    //     return $this->hasOne(ServiceMasterData::class, 'id','item_id');
+    // }
+    // public function actions(){
+    //     return $this->hasMany(WorksDone::class, 'pm_id', 'id');
+    // }
+    // public function pm_actions(){
+    //     return $this->hasMany(PMActions::class, 'maintenance_id', 'id');
+    // }
 }

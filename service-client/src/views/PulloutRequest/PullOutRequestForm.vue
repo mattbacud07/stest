@@ -52,8 +52,8 @@
                             </v-col>
                             <v-col :cols="column">
                                 <VueDatePicker v-model="formData.proposed_pullout_date" auto-apply
-                                    :min-date="new Date()" :enable-time-picker="false" :teleport="true" :state="dateState"
-                                    placeholder="Propose Pullout Date" />
+                                    :min-date="new Date()" :enable-time-picker="false" :teleport="true"
+                                    :state="dateState" placeholder="Propose Pullout Date" />
                             </v-col>
                         </v-row>
                         <!-- Equipment & Peripherals -->
@@ -104,10 +104,13 @@
 
                                     <!-- Overlay box for Equipment Peripherals -->
                                     <div class="d-flex justify-content-center">
-                                        <v-btn color="primary" size="medium" flat class="text-none mt-3 p-2"
+                                        <v-btn color="primary" size="medium" :disabled="total_rows_md === 0" flat class="text-none mt-3 p-2"
                                             @click="overlayMasterData = !overlayMasterData">
                                             <v-icon class="mr-3">mdi-database-cog</v-icon>
                                             Select Equipment
+                                            <template v-slot:append>
+                                                <v-badge color="warning" :content="total_rows_md" inline></v-badge>
+                                            </template>
                                         </v-btn>
                                         <v-overlay v-model="overlayMasterData"
                                             class="d-flex align-items-center justify-content-center"

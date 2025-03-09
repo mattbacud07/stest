@@ -54,13 +54,13 @@ class EhMainApproverController extends Controller
         $service_id = $request->service_id ?? 0;
         $category = $request->category ?? '';
         $equipments = EquipmentPeripherals::select(
-                'equipment_peripherals.*',
-                'equipment_peripherals.id as equipment_id',
-                'm.item_code as itemCode',
-                'm.description as itemDescription',
-                'md.serial',
-                'md.sbu'
-            )
+            'equipment_peripherals.*',
+            'equipment_peripherals.id as equipment_id',
+            'm.item_code as itemCode',
+            'm.description as itemDescription',
+            'md.serial',
+            'md.sbu'
+        )
             ->where([
                 'service_id' => $service_id,
                 'request_type' => $category,
@@ -104,7 +104,7 @@ class EhMainApproverController extends Controller
                 ->where('approver_category', EH::EH_INSTALLATION)
                 ->value('approval_level');
 
-            $getExternalRequestOption = EH::select('request_type')->where('id', $service_id)->first(); // Get External Option Request for Identifying Satellite Shipment
+            $getExternalRequestOption = EH::where('id', $service_id)->select('request_type')->first(); // Get External Option Request for Identifying Satellite Shipment
             $request_type = $getExternalRequestOption->request_type;
 
             $level = EH::where('id', $service_id)->value('level');
@@ -112,7 +112,7 @@ class EhMainApproverController extends Controller
             if (is_null($user_approver_level) || is_null($level)) {
                 return response()->json(['error' => 'Approver level or status not found'], 404);
             }
-            if($level != $levelFromRequest){
+            if ($level != $levelFromRequest) {
                 return response()->json(['errorMisMatch' => 'Approver level mismatch or already approved.'], 404);
             }
 
@@ -132,46 +132,7 @@ class EhMainApproverController extends Controller
                         'driver' => $driver,
                         'receiving_option' => $receiving_option,
                     ];
-                } 
-                // } elseif ($level === EH::INSTALLATION_ENGINEER) {
-                //     $level = EH::INSTALLATION_ENGINEER;
-
-                //     // $date_installed = Carbon::now();
-                //     $actions_done_data = [];
-                //     foreach ($request->actionsDone as $action) {
-                //         $actions_done_data[] = [
-                //             'serial' => $action['serial'],
-                //             'equipment_id' => $action['equipment_id'],
-                //             'service_id' => $action['service_id'],
-                //             'action' => $action['action'],
-                //             'work_type' => $action['work_type']
-                //         ];
-                //     }
-
-                //     /** Submit Actions Done */
-                //     $this->action->declare_actions_done($actions_done_data);
-
-                //     /** Get all the Equipments for automation of PM Sched */
-                //     $equipments = EquipmentPeripherals::select('equipment_peripherals.*', 'p.equipment', 'p.schedule', 'eh.institution', 'eh.ssu')
-                //         ->leftJoin('pm_setting as p', 'equipment_peripherals.item_id', '=', 'p.equipment')
-                //         ->leftJoin('equipment_handling as eh', 'equipment_peripherals.service_id', '=', 'eh.id')
-                //         ->where('equipment_peripherals.service_id', $service_id)
-                //         ->where('equipment_peripherals.category', 'Equipment')
-                //         ->where('equipment_peripherals.request_type', self::EH)
-                //         ->get();
-
-                //     /** Get External Request Option */
-                //     $externalRequestOptionArray = [IEModel::ReagentTieup, IEModel::Purchased]; //remove 5, accrding to SDpt
-
-                //     if ($getExternalRequestOption && in_array($request_type, $externalRequestOptionArray)) {
-                //         $this->generatePMSched->calculateNextPMSchedule($date_now, $equipments);
-                //     }
-
-                //     /** Update for Equipment Installation */
-                //     $dataArray = [
-                //         'date_installed' => $date_now,
-                //     ];
-                // }
+                }
 
                 // $email = 'joshenpolen@gmail.com';
                 // $name = $guard->user()->first_name . ' ' . $guard->user()->last_name;
@@ -201,7 +162,7 @@ class EhMainApproverController extends Controller
                 $date_now
             );
 
-            if($update_equipment_handling && $update_log_approval){
+            if ($update_equipment_handling && $update_log_approval) {
                 /** Create Initial Approver Logs */
                 $this->approvalService->logApproval(
                     $service_id,
@@ -245,9 +206,9 @@ class EhMainApproverController extends Controller
 
             $q = EH::find($service_id);
             $update_main_status = $q->update([
-                    'main_status' => EH::DISAPPROVED,
-                    'updated_at' => Carbon::now(),
-                ]);
+                'main_status' => EH::DISAPPROVED,
+                'updated_at' => Carbon::now(),
+            ]);
             if (!$update_main_status) {
                 throw new Exception('Error. Something went wrong in updating.');
             }

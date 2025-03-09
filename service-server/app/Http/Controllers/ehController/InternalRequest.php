@@ -53,6 +53,8 @@ class InternalRequest extends Controller
 
             /** Search Column */
             $columnMappings = [
+                'id' => ['table' => 'internal_request', 'db' => 'mysql', 'column' => 'id'],
+                'service_id' => ['table' => 'eh', 'db' => 'mysql', 'column' => 'id'],
                 'name' => ['table' => 'i', 'db' => 'mysql', 'column' => 'name'],
                 'proposed_deleivery_date' => ['table' => 'eh', 'db' => 'mysql', 'column' => 'proposed_delivery_date'],
                 'first_name' => ['table' => 'u', 'db' => 'mysqlSecond', 'column' => 'first_name'],
@@ -61,8 +63,8 @@ class InternalRequest extends Controller
             ];
 
             /**Server Mode Details */
-            $current_page = $request->current_page ?? 0;
-            $pageSize = $request->pageSize ?? 0;
+            $current_page = $request->current_page ?? 1;
+            $pageSize = $request->pagesize ?? 10;
             $search = $request->search ?? '';
             $sortColumn = $request->sort_column ?? '';
             $sortDirection = $request->sort_direction ?? '';
@@ -95,16 +97,36 @@ class InternalRequest extends Controller
                 });
             }
 
+
+            /** =============================================================== */
+
+
             if ($this->role_validator->userHasRole($current_role)) {
-                if ($current_role === Roles::TLRoleID) {
-                    $query->orWhere(function ($subQuery) use ($user_id) {
-                        $subQuery->where('internal_request.current_assigned_by', '=', $user_id);
-                    });
-                } elseif ($current_role === Roles::engineerRoleID) {
-                    $query->orWhere(function ($subQuery) use ($user_id) {
-                        $subQuery->where('internal_request.current_assigned_to', '=', $user_id);
-                    });
+                $query->where(function ($subQuery) use ($current_role, $user_id) {
+                    if ($current_role === Roles::TLRoleID || $current_role === Roles::SBUAssistantRoleID) {
+                        // $query->where(function ($subQuery) use ($user_id) {
+                        $subQuery->orWhere('internal_request.current_assigned_by', '=', $user_id);
+                        // });
+                    } elseif ($current_role === Roles::engineerRoleID) {
+                        // $query->where(function ($subQuery) use ($user_id) {
+                        $subQuery->orWhere('internal_request.current_assigned_to', '=', $user_id);
+                        // });
+                    }
+                });
+
+                /** Filtering */
+                if ($request->has('filterStatus')) {
+                    $status = $request->filterStatus;
+                    $query->whereIn('internal_request.status', $status);
                 }
+                if ($request->has('filterInstitution')) {
+                    $institution_ids = $request->filterInstitution;
+                    $institutions = array_map(function ($institution_ids) {
+                        return $institution_ids['institution_id'];
+                    }, $institution_ids ?? []);
+                    $query->whereIn('eh.institution', $institutions);
+                }
+
                 $data = $query->orderBy($sortColumn, $sortDirection)->paginate(
                     $pageSize,
                     ['*'],
@@ -113,8 +135,13 @@ class InternalRequest extends Controller
                 );
             } else return response()->json(['error' => 'Forbidden'], 403);
 
+
+
+
+
             return response()->json([
                 'internal_servicing_data' => $data,
+                // 'test_data' => $status,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -132,19 +159,28 @@ class InternalRequest extends Controller
 
         try {
             $data = InternalServicingModel::from('internal_request as it')
-                ->with(['task_delegation.task_activity' => function($q){
+                ->with(['task_delegation.task_activity' => function ($q) {
                     $q->where('type', self::IS)->get();
                 }])
-                ->with(['task_delegation.actions_taken' => function($q){
+                ->with(['task_delegation.actions_taken' => function ($q) {
+                    $q->where('work_type', self::IS)->get();
+                }])
+                ->with(['task_delegation.items_acquired' => function ($q) {
                     $q->where('work_type', self::IS)->get();
                 }])
                 ->with(['equipment_handling' => function ($q) {
+                    $q->with(['users']);
+                    $q->with(['institution']);
+                    $q->with(['equipments' => function ($q) {
+                        $q->with(['master_data']);
+                        $q->with(['general_master_data']);
+                    }]);    // Get all equipments
                     $q->select(
                         'equipment_handling.*',
                         'u.first_name',
                         'u.last_name',
                         'i.name',
-                        'i.address', 
+                        'i.address',
                     )
                         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'equipment_handling.requested_by', '=', 'u.id')
                         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
@@ -155,8 +191,10 @@ class InternalRequest extends Controller
                         'engineer_task_delegation.*',
                         DB::raw("CONCAT(assigned_to.first_name,' ',assigned_to.last_name) as assigned_to"),
                     )->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as assigned_to', 'engineer_task_delegation.assigned_to', '=', 'assigned_to.id');
+                    $q->with(['items_acquired']);
+                    $q->with(['task_activity']);
+                    $q->with(['actions_taken']);
                 }])
-                // ->with(['task_delegation'])
                 ->select(
                     'it.*',
                     DB::raw("CONCAT(assigned_to.first_name,' ',assigned_to.last_name) as assigned_to"),
@@ -302,15 +340,19 @@ class InternalRequest extends Controller
     public function for_storage(Request $request)
     {
         $internal_id = $request->internal_id;
+        $service_id = $request->service_id;
+        $delegation_id = $request->delegation_id;
         try {
             DB::beginTransaction();
 
             // Internal Request
             $q = InternalServicingModel::find($internal_id);
             $update_internal_status = $q->update([
-                'status' => self::SENTWAREHOUSE
+                'status' => self::SENTWAREHOUSE,
+                'option_type' => InternalServicingModel::OPTION_TYPE_STORAGE
             ]);
             if (!$update_internal_status) throw new Exception('Failed to update internal status');
+
 
             DB::commit();
             return response()->json([
@@ -332,15 +374,25 @@ class InternalRequest extends Controller
         $approvalService = new ApprovalService();
 
         $internal_id = $request->internal_id;
+        $option_type = $request->option_type;
         $service_id = $request->service_id;
 
         try {
             DB::beginTransaction();
+            if ($option_type == InternalServicingModel::OPTION_TYPE_STORAGE) {
+                $main_status = EhServicesModel::FOR_STORAGE;
+                $internal_status = self::STORAGE_TEXT;
+                $level = null;
+            } else {
+                $main_status = EhServicesModel::ONGOING;
+                $internal_status = self::COMPLETED;
+                $level = EhServicesModel::BILLING_WIM;
+            }
 
             $q_eh = EhServicesModel::find($service_id);
             $update_eh = $q_eh->update([
-                'level' => EhServicesModel::BILLING_WIM,
-                'main_status' => EhServicesModel::ONGOING
+                'level' => $level,
+                'main_status' => $main_status
             ]);
             if (!$update_eh) throw new Exception('Failed to update equipment handling');
 
@@ -348,7 +400,7 @@ class InternalRequest extends Controller
             // Internal Request
             $q = InternalServicingModel::find($internal_id);
             $update_internal_status = $q->update([
-                'status' => self::COMPLETED
+                'status' => $internal_status
             ]);
             if (!$update_internal_status) throw new Exception('Failed to update internal status');
 
@@ -367,7 +419,8 @@ class InternalRequest extends Controller
                 self::EH,
                 self::APPROVED, // status to update or new status
                 null,
-                Carbon::now()
+                Carbon::now(),
+                'none_user_id'
             );
 
             DB::commit();
@@ -401,7 +454,7 @@ class InternalRequest extends Controller
             ]);
             if (!$update_internal_status) throw new Exception('Failed to update internal status');
 
- 
+
             $update_delegation_status = $this->task_log->update_task_delegation_log(
                 $internal_id,
                 self::DELEGATED,
@@ -505,10 +558,7 @@ class InternalRequest extends Controller
                 ];
             }
 
-            $submitAction = $this->action->declare_actions_done($dataToInsert);
-            if (!$submitAction) {
-                throw new Exception('Error adding actions Done');
-            }
+            $this->action->declare_actions_done($dataToInsert);
 
             $statusInternal = ($status_after_service == 'Operational') ? self::SENTWAREHOUSE : self::RETURNEDHEAD;
 
@@ -521,10 +571,11 @@ class InternalRequest extends Controller
             $itemsToInsert = [];
             foreach ($items as $item) {
                 $itemsToInsert[] = [
-                    'service_id' => $internal_id,
+                    'service_id' => $delegation_id,
                     'item' => $item['item'],
                     'qty' => $item['qty'],
                     'remarks' => $item['remarks'],
+                    'work_type' => self::IS
                 ];
             }
             $insert_items = ChecklistItemAcquired::insert($itemsToInsert);

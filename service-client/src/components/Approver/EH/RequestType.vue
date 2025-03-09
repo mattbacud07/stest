@@ -1,7 +1,7 @@
 <template>
     <v-card style="padding: 1em 1em;" elevation="1">
         <!-- Internal External Request -->
-        <v-row class="mt-3">
+        <v-row>
             <v-col cols="12">
                 <v-row>
                     <v-col cols="12" md="6" sm="6">
@@ -48,7 +48,7 @@
             </v-col>
             <v-col :cols="column">
                 <p class="mb-2">
-                    <v-icon class="mr-1 vIcon">{{ request_data.ocular === 1 ? 'mdi-checkbox-marked' :
+                    <v-icon class="mr-1 vIcon">{{ request_data.occular === 1 ? 'mdi-checkbox-marked' :
                         'mdi-checkbox-blank-outline' }}</v-icon>
                     Request for Ocular
                 </p>
@@ -65,7 +65,7 @@
             </v-col>
             <v-col :cols="column">
                 <p class="mt-2">Endorsement:</p>
-                <p>{{ request_data.endorsement || '---' }}</p>
+                <p class="text-disabled">{{ request_data.endorsement || '---' }}</p>
             </v-col>
         </v-row>
 
@@ -82,7 +82,7 @@ const { width } = useDisplay()
 const props = defineProps({
     request_data: {
         type: Object,
-        default: () => { }
+        default : () => ({})
     }
 })
 

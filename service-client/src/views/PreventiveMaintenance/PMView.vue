@@ -8,6 +8,8 @@
                         :disabled="item.disabled">
                         {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
                     </v-breadcrumbs-item>
+                    
+                <v-icon color="grey" @click="refreshData(true)"><v-tooltip activator="parent" location="bottom">Refresh</v-tooltip> mdi-refresh</v-icon>
                 </v-breadcrumbs>
 
                 <!-- <v-btn @click="printPreview(isPrintPreview)" class="text-none" prepend-icon="mdi-printer-eye" color="primary" density="compact">{{ isPrintPreview ? 'Back' : 'Print Preview'}}</v-btn> -->
@@ -16,124 +18,122 @@
             </div>
             <v-spacer></v-spacer>
 
-            <v-skeleton-loader type="button" :loading="skeleton">
-                <!-- Delegate Button -->
-                <div>
-                    <!-- TL -->
-                    <template v-if="can('delegate', 'Preventive Maintenance') && getUserSSU() === pm_ssu">
-                        <v-dialog v-model="delegateEngineerDialog" max-width="400" persistent
-                            v-if="status === m_var.Scheduled">
-                            <template v-slot:activator="{ props: activatorProps }">
+            <div>
+                <PMDelegateEngineer v-if="can('delegate', PM) && canDelegate" :id="id" @refresh-data="refreshData" />
 
-                                <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable" color="primary"
-                                    variant="flat" class="text-none btnSubmit"><v-icon
-                                        class="mr-2">mdi-account-arrow-left-outline</v-icon>
-                                    Delegate Engineer</v-btn>
-                            </template>
-                            <v-card text="" title="Delegate Engineer" prepend-icon="mdi-account">
-                                <v-form @submit.prevent="delegateEngineer" ref="form">
-                                    <v-col cols="12">
-                                        <v-select color="primary" v-model="selectedEngineer" class="mr-2 ml-2 mt-5"
-                                            label="Service Engineer" placeholder="" density="compact"
-                                            variant="outlined" :items="engineersData" item-title="title"
-                                            item-value="value" :rules="[v => !!v || 'Required']" clearable></v-select>
-                                    </v-col>
-                                    <!-- <template v-slot:actions> -->
-                                    <v-divider></v-divider>
-                                    <v-row justify="end" class="mt-7 mb-5 pr-3">
-                                        <v-btn variant="tonal" @click="delegateEngineerDialog = false" color="primary"
-                                            class="text-none mr-2"><v-icon>mdi-close</v-icon>
-                                            Cancel</v-btn>
-                                        <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable"
-                                            color="#191970" flat class="text-none bg-primary mr-5"><v-icon
-                                                class="mr-2">mdi-check</v-icon>
-                                            Submit</v-btn>
-                                    </v-row>
-                                    <!-- </template> -->
-                                </v-form>
-                            </v-card>
-                        </v-dialog>
-                    </template>
+                <PMAcceptDecline
+                    v-if="can('installer', PM) && canAcceptDecline && task_delegation?.status === m_var.Delegated"
+                    :id="id" :delegation_id="task_delegation?.id" @refresh-data="refreshData" />
 
-                    <!-- Engineer -->
-                    <template v-if="can('installer', 'Preventive Maintenance') && getUserSSU() === pm_ssu">
-                        <div v-if="status === m_var.Delegated">
-                            <v-dialog v-model="pm_decline_dialog" max-width="400" persistent>
-                                <template v-slot:activator="{ props: activatorProps }">
-                                    <v-btn type="button" :disabled="btnDisable" v-bind="activatorProps" color="primary"
-                                        variant="tonal" class="text-none mr-2"><v-icon class="mr-2">mdi-check</v-icon>
-                                        Decline</v-btn>
-                                </template>
-                                <v-card text="" title="Decline Task">
-                                    <v-form @submit.prevent="pm_decline" ref="form">
-                                        <v-col cols="12">
-                                            <v-textarea v-model="reason_to_decline" color="primary" label="Reason"
-                                                variant="outlined" :rules="[v => !!v || 'Required']"></v-textarea>
-                                        </v-col>
-                                        <!-- <template v-slot:actions> -->
-                                        <v-divider></v-divider>
-                                        <v-row justify="end" class="mt-7 mb-5 pr-3">
-                                            <v-btn variant="tonal" @click="pm_decline_dialog = false" color="primary"
-                                                class="text-none mr-2"><v-icon>mdi-close</v-icon>
-                                                Cancel</v-btn>
-                                            <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable"
-                                                color="#191970" flat class="text-none bg-primary mr-5"><v-icon
-                                                    class="mr-2">mdi-check</v-icon>
-                                                Submit</v-btn>
-                                        </v-row>
-                                        <!-- </template> -->
-                                    </v-form>
-                                </v-card>
-                            </v-dialog>
-                            <v-btn type="button" :loading="btnLoading" :disabled="btnDisable" @click="pm_accepted"
-                                color="primary" variant="flat" class="text-none "><v-icon
-                                    class="mr-2">mdi-check</v-icon> Accept</v-btn>
-                        </div>
+                <div v-if="can('installer', PM) && canAcceptDecline && task_delegation?.status === m_var.Accepted">
 
-                        <div v-if="status === m_var.Accepted && getUserSSU() === pm_ssu">
-                            <v-btn type="button" :loading="btnLoading" :disabled="btnDisable"
-                                @click="pm_task_processing" color="primary" variant="flat" class="text-none "><v-icon
-                                    class="mr-2">mdi-check</v-icon> In Transit</v-btn>
-                        </div>
-                        <div v-if="status === m_var.InTransit && getUserSSU() === pm_ssu">
-                            <v-btn type="button" :loading="btnLoading" :disabled="btnDisable"
-                                @click="pm_task_processing" color="primary" variant="flat" class="text-none "><v-icon
-                                    class="mr-2">mdi-check</v-icon> Start PM Task</v-btn>
-                        </div>
-                        <div v-if="status === m_var.InProgress && getUserSSU() === pm_ssu">
-                            <v-btn type="button" :loading="btnLoading" :disabled="btnDisableDone"
-                                @click="clear" color="primary" variant="text" class="text-none "><v-icon
-                                    class="mr-2">mdi-close</v-icon> Clear</v-btn>
-
-                            <v-btn type="button" :loading="btnLoading" :disabled="btnDisableDone"
-                                @click="pm_task_processing" color="primary" variant="flat" class="text-none "><v-icon
-                                    class="mr-2">mdi-check</v-icon> Mark as Done</v-btn>
-                        </div>
-                    </template>
-
+                    <VDialog v-model="dialogSure" title="Information" text="Are you sure to this action?"
+                        @confirm="inTransit" />
+                    <v-btn type="button" :loading="btnLoading" :disabled="btnDisable" @click="dialogSure = true"
+                        color="primary" variant="flat" class="text-none "><v-icon class="mr-2">mdi-check</v-icon>In
+                        Transit
+                    </v-btn>
                 </div>
-            </v-skeleton-loader>
+                <div v-if="can('installer', PM) && canAcceptDecline && task_delegation?.status === m_var.InTransit">
+                    <VDialog v-model="dialogSure" title="Information" text="Are you sure to this action?"
+                        @confirm="startPMTask" />
+                    <v-btn type="button" :loading="btnLoading" :disabled="btnDisable" @click="dialogSure = true"
+                        color="primary" variant="flat" class="text-none "><v-icon class="mr-2">mdi-check</v-icon> Start
+                        PM Task</v-btn>
+                </div>
+
+                <div v-if="can('installer', PM) && canAcceptDecline && task_delegation?.status === m_var.InProgress">
+                    <v-btn @click="markAsCompleted" text="Mark as Completed" :disabled="btnDisable" color="primary"
+                        variant="flat" class="text-none mr-5" />
+                </div>
+
+            </div>
         </template>
 
         <template #default>
-            <v-skeleton-loader class="d-print-none" type="list-item-three-line@2, table@2"
-                loading-text="Prperties Loafding" :loading="skeleton">
-                <v-container class="mt-10">
-                    <PMPrint />
-                    <OperationAfterService :pm_data="pm_data" :pm_id="parseInt(id)" :currentRole="currentRole" />
-                    <ServiceProvider />
-                    <CustomerDetails  @set-signature="setSignature"
-                        :status="status" />
-                    <ActionsRemarks @actions="actions_done" @remarks="getRemarks" :status="status" />
-                    <StatusAfterService @status-after-service="status_after_service" :status="status"
-                        :pm_id="parseInt(id)" @sparePartsData="getSparePartsData" />
-                </v-container>
-            </v-skeleton-loader>
+            <v-container class="mt-10">
+                <template v-if="loading">
+                    <v-row>
+                        <v-col cols="6"><v-skeleton-loader type="list-item-two-line"></v-skeleton-loader></v-col>
+                        <v-col cols="6"><v-skeleton-loader type="list-item-two-line"></v-skeleton-loader></v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="4"><v-skeleton-loader type="list-item-two-line"></v-skeleton-loader></v-col>
+                        <v-col cols="4"><v-skeleton-loader type="list-item-two-line"></v-skeleton-loader></v-col>
+                        <v-col cols="4"><v-skeleton-loader type="list-item-two-line"></v-skeleton-loader></v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="4"><v-skeleton-loader type="list-item-two-line"></v-skeleton-loader></v-col>
+                        <v-col cols="4"><v-skeleton-loader type="list-item-two-line"></v-skeleton-loader></v-col>
+                        <v-col cols="4"><v-skeleton-loader type="list-item-two-line"></v-skeleton-loader></v-col>
+                    </v-row>
+                </template>
+                <template v-else>
+                    <transition name="slide-x-transition">
+                        <div>
+                            <v-chip class="ma-2 mt-5" :color="m_var.setPMStatus(pm_data?.status).color" label>
+                                <v-tooltip activator="parent" location="bottom">Status</v-tooltip>
+                                &nbsp;{{ m_var.setPMStatus(pm_data?.status).text ?? '---' }}
+                            </v-chip>
+                            <v-chip class="ma-2 mt-5" color="purple" label
+                                v-if="latestTaskDelegation?.status_after_service">
+                                <v-tooltip activator="parent" location="bottom">Status after service</v-tooltip>
+                                &nbsp;{{ latestTaskDelegation?.status_after_service ?? '---' }}
+                            </v-chip>
+                            <v-chip class="ma-2 mt-5" v-if="pm_data?.tag" color="purple" label>
+                                <v-tooltip activator="parent" location="bottom">Tag</v-tooltip>
+                                &nbsp;{{ pm_data?.tag ?? '---' }}
+                            </v-chip>
+                        </div>
+                    </transition>
+
+                    <ServiceReportForm v-model="service_report_data" ref="serviceFormRef" class="mt-7"
+                    v-if="can('installer', PM) && canAcceptDecline && task_delegation?.status === m_var.InProgress" />
+
+                    <PMCustomerDetails :customer_details="pm_data" />
+               
+                <!-- <PMPrint /> -->
+                <v-card class="mt-10">
+                    <v-tabs v-model="tab" density="compact" class="border-b-sm">
+                        <div>
+                            <v-tab value="delegation_details" class="text-none" color="primary"><v-icon
+                                    class="mr-2">mdi-gesture-tap-button</v-icon> Delegation
+                                Details</v-tab>
+                            <v-tab value="service_report" class="text-none" color="primary"><v-icon
+                                    class="mr-2">mdi-poll</v-icon>
+                                Service Report</v-tab>
+                        </div>
+                        <v-spacer></v-spacer>
+                        <v-tab value="customer_details" class="text-none" color="primary"><v-icon
+                                class="mr-2">mdi-badge-account</v-icon>
+                            Customer Details</v-tab>
+                        <div>
+
+                        </div>
+                    </v-tabs>
+
+                    <v-card-text>
+                        <v-window v-model="tab">
+                            <v-window-item value="delegation_details">
+                                <InternalServicingActivity :internalData="pm_data" />
+                            </v-window-item>
+                            <v-window-item value="service_report">
+                                <ServiceReportData :task_delegation="task_delegation" :actions_taken="actions_taken"
+                                    :spareparts="spareparts" />
+                            </v-window-item>
+                            <v-window-item value="customer_details">
+
+                            </v-window-item>
+                        </v-window>
+                    </v-card-text>
+                </v-card>
+            </template>
+            </v-container>
         </template>
     </LayoutSinglePage>
 </template>
 <script setup>
-import { ref, reactive, onMounted, watch, provide } from 'vue';
+import { ref, reactive, onMounted, watch, provide, computed } from 'vue';
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 import moment from 'moment';
 import { useRouter, useRoute } from 'vue-router';
@@ -141,20 +141,11 @@ import * as m_var from '@/global/maintenance'
 import * as pub_var from '@/global/global'
 
 /** Import Components */
-import CustomerDetails from '@/components/PreventiveMaintenance/PMComponents/CustomerDetails.vue'
-import StatusAfterService from '@/components/PreventiveMaintenance/PMComponents/StatusAfterService.vue'
-import ActionsRemarks from '@/components/PreventiveMaintenance/PMComponents/ActionsRemarks.vue'
-import ServiceProvider from '@/components/PreventiveMaintenance/PMComponents/ServiceProvider.vue'
-import OperationAfterService from '@/components/PreventiveMaintenance/PMComponents/OperationAfterService.vue'
-import PMPrint from '@/components/Print/PMPrint.vue';
-
-/** Vuue3 DataTable */
-import Vue3Datatable from '@bhplugin/vue3-datatable'
-import '@bhplugin/vue3-datatable/dist/style.css'
-
-/** Vuetify Display */
-import { useDisplay } from 'vuetify'
-const { width } = useDisplay()
+// import PMPrint from '@/components/Print/PMPrint.vue';
+import PMCustomerDetails from '@/components/PreventiveMaintenance/PMComponents/PMCustomerDetails.vue';
+import InternalServicingActivity from '@/components/Approver/EH/InternalServicingActivity.vue';
+import ServiceReportData from '@/components/Approver/EH/ServiceReportData.vue';
+import PMDelegateEngineer from '@/components/PreventiveMaintenance/PMComponents/PMDelegateEngineer.vue';
 
 /** Toast Notification */
 import { useToast } from 'vue-toast-notification'
@@ -176,19 +167,23 @@ const apiRequest = apiRequestAxios()
 /** Role Stores and Permissions */
 const role = getRole()
 const currentRole = role.currentUserRole
+const tab = ref('delegation_details')
 
 /** Permissions */
 import { permit } from '@/castl/permitted';
 const { can } = permit()
 
+import { A_EH, A_PM, PM } from '@/global/modules';
+import PMAcceptDecline from '@/components/PreventiveMaintenance/PMComponents/PMAcceptDecline.vue';
+import PMPrint from '@/components/Print/PMPrint.vue';
+import VDialog from '@/components/common/VDialog.vue';
+import ServiceReportForm from '@/components/Approver/EH/ServiceReportForm.vue';
 
 
-// console.log(router)
-const currentWorkType = ref(route.params.work_type === 'PM' ? '/preventive-maintenance' : '/corrective-maintenance')
 const breadcrumbItems = [
-    { title: 'Back', disabled: false, href: currentWorkType.value },
-    { title: route.params.work_type === 'PM' ? 'Preventive Maintenance' : 'Corrective Maintenance', disabled: true, href: '' },
-    { title: route.params.work_type === 'PM' ? 'PM-Details' : 'CM-Details', disabled: true, href: '' },
+    { title: 'Back', disabled: false, href: '/preventive-maintenance' },
+    { title: 'Preventive Maintenance', disabled: true, href: '' },
+    { title: 'PM-Details', disabled: true, href: '' },
 ]
 const navigateTo = (item) => {
     if (!item.disabled && item.href) {
@@ -196,340 +191,183 @@ const navigateTo = (item) => {
     }
 };
 
-
-
-/** Actions Done Emit Functions */
-const actions = ref([])
-const btnDisableDone = ref(false)
-const actions_done = (newActions) => {
-    actions.value = newActions
-    // console.log(actions.value)
-}
-
-const statusAfterService = ref('')
-const status_after_service = (valueService) => {
-    statusAfterService.value = valueService
-}
-
-/** Get Spareparts Data from StatusAfterService.vue */
-const spareParts = ref([])
-const getSparePartsData = (data) => {
-    spareParts.value = data
-}
-
-const remarks = ref('')
-const getRemarks = (valRemark) => {
-    remarks.value = valRemark
-}
-
-
 const form = ref(false)
 const btnDisable = ref(false)
 const btnLoading = ref(false)
-const delegateEngineerDialog = ref(false)
-const pm_decline_dialog = ref(false)
-const id = route.params.id
+const loading = ref(false)
+const id = parseInt(route.params.id)
 
-const pm_data = ref(null)
-const selectedEngineer = ref('')
-
-
-
-
-// Functions
-// * Delegated Engineer**/
-// const confirmedSerial = ref('nullSerial')
-// const serial = ref('')
-// const getConfirmSerial = (serialNumber) => {
-//     confirmedSerial.value = serialNumber
-//     serial.value = serialNumber
-// }
+/** Signature */
 const signature = ref(null)
 const setSignature = (data) => {
     signature.value = data
 }
-const delegateEngineer = async () => {
-    btnLoading.value = true
-    const { valid } = await form.value.validate()
-    // if (confirmedSerial.value === null && confirmedSerial.value !== 'nullSerial') {
-    //     btnLoading.value = false
-    //     toast.error('Serial number is required')
-    //     return
-    // }
-    if (!valid) {
-        btnLoading.value = false
-        return
-    }
-    try {
-        const res = await apiRequest.post('pm_process', {
-            id: id,
-            engineer: selectedEngineer.value,
-            // serial: serial.value,
-        })
-        if (res.data && res.data.success) {
-            toast.success('Successfully delegated')
-            form.value.reset()
-            getPMDetails()
-        } else if (res.data.delegated_exist) toast.error('Currently delegated')
-        else {
-            toast.error(response.data.errorE)
-            btnLoading.value = false
-        }
-    } catch (error) {
-        alert(error)
-        btnLoading.value = false
-    } finally {
-        btnLoading.value = false
-        form.value.reset()
-        delegateEngineerDialog.value = false
-    }
-}
-
-
-
-/** Decline PM */
-const reason_to_decline = ref('')
-const pm_decline = async () => {
-    btnLoading.value = true
-
-    const { valid } = await form.value.validate()
-
-
-    if (!valid) {
-        btnLoading.value = false
-        return
-    }
-    try {
-        const res = await apiRequest.post('pm_decline', {
-            pm_id: id,
-            reason: reason_to_decline.value
-        })
-        if (res.data && res.data.success) {
-            toast.success('Reason submitted')
-            form.value.reset()
-            router.push(currentWorkType.value)
-        }
-        else {
-            toast.error('Something went wrong')
-            btnLoading.value = false
-        }
-    } catch (error) {
-        alert(error)
-        btnLoading.value = false
-    } finally {
-        btnLoading.value = false
-        form.value.reset()
-        pm_decline_dialog.value = false
-    }
-}
-
-
-
-/** Accept PM */
-const pm_accepted = async () => {
-    btnLoading.value = true
-
-    try {
-        const response = await apiRequest.post('pm_accepted', {
-            id: id,
-        })
-        if (response.data && response.data.success) {
-            toast.success('PM Task Accepted')
-            getPMDetails();
-        }
-        else {
-            toast.error('Something went wrong')
-            btnLoading.value = false
-        }
-    } catch (error) {
-        alert(error)
-        btnLoading.value = false
-    } finally {
-        btnLoading.value = false
-    }
-}
-
-
-/** PM Task Proccessing*/
-const pm_task_processing = async () => {
-    btnLoading.value = true
-    if (status.value === m_var.InProgress) {
-        const checkIfTheresEmpty = actions.value.some(val => {
-            return typeof val === 'string' ? val.trim() === '' : val === undefined || val === null
-        })
-        const checkIfTheresOverText = actions.value.every(val => {
-            return val?.length <= 120 ? true : false
-        })
-
-        const checkSparePartsEmpty = spareParts.value.every(data => {
-            return data.item_id && data.item_code && data.description && data.qty && data.dr && data.si
-        })
-
-
-        if (!signature.value) {
-            toast.error('Client signature is required')
-            btnLoading.value = false
-            return
-        }
-
-        if (actions.value.length === 0) {
-            toast.error('Please submit actions taken')
-            btnLoading.value = false
-            return
-        }
-        if (checkIfTheresEmpty) {
-            toast.error('Please fill in required fields')
-            btnLoading.value = false
-            return
-        }
-        if (!checkIfTheresOverText) {
-            toast.error('Please limit your input to 120 characters')
-            btnLoading.value = false
-            return
-        }
-
-        if (statusAfterService.value === '') {
-            toast.error('Please choose one option what is the status after service')
-            btnLoading.value = false
-            return
-        }
-
-        if (spareParts.value.length > 0 && !checkSparePartsEmpty) {
-            toast.error('Please fill in all required fields in spareparts')
-            btnLoading.value = false
-            return
-        }
-
-
-
-    }
-    try {
-        const response = await apiRequest.post('pm_task_processing', {
-            id: id, 
-            actions: actions.value,
-            spareParts: spareParts.value,
-            status_after_service: statusAfterService.value,
-            remarks: remarks.value,
-            work_type: route.params.work_type,
-            signature : signature.value
-        })
-        if (response.data && response.data.success) {
-            toast.success('Successfully Save')
-            getPMDetails();
-        }
-        else {
-            toast.error(response.data.error)
-            btnLoading.value = false
-        }
-    } catch (error) {
-        alert(error)
-        btnLoading.value = false
-    } finally {
-        btnLoading.value = false
-    }
-}
-
-
-
-// Clear Inputs
-const clear = () =>{
-    actions.value =  []
-    spareParts.value =  []
-    statusAfterService.value =  ''
-    remarks.value = ''
-}
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-const skeleton = ref(false)
-const status = ref('')
-const statusAfterServiceData = ref('')
-const tag = ref('')
-const pm_ssu = ref(null)
-const getUserSSU = () => {
-    const roleUser = user.user.user_roles.find(v => v.role_id === currentRole);
-    const ssu = roleUser ? roleUser.SSU : null;
-    return ssu;
-}
-
-const getPMDetails = async () => {
-    skeleton.value = true
+/** Get PM Data By Row ID */
+const pm_data = ref({})
+const task_delegation = ref({})
+const latestTaskDelegation = ref({})
+const actions_taken = ref([])
+const spareparts = ref([])
+const getPMDataByRowID = async () => {
+    loading.value = true
     try {
         const response = await apiRequest.get('get_pm_record_details', {
-            params: { id: id }
-        });
-        if (response.data && response.data.details) {
-            pm_data.value = response.data.details[0]
-            status.value = pm_data.value.status
-            statusAfterServiceData.value = pm_data.value.status_after_service
-            tag.value = pm_data.value.tag
-            pm_ssu.value = pm_data.value.ssu
-            skeleton.value = false
-
-
-            if (pm_data.value && pm_data.value.work_type && pm_data.value.work_type !== route.params.work_type) {
-                toast.error('Something went wrong')
-                router.push('/')
-                return
+            params: {
+                id: id,
+                module_type: A_PM
             }
+        });
+        if (response?.data?.pm) {
+            const result = response.data.pm
+            pm_data.value = response.data.pm
 
-            // console.log(pm_data.value.eh.ssu)
+            task_delegation.value = result.task_delegation
+            actions_taken.value = result.task_delegation?.actions_taken
+            spareparts.value = result.task_delegation?.spareparts
+            latestTaskDelegation.value = result.latest_task_delegation
+
         } else toast.error('Something went wrong')
     } catch (error) {
         console.log(error)
     } finally {
-        skeleton.value = false
+        loading.value = false
     }
 };
 
-// Provide PM_data
-provide('pm_data', pm_data)
-provide('refreshPMData', getPMDetails)
 
+/** Delegate Engineer ->  */  //subject to edit later tonight -------------------->>>>>>
+const rolesToAccess = [pub_var.TLRoleID, pub_var.SBUServiceAssistantID, pub_var.engineerRoleID]
+const user_sbu = user.user?.user_roles?.find(v => rolesToAccess.includes(v.role_id))?.SBU
+const canDelegate = computed(() => {
+    if ((pm_data.value.status === m_var.Scheduled || pm_data.value?.status === m_var.Declined)
+        && pm_data.value?.equipment?.sbu === user_sbu) return true
+    return false //subject to change the scheduled status to waiting for schedule
+})
 
-
-
-
-/**
- * Get Engineers Data - Use for Delegation
- */
-const engineersData = ref([])
-const getEngineersData = async () => {
-    skeleton.value = true
+/** In Transit */
+const dialogSure = ref(false)
+const inTransit = async () => {
+    btnLoading.value = true
+    btnDisable.value = true
     try {
-        const response = await apiRequest.get('get-engineers-data')
-        if (response.data && response.data.engineers) {
-            // const filteredEngineersData = response.data.engineers.filter(data => data.SSU === pm_ssu.value)
-            const engineersValue = response.data.engineers.map(data => {
-                return {
-                    title: data.users.first_name + ' ' + data.users.last_name,
-                    value: data.user_id
-                }
-            })
-            engineersData.value = engineersValue
-            // console.log(engineersData.value)
+        const res = await apiRequest.post('in-transit', {
+            id: id,
+            delegation_id: task_delegation.value?.id,
+        })
+        if (res?.data?.success) {
+            getPMDataByRowID()
+            toast.success('Successfull')
         }
     } catch (error) {
-        alert(error)
+        console.log(error)
+        btnLoading.value = false
+        btnDisable.value = false
+    } finally {
+        btnLoading.value = false
+        btnDisable.value = false
     }
+}
+
+
+/** Start Task */
+const startPMTask = async () => {
+    btnLoading.value = true
+    try {
+        const res = await apiRequest.post('start-task', {
+            id: id,
+            delegation_id: task_delegation.value?.id,
+            in_transit: task_delegation.value?.task_activity?.find(v => v.status === 'In Transit')?.acted_at
+        })
+        if (res.data && res.data.success) {
+            toast.success('Successfull')
+            getPMDataByRowID()
+        }
+    } catch (error) {
+        console.log(error)
+        btnLoading.value = false
+    } finally {
+        btnLoading.value = false
+    }
+}
+
+/** Servie Report Details */
+// const markAsCompletedForm = ref(false)
+const serviceFormRef = ref(null)
+const service_report_data = ref({
+    status_after_service: '',
+    fields: [],
+    spareparts: [],
+    remarks : '',
+    complaint : '',
+    problem : '',
+})
+
+
+/** ========================== Set as Completed ======================== */
+const markAsCompleted = async () => {
+    btnLoading.value = true
+    btnDisable.value = true
+    const valid = await serviceFormRef.value?.validateServiceForm()
+    if (!valid) {
+        btnLoading.value = false
+        btnDisable.value = false
+        return
+    }
+    if (service_report_data.value.fields?.length === 0) {
+        toast.error('Required actions taken')
+        btnLoading.value = false
+        btnDisable.value = false
+        return
+    }
+    try {
+        const response = await apiRequest.post('mark_as_completed', {
+            id: id,
+            delegation_id: task_delegation.value?.id,
+            ...service_report_data.value
+        })
+        if (response?.data?.success) {
+            toast.success('Completed successfully')
+            getPMDataByRowID()
+        } else {
+            toast.error(response.data.error)
+        }
+    } catch (error) {
+        console.log(error)
+    } finally {
+        btnLoading.value = false
+        btnDisable.value = false
+    }
+}
+
+
+
+
+
+
+
+
+
+/** Accept Decline the Delegation */
+const canAcceptDecline = computed(() => {
+    const assigned_to = task_delegation.value?.assigned_to
+    // const isDelegated = task_delegation.value?.status === 'Delegated'
+    const user_id = user.user.id
+    return assigned_to === user_id
+})
+
+
+const refreshData = (data) => {
+    if (data === true) getPMDataByRowID()
 }
 
 
 
 onMounted(async () => {
-    getPMDetails();
-    getEngineersData()
+    getPMDataByRowID();
 });
 </script>
 

@@ -2,46 +2,68 @@
     <LayoutWithActions @searchText="getSearchText">
         <template #filter>
             <v-row>
-                <v-col cols="12" class="d-flex justify-space-between align-items-center">
-                    <v-checkbox label="Advanced filter" color="primary" style="margin-left: -12px;"
-                        v-model="showFilter"></v-checkbox>
+                <v-col cols="12" class="d-flex justify-space-between align-items-center pa-0">
+                    <v-badge color="warning" dense :content="filterCount" :offset-y="5">
+                        <v-checkbox false-icon="mdi-filter-menu" true-icon="mdi-close" color="primary"
+                            v-model="showFilter">
+                            <v-tooltip activator="parent" v-if="!showFilter">Expanded Filter</v-tooltip>
+                        </v-checkbox>
+                    </v-badge>
                     <!-- <v-spacer></v-spacer> -->
                     <transition name="slide-x-transition">
-                        <v-col v-if="showFilter" class="d-flex">
+                        <v-col class="d-flex"
+                            :style="{ visibility: showFilter ? 'visible' : 'hidden', opacity: showFilter ? '1' : '0' }">
                             <!-- Filter by Institution  -->
                             <v-col cols="3" class="pa-0 mr-1">
-                                <v-combobox transition="slide-x-transition" :loading="loadingInstitutionData"
-                                    color="primary" v-model="filter.filterInstitution" label="Institution"
-                                    density="compact" :items="institutionData" chips closable-chips single-line
-                                    itemValue="institution_id" variant="outlined" itemTitle="key" multiple>
+                                <v-combobox transition="slide-x-transition" color="primary"
+                                    v-model="filter.filterInstitution" label="Institution" density="compact"
+                                    :items="institutionData" chips closable-chips single-line itemValue="institution_id"
+                                    variant="outlined" itemTitle="key" multiple>
                                 </v-combobox>
                             </v-col>
 
-                            <v-col cols="3" class="pa-0 mr-1">
+                            <!-- <v-col cols="3" class="pa-0 mr-1">
                                 <VueDatePicker v-model="filter.delegation_date" auto-apply range model-type="yyyy-MM-dd"
                                     :enable-time-picker="false" placeholder="Delegation Date" />
-                            </v-col>
+                            </v-col> -->
                             <!-- Filter by Status  -->
                             <v-col cols="auto" class="pa-0 mr-1">
-                                <v-menu transition="slide-x-transition" v-model="filterByStatusDropDown"
-                                    :close-on-content-click="false" min-width="400" width="400" height="auto"
-                                    location="bottom">
-                                    <template v-slot:activator="{ props }">
-                                        <v-btn color="primary" variant="tonal" v-bind="props" class="text-none">
-                                            <span class="text-primary" v-if="filter.filterStatus.length > 0">{{
-                                                filter.filterStatus.length + " " }} </span>
-                                            Status <v-icon>mdi-chevron-down</v-icon> </v-btn>
+                                <v-btn color="primary" variant="plain" class="text-none">
+                                    <template v-slot:prepend>
+                                        <v-badge color="primary" :content="filter.filterStatus?.length"
+                                            inline></v-badge>
                                     </template>
+                                    Status <v-icon>mdi-chevron-down</v-icon>
+                                    <v-menu transition="slide-x-transition" :close-on-content-click="false"
+                                        min-width="400" width="400" height="auto" location="bottom" activator="parent">
+                                        <v-card width="auto" class="pr-3">
+                                            <v-checkbox v-model="filter.filterStatus"
+                                                v-for="(status) in pub_var.JOStatus" class="columnChooserCheckBox"
+                                                :label="status.text" :value="status.key"></v-checkbox>
 
-                                    <v-card width="auto" class="pr-3">
-                                        <v-checkbox v-model="filter.filterStatus" class="columnChooserCheckBox"
-                                            label="Pending" :value="pub_var.PENDING"></v-checkbox>
-                                        <v-checkbox v-model="filter.filterStatus" class="columnChooserCheckBox"
-                                            label="Disapproved" :value="pub_var.DISAPPROVED"></v-checkbox>
-                                        <v-checkbox v-model="filter.filterStatus" class="columnChooserCheckBox"
-                                            label="Completed" :value="pub_var.COMPLETE"></v-checkbox>
-                                    </v-card>
-                                </v-menu>
+                                        </v-card>
+                                    </v-menu>
+                                </v-btn>
+                            </v-col>
+                            <!-- Filter by Approval Level -->
+                            <v-col cols="auto" class="pa-0 mr-1">
+                                <v-btn color="primary" variant="plain" class="text-none">
+                                    <template v-slot:prepend>
+                                        <v-badge color="primary" :content="filter.filterApprovalLevel?.length"
+                                            inline></v-badge>
+                                    </template>
+                                    Pending Approval <v-icon>mdi-chevron-down</v-icon>
+                                    <v-menu transition="slide-x-transition" :close-on-content-click="false"
+                                        min-width="400" width="400" height="auto" location="bottom" activator="parent">
+                                        <v-card width="auto" class="pr-3">
+                                            <v-checkbox v-model="filter.filterApprovalLevel"
+                                                v-for="(designation) in pub_var.approver_designation"
+                                                class="columnChooserCheckBox pa-0 ma-0" :label="designation.key"
+                                                :value="designation.value"></v-checkbox>
+
+                                        </v-card>
+                                    </v-menu>
+                                </v-btn>
                             </v-col>
                         </v-col>
                     </transition>
@@ -59,9 +81,9 @@
         </template>
         <template #default="{ searchText }">
             <v-card class="mx-auto">
-                <vue3-datatable ref="datatable" class="tableLimitText" :rows="rows" :columns="cols" :loading="loading"
-                    :search="params.search" :totalRows="total_rows" :pageSize="params.pageSize" :isServerMode="true"
-                    @change="changeServer" @rowSelect="rowSelect" :sortColumn="params.sort_column"
+                <vue3-datatable ref="datatable" class="tableLimitText sticky-last-header" :rows="rows" :columns="cols"
+                    :loading="loading" :search="params.search" :totalRows="total_rows" :pageSize="params.pagesize"
+                    :isServerMode="true" @change="changeServer" @rowSelect="rowSelect" :sortColumn="params.sort_column"
                     :sortDirection="params.sort_direction" :sortable="true"
                     skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover" :hasCheckbox="true"
                     :rowClass="getRowClass" :selectRowOnClick="true" cellClass="internalCell"
@@ -73,12 +95,20 @@
                         <span>{{ pub_var.requestType(data.value.request_type) }}</span>
                     </template>
                     <template #request_name="data">
-                        <span>{{ pub_var.requestName(data.value.request_type, data.value.request_name, data.value.other)
-                        }}</span>
+                        <span v-if="data.value?.request_type === pub_var.requestTypeShipment">
+                            {{ data.value.request_name }}
+                            <v-tooltip location="left" activator="parent">
+                                Satellite:
+                                {{ data.value.satellite }}
+                            </v-tooltip>
+                        </span>
+                        <span v-else>{{ pub_var.requestName(data.value.request_type, data.value.request_name,
+                            data.value.other)}}</span>
                     </template>
                     <template #equipments="data">
                         <v-tooltip activator="parent" color="primary">
-                            <p class="mb-1 mt-1" v-for="(item) in data.value.equipments?.filter(v => v.category === 'Equipment')">
+                            <p class="mb-1 mt-1"
+                                v-for="(item) in data.value.equipments?.filter(v => v.category === 'Equipment')">
                                 <v-icon>mdi-circle-medium</v-icon> {{ item.master_data?.equipment }}
                                 <span v-if="item.master_data?.sbu">[ SBU - {{ item.master_data?.sbu }} ] </span>
                             </p>
@@ -98,6 +128,17 @@
                         <span>
                             <v-chip label density="compact" :color="pub_var.setJOStatus(data.value.main_status).color">
                                 {{ pub_var.setJOStatus(data.value.main_status).text }}
+                                <v-tooltip activator="parent" location="left">
+                                    <span class="text-danger"
+                                        v-if="parseInt(data.value.main_status) === pub_var.DISAPPROVED">Disapproved</span>
+                                    <span class="text-success"
+                                        v-else-if="parseInt(data.value.main_status) === pub_var.COMPLETE">Completed</span>
+                                    <span v-else>{{ pub_var.getApproverByLevel(data.value.level, 1) }}
+                                        {{ pub_var.INSTALLATION_TL === data.value.level || pub_var.INSTALLATION_ENGINEER
+                                            ===
+                                        data.value.level ? data.value.SBU : '' }}
+                                    </span>
+                                </v-tooltip>
                             </v-chip>
                         </span>
                     </template>
@@ -139,8 +180,9 @@ import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
 //** Datepicker */
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css'
+// import VueDatePicker from '@vuepic/vue-datepicker';
+// import '@vuepic/vue-datepicker/dist/main.css'
+import { nonEmptyCountFilter } from '@/helpers/filters';
 
 
 
@@ -160,16 +202,17 @@ const apiRequest = apiRequestAxios()
 
 /** Filtering */
 const showFilter = ref(false)
-const filterByStatusDropDown = ref(null)
-// const internalStatus = ref(pub_var.internalStat)
 
 const filter = ref({
     filterStatus: [],
     filterInstitution: [],
-    delegation_date: '',
+    filterApprovalLevel: []
 })
+const filterCount = ref(0)
 watch(filter, (newFilter) => {
+    filterCount.value = nonEmptyCountFilter(newFilter)
     localStorage.setItem('EHFilter', JSON.stringify(newFilter));
+    params.current_page = 1
     getRequest()
 }, { deep: true })
 
@@ -181,7 +224,7 @@ const getSearchText = (data) => {
 const loading = ref(true);
 const total_rows = ref('');
 
-const params = reactive({ current_page: 1, pageSize: 10, sort_column: 'created_at', sort_direction: 'desc', search: '' });
+const params = reactive({ current_page: 1, pagesize: 10, sort_column: 'created_at', sort_direction: 'desc', search: '' });
 const rows = ref(null);
 
 const cols =
@@ -197,7 +240,7 @@ const cols =
         { field: 'final_installation_date', title: 'Final Installation Date', hide: false },
         { field: 'created_at', title: 'Date Requested', type: 'date', hide: false },
         { field: 'approver_name', title: 'Pending Approval', hide: false }, //minWidth : '300px' 
-        { field: 'main_status', title: 'Status', type: 'number', hide: false }, //  minWidth : '200px',
+        { field: 'main_status', title: 'Status', cellClass: "sticky-last", headerClass: "sticky-last-header", type: 'number', hide: false }, //  minWidth : '200px',
     ]) || [];
 
 const colField = cols.value.reduce((acc, v) => {
@@ -216,10 +259,10 @@ provide('column', cols)
  */
 const rolesToAccess = [pub_var.TLRoleID, pub_var.SBUServiceAssistantID, pub_var.engineerRoleID]
 const doubleClickViewData = (row) => {
-    if(rolesToAccess.includes(currentUserRoleID)){
+    if (rolesToAccess.includes(currentUserRoleID)) {
         router.push({ name: 'WorkOrderInstallation', params: { id: row.id } })
-    }else
-    router.push({ name: 'WorkOrderApprover', params: { id: row.id } })
+    } else
+        router.push({ name: 'WorkOrderApprover', params: { id: row.id } })
 }
 const selectedRows = ref([])
 const rowSelect = (row) => {
@@ -268,7 +311,8 @@ const getRequest = async () => {
             params: {
                 ...params,
                 user_id: user.user.id,
-                current_role: currentUserRoleID
+                current_role: currentUserRoleID,
+                ...filter.value,
             },
         });
         const result = response.data?.equipment_handling
@@ -288,7 +332,7 @@ const getRequest = async () => {
 const debounceSearch = debounce(getRequest, 300)
 const changeServer = (data) => {
     params.current_page = data.current_page
-    params.pageSize = data.pageSize
+    params.pagesize = data.pagesize
     params.sort_column = data.sort_column
     params.sort_direction = data.sort_direction
 
@@ -316,6 +360,10 @@ onMounted(() => {
 <style scoped>
 * {
     user-select: none;
+}
+
+.columnChooserCheckBox {
+    height: 30px !important;
 }
 
 table tbody tr td span:empty::before {

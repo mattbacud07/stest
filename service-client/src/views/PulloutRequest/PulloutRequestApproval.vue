@@ -15,7 +15,7 @@
             <v-progress-circular indeterminate size="20" width="1" color="primary" v-if="loading"></v-progress-circular>
             <!-- Approval Template -->
             <template v-if="can('approve', PR) && canApprove">
-                <v-dialog v-model="dialog_disapprove" max-width="400" persistent>
+                <v-dialog v-model="dialog_disapprove" max-width="500" persistent>
                     <template v-slot:activator="{ props: activatorProps }">
                         <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="tonal"
                             class="text-none mr-2">
@@ -29,7 +29,7 @@
                         <template v-slot:actions>
                             <v-row justify="end">
                                 <v-btn elevation="2" @click="dialog_disapprove = false" background-color="red"
-                                    color="#191970" class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                    color="#191970" class="text-none mr-2">
                                     Cancel</v-btn>
                                 <v-btn @click="disapproveRequest" color="primary" elevation="2" class="text-none mr-3"
                                     style="background-color: #191970;color: #fff!important;"><v-icon
@@ -40,7 +40,7 @@
                 </v-dialog>
 
                 <!-- Approve Button -->
-                <v-dialog v-model="dialog_approve" max-width="400" persistent>
+                <v-dialog v-model="dialog_approve" max-width="500" persistent>
                     <template v-slot:activator="{ props: activatorProps }">
 
                         <v-btn type="button" v-bind="activatorProps" :disabled="btnDisable" color="primary"
@@ -74,7 +74,7 @@
                             <v-divider></v-divider>
                             <v-row justify="end" class="mt-7 mb-5 pr-3">
                                 <v-btn variant="tonal" @click="dialog_approve = false" color="primary"
-                                    class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                    class="text-none mr-2">
                                     Cancel</v-btn>
                                 <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="#191970" flat
                                     class="text-none bg-primary mr-5"><v-icon class="mr-2">mdi-check</v-icon>
@@ -89,7 +89,7 @@
 
         <v-container class="container-form mt-3">
             <transition name="scale-transition">
-                <v-card class="mt-5" elevation="0" v-if="!loading">
+                <v-card class="mt-5 statusVCard" elevation="0" v-if="!loading">
                     <v-chip class="ma-2" size="small" color="purple" label>
                         <strong>&nbsp;{{ pullout_approver(formData.level.value) }}</strong>
                         <v-tooltip activator="parent" location="bottom">
@@ -113,7 +113,7 @@
                     </div>
                     <v-row>
                         <v-col cols="6">
-                            <v-card elevation="1" class="pa-2 border-sm pa-3">
+                            <v-card elevation="0" class="pa-2 border-sm pa-3">
                                 <b class="text-primary">Service Dept. Set Schedule</b>
                                 <p class="mt-4 mb-4">Set Schedule: <span class="font-weight-bold">{{
                                     pub_var.FullMonthWithTime(serviceData?.scheduled_date) }}</span></p>
@@ -130,7 +130,7 @@
                         </v-col>
 
                         <v-col cols="6">
-                            <v-card elevation="1" class="pa-2 border-sm pa-3">
+                            <v-card elevation="0" class="pa-2 border-sm pa-3">
                                 <b class="text-primary">Outbound Dept. Set Schedule</b>
                                 <p class="mt-4 mb-4">Set Schedule: <span class="font-weight-bold">{{
                                     pub_var.FullMonthWithTime(outboundData?.scheduled_date) }}</span></p>
@@ -215,7 +215,7 @@
                 </v-card>
             </transition>
             <v-card class="mt-10">
-                <v-tabs v-model="tab" density="compact" class="border-b-sm" bg-color="grey-lighten-5">
+                <v-tabs v-model="tab" density="compact" class="border-b-sm">
                     <v-tab value="equipments" class="text-none"><v-icon class="mr-2">mdi-hammer-screwdriver</v-icon>
                         Requested
                         Equipments</v-tab>
@@ -226,11 +226,10 @@
                 <v-card-text>
                     <v-window v-model="tab" :disabled="true">
                         <v-window-item value="equipments">
-                            <RequestedEquipments :service_id="parseInt(id)" :category="pub_var.PULLOUT"
-                                @get-equipment="getEquipments" />
+                            <PulloutRequestedEquipment :equipments="equipments"/>
                         </v-window-item>
                         <v-window-item value="history">
-                            <PulloutHistoryLog :service_id="parseInt(id)" :status="formData.level.value" />
+                            <PulloutHistoryLog :service_id="id" :status="formData.level.value" />
                         </v-window-item>
                     </v-window>
                 </v-card-text>
@@ -249,7 +248,6 @@ import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vu
 import { user_data } from '@/stores/auth/userData';
 import { getRole } from '@/stores/getRole'
 import { apiRequestAxios } from '@/api/api';
-import RequestedEquipments from '@/components/Approver/EH/RequestedEquipments.vue';
 import PulloutHistoryLog from '@/components/Pullout/PulloutHistoryLog.vue';
 import * as pub_var from '@/global/global'
 
@@ -273,6 +271,7 @@ const { can } = permit()
 
 /** Fetch All Service Engineers */
 import { users_engineers } from '@/helpers/getUsers';
+import PulloutRequestedEquipment from '@/components/Pullout/PulloutRequestedEquipment.vue';
 const { engineers } = users_engineers()
 const sort_engineers = computed(() => {
     return [...(engineers.value || [])].sort((a, b) => a.sbu - b.sbu)
@@ -293,7 +292,7 @@ const tab = ref('equipments') //TAB
 const form = ref(false)
 const btnDisable = ref(false)
 const btnLoading = ref(false)
-const id = route.params.id
+const id = parseInt(route.params.id)
 
 /** Form Fields */
 const formData = {
@@ -340,11 +339,7 @@ const dialog_disapprove = ref(false)
 const dialog_approve = ref(false)
 
 
-/** get Equipments in Requested Equipments Component */
-const equipment_sbu = ref([])
-const getEquipments = (data) => {
-    equipment_sbu.value = data.map(v => v.sbu)
-}
+
 /** show Settings for Outbound and Service */
 const user_sbu_as_approver = user.user.user_roles.find(v => v.role_id === pub_var.approverRoleID)?.SBU
 const showSettingSchedule = computed(() => {
@@ -361,7 +356,7 @@ const showSettingSchedule = computed(() => {
 })
 // Check if Schedule Match
 const dateMatch = computed(() => {
-    if (outboundData.value.scheduled_date !== serviceData.value.scheduled_date) {
+    if (outboundData.value?.scheduled_date !== serviceData.value?.scheduled_date) {
         return { color: 'error', text: 'Schedules do not match' }
     }
     else return { color: 'success', text: 'Schedules match' }
@@ -387,7 +382,7 @@ const canApprove = computed(() => {
     const userApprovalLevels = user.user?.approval_level_pullout || [];
     const userID = user.user?.id;
     const userDepartment = user.user?.department;
-
+    
     if (userApprovalLevels.includes(formData.level.value)) {
         if (!allowedStatuses.includes(formData.status.value)) return false
         if (formData.level.value === SUPERVISOR) {
@@ -423,22 +418,31 @@ const approveRequest = async () => {
             remark: remark.value,
             ...sched.value
         })
-        if (response.data && response.data.success) {
-            btnDisable.value = true
-            toast.success('Approved successfully')
-            router.push('/pull-out-request')
+        if (response?.data?.success) {
+            if(response?.data?.matched){
+                toast.success('Schedule Matched')
+                getRequest()
+            }
+            else if(response?.data?.under_operation_service){
+                toast.success('You set schedule successfully')
+                getRequest()
+            }else{
+                toast.success('Approved successfully')
+                router.push('/pull-out-request')
+            }
         }
         else {
             console.log(response.data.errorLog)
             toast.error(response.data.errorLog)
-            dialog_approve.value = false
             getRequest()
         }
     } catch (error) {
         console.log(error)
     }
     finally {
+        btnDisable.value = false
         btnLoading.value = false
+        dialog_approve.value = false
     }
 }
 
@@ -476,12 +480,15 @@ const pullout_decision_outbound = ref([])
 const pullout_decision_service = ref([])
 const pending_decisions = ref('')
 const has_schedule = ref('')
+const equipments = ref([])
 const finalSchedule = computed(() => {
     const schedule = formData.final_schedule.value
     return schedule ? moment(schedule.trim(), 'YYYY-MM-DD HH:mm:ss').format('MMMM DD, YYYY hh:mm a') : ''
 })
 const outboundData = computed(() => pullout_decision_outbound?.value.find(v => v.type === 'outbound'))
 const serviceData = computed(() => pullout_decision_service?.value.find(v => v.type === 'service'))
+
+const equipment_sbu = ref([])
 const getRequest = async () => {
     try {
         loading.value = true;
@@ -505,6 +512,9 @@ const getRequest = async () => {
             pullout_decision_service.value = result?.pullout_decision_service
             pending_decisions.value = result?.pending_decisions
             has_schedule.value = result?.has_schedule
+            equipments.value = result?.equipments
+
+            equipment_sbu.value = result?.equipments?.map(v => v.master_data?.sbu)
         }
     } catch (error) {
         console.log(error)

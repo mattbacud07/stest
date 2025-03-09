@@ -22,9 +22,6 @@ class ApprovalService
             throw new Exception('Empty array of equipment. Failed to update serial number');
         } else {
             foreach ($items as $item) {
-                // $update_item_peripheral = DB::table('equipment_peripherals')
-                //     ->whereIn('id', [$item['id']]) // Wrap $item['id'] in an array
-                //     ->update(['serial_number' => $item['serial']]);
                 $update_item_peripheral = EquipmentPeripherals::whereIn('id', [$item['id']])
                     ->update(['serial_number' => $item['serial']]);
 
@@ -74,9 +71,9 @@ class ApprovalService
     }
 
     /** Update Log Approvals */
-    public function updateLogApproval($service_id, $current_level, $status, $type, $new_status, $remarks, $acted_at)
+    public function updateLogApproval($service_id, $current_level, $status, $type, $new_status, $remarks, $acted_at, $user_id = null)
     {
-        $user_id = Auth::user()->id;
+        $auth_user_id = Auth::user()->id;
         $query = Approvals::where([
             'service_id' => $service_id,
             'level' => $current_level,
@@ -90,7 +87,7 @@ class ApprovalService
 
         $updated = $query->update([
             'service_id' => $service_id,
-            'user_id' => $user_id,
+            'user_id' => $user_id == null ? $auth_user_id : null,
             'status' => $new_status,
             'remarks' => $remarks,
             'acted_at' => $acted_at
@@ -105,7 +102,7 @@ class ApprovalService
         // $basedOnRequest = $request_type === EH::REQUEST_TYPE 
         $basedOnRequest = [];
         if ($request_type != EH::REQUEST_TYPE) { // if request_type is not Shipment/Delivery = 4
-            $basedOnRequest = [EH::EH_SIGNATORY_COMPLETE, EH::INSTALLING];
+            $basedOnRequest = [EH::INSTALLATION_TL, EH::INSTALLING];
         } else {
             if ($receiving_option == EH::door_to_door) { // set in OUTBOUND Level
                 $basedOnRequest = [EH::S_WIM, EH::ONGOING];
@@ -127,7 +124,7 @@ class ApprovalService
             EH::S_WIM => [EH::S_BILLING_WIM, EH::ONGOING],
             // EH::S_SERVICE => [EH::S_BILLING_WIM, EH::ONGOING],
             EH::S_OUTBOUND => [EH::S_WIM, EH::ONGOING],
-            EH::S_BILLING_WIM => [EH::EH_SIGNATORY_COMPLETE, EH::INSTALLING],
+            EH::S_BILLING_WIM => [EH::INSTALLATION_TL, EH::INSTALLING],
 
             // EH::INSTALLATION_TL => [EH::INSTALLATION_ENGINEER, EH::INSTALLING],
             // EH::INSTALLATION_ENGINEER => [EH::EH_SIGNATORY_COMPLETE, EH::COMPLETE]

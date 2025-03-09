@@ -11,18 +11,18 @@ class PMPartsUsed extends LogsBaseModel
 {
     use HasFactory;
 
-    protected $table = 'pm_parts_used';
+    protected $table = 'parts_used';
     public $timestamps = true;
 
     protected $fillable = [
+        'service_id',
         'item_id',
         'item_description',
         'qty',
         'dr',
         'si',
         'remarks',
-        'created_at',
-        'updated_at',
+        'type'
     ];
 
 

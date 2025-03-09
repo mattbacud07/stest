@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\authLogin\UserModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class ApprovalConfigModel extends LogsBaseModel
 {
@@ -26,7 +28,15 @@ class ApprovalConfigModel extends LogsBaseModel
     ];
 
 
-    // public function role_user(){
-    //     return $this->belongsTo(RoleUser::class, 'role_user_id', 'id');
-    // }
+    public function users()
+    {
+        return $this->belongsTo(UserModel::class, 'user_id', 'id')
+            ->select(
+                'id',
+                'first_name',
+                'last_name',
+                'department',
+                DB::raw(("CONCAT(first_name,' ',last_name) as full_name"))
+            );
+    }
 }

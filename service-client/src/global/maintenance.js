@@ -7,49 +7,40 @@ export const pm = 1
 export const cm = 2
 
 /** Status */
-/** Status */
 export const Scheduled = 'Scheduled';
+export const ReadyForDelegation = 'ReadyForDelegation';
 export const NotSet = 'Not Set';
 export const Delegated = 'Delegated';
-// export const PendingAcceptance = 'Pending Acceptance';
 export const Accepted = 'Accepted';
 export const InTransit = 'In Transit';
 export const InProgress = 'In Progress';
-// export const Backlog = 'Backlog';
-// export const Backjob = 'Backjob';
 export const Completed = 'Completed';
 export const Closed = 'Closed';
-export const pm_status_array = [
-    Scheduled,
-    NotSet,
-    Delegated,
-    Accepted,
-    InTransit,
-    InProgress,
-    Completed,
-    Closed
-];
-export const status_pm = (data) => {
-    switch (data) {
-        case 'Scheduled':
-            return { color: 'blue!important', text: 'Pending Assignment' }
-        case 'Not Set':
-            return { color: 'gray!important', text: 'Not Set' }
-        case 'Delegated':
-            return { color: 'orange!important', text: 'Waiting for Acceptance' }
-        case 'Accepted':
-            return { color: '#BF360C!important', text: 'Job Accepted' }
-        case 'In Transit':
-            return { color: 'indigo!important', text: 'On the Way' }
-        case 'In Progress':
-            return { color: 'teal!important', text: 'In Progress' }
-        case 'Completed':
-            return { color: 'green!important', text: 'Job Completed' }
-        case 'Closed':
-            return { color: 'red!important', text: 'Closed' }
-        default:
-            return { color: 'gray!important', text: 'Unknown Status' }
-    }
+export const Declined = 'Declined';
+// export const pm_status_array = [
+//     Scheduled,
+//     NotSet,
+//     Delegated,
+//     Accepted,
+//     InTransit,
+//     InProgress,
+//     Completed,
+//     Closed
+// ];
+export const status_pm = [
+    {key: Scheduled, color: 'blue', text: 'Pending Assignment' },
+    {key: ReadyForDelegation, color: 'brown-darken-4', text: 'Ready For Delegation' },
+    {key: NotSet, color: 'grey', text: 'Not Set' },
+    {key: Delegated, color: 'orange', text: 'Waiting for Acceptance' },
+    {key: Accepted, color: 'purple', text: 'Request Accepted' },
+    {key: InTransit, color: 'indigo', text: 'On the Way' },
+    {key: InProgress, color: 'deep-orange', text: 'In Progress' },
+    {key: Completed, color: 'green', text: 'Request Completed' },
+    {key: Closed, color: 'grey', text: 'Closed' },
+    {key: Declined, color: 'red', text: 'Declined' },
+]
+export const setPMStatus = (key) => {
+    return status_pm.find(v => v.key === key) || { color: 'brown', text: '' }
 }
 
 

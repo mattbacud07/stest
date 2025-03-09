@@ -18,8 +18,8 @@
                         class="text-none mr-2">
                         Cancel
                     </v-btn>
-                    <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary" variant="flat"
-                        class="text-none btnSubmit">
+                    <v-btn type="submit" :loading="btnLoading" :disabled="!isChanged" color="primary" variant="flat"
+                        :class="['text-none', 'btnSubmit',{'cursor-not-allowed' : !isChanged }]">
                         <v-icon class="mr-2">mdi-note-plus-outline</v-icon> Create
                     </v-btn>
                 </v-col>
@@ -31,10 +31,11 @@
                     <v-card class="pa-7 mb-5">
                         <v-row>
                             <v-col cols="12" lg="6" md="6" sm="6">
-                                <v-combobox color="primary" v-model="institutionValue" clearable label="Institution *"
-                                    density="compact" :items="institutionData" variant="outlined" itemValue="value"
-                                    itemTitle="key" :rules="rule.institutionValue" :close-on-content-click="false"
-                                    hide-details></v-combobox>
+                                <v-combobox color="primary" v-model="formData.institution" clearable
+                                    label="Institution *" density="compact" :items="institutions" variant="outlined"
+                                    itemValue="id" itemTitle="name" :rules="rule.institutionValue"
+                                    @update:modelValue="getAddress($event)"
+                                    :close-on-content-click="false"></v-combobox>
                             </v-col>
                             <v-col cols="12" lg="6" md="6" sm="6">
                                 <v-text-field color="primary" v-model="formData.address" label="Address *"
@@ -192,11 +193,13 @@
                                 :filter="true" skin="bh-table-compact bh-table-bordered bh-table-responsive" class=""
                                 @rowSelect="rowClickEquipment" @change="changeServer"
                                 :rowClass="getRowClass"></vue3-datatable>
-                                <p class="text-danger small">Select one equipment</p>
+                            <p class="text-danger small">Select one equipment</p>
                             <p class="text-danger">Selected Item: <b>[{{ formData.item_code }}]</b></p>
                         </v-card>
                     </v-overlay>
                 </v-col>
+                <VDialog v-model="leaveDialog" title="Discard Changes" text="Are you sure you want to leave?"
+                    @confirm="leave"/>
             </template>
         </LayoutSinglePage>
     </v-form>
@@ -220,13 +223,12 @@ import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
 /** Lodash Debounce */
-import debounce from 'lodash/debounce'
+import _ from 'lodash'
 
 /** Import vuetify UseDisplay */
 import { useDisplay } from 'vuetify'
 const { name, width } = useDisplay()
 
-// console.log(name.value)
 
 import { user_data } from '@/stores/auth/userData';
 import { apiRequestAxios } from '@/api/api';
@@ -241,7 +243,7 @@ const apiRequest = apiRequestAxios()
 
 const datatable = ref(null)
 const form = ref(false)
-const dialog = ref(false)
+const leaveDialog = ref(false)
 const overlayMasterData = ref(false)
 const btnDisable = ref(false)
 const btnLoading = ref(false)
@@ -263,42 +265,43 @@ const navigateTo = (item) => {
 const institutionValue = ref('')
 /** Declarations */
 const formData = ref({
-    institutionValue: '',
-    address: '',
-    item_code: '',
-    item_id: '',
-    equipment: '',
-    serial: '',
-    sbu: '',
-    dealer_name: '',
-    area: '',
-    operation_time: '',
-    software_version: '',
-    admission_date: '',
-    date_installed: '',
-    contract_due_date: '',
-    region: '',
-    frequency: '',
-    analyzer_type: '',
-    class: '',
-    initially_installed: '',
-    reason_equipment_status: '',
-    email: '',
-    mode: '',
-    supplier: '',
-    status: '',
+    institution: null,
+    address: null,
+    item_code: null,
+    item_id: null,
+    equipment: null,
+    serial: null,
+    sbu: null,
+    dealer_name: null,
+    area: null,
+    operation_time: null,
+    software_version: null,
+    admission_date: null,
+    date_installed: null,
+    contract_due_date: null,
+    region: null,
+    frequency: null,
+    analyzer_type: null,
+    class: null,
+    initially_installed: null,
+    reason_equipment_status: null,
+    email: null,
+    mode: null,
+    supplier: null,
+    status: null,
 })
 
 /** Auto Populate Addresss base on Institution */
-watch(institutionValue, (newVal) => {
-    formData.value.address = newVal ? newVal.value : ''
-})
+const getAddress = (data) => {
+    formData.value.address = data?.address ?? null
+}
 
 
 /** Input Form Rules */
 const rule = ref({
     institutionValue: [
-        v => !!v || 'Required'
+        v => !!v || 'Required',
+        v => institutions.value.some(d => d.id === (v?.id || v)) || 'Please select a valid data in the list',
     ],
     address: [
         v => (v && v.trim() !== '') || 'Required'
@@ -412,24 +415,10 @@ const getMasterData = async () => {
 };
 
 // Instittuition
-const get_institution = async () => {
-    try {
-        loading.value = true;
-        const response = await apiRequest.get('get_institution');
-
-        institutionData.value = response.data.institutions.map(institution => {
-            return {
-                key: institution.name,
-                value: institution.address,
-                institutionId: institution.id,
-            }
-        })
-    } catch (error) {
-        console.log(error)
-    }
-
-    loading.value = false;
-};
+// Instittuition
+import { useInstitutions } from '@/helpers/getInstitution';
+import VDialog from '@/components/common/VDialog.vue';
+const { institutions } = useInstitutions()
 
 // Supplier
 const supplierData = ref([])
@@ -477,7 +466,7 @@ const get_users = async () => {
 };
 
 // debounce initialization
-const debounceSearch = debounce(getMasterData, 300)
+const debounceSearch = _.debounce(getMasterData, 300)
 
 /** Server Mode */
 const changeServer = (data) => {
@@ -491,16 +480,27 @@ const changeServer = (data) => {
         getMasterData();
     }
 };
+const orginalFormData = _.cloneDeep(formData.value)
+const isChanged = computed(()=>{
+    return !_.isEqual(formData.value, orginalFormData)
+})
 
 /** Discard button */
 const discard = () => {
+    if(isChanged.value){
+        leaveDialog.value = true
+        return
+    }
+    leave()
+}
+const leave = () => {
+    leaveDialog.value = false
     router.push('/master-data')
 }
 
 
 onMounted(() => {
     getMasterData();
-    get_institution()
     get_supplier()
     get_users()
 });
@@ -512,12 +512,7 @@ onMounted(() => {
 
 
 
-
-
-
-
-
-<style scoped>
+<!-- <style scoped>
 .dp--menu-wrapper {
     position: absolute !important;
 }
@@ -538,4 +533,4 @@ onMounted(() => {
 /* .vCheckbox {
         height: 40px !important;
     } */
-</style>
+</style> -->

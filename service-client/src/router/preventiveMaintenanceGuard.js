@@ -8,16 +8,10 @@ export const preventiveMaintenanceRequest = (actionsArray, resource) => {
         const ability = myAbility.abilities
         const { can } = useAbility(ability.value)
 
-        const validWorkType = ['PM', 'CM']
-        const work_type = to.params.work_type
-
-        if (validWorkType.includes(work_type)) {
             const hasAccess = actionsArray.some(action => can(action, resource))
             if (hasAccess) {
                 next()
             }
             else next('/forbidden')
-        }
-        else next(false)
     }
 }

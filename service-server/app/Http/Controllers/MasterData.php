@@ -231,7 +231,7 @@ class MasterData extends Controller
             $soft_delete = $q->delete();
 
             if (!$soft_delete) {
-                throw new Exception('Unsuccessful');
+                throw new Exception('Error deleting the record');
             }
 
             DB::commit();

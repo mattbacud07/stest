@@ -22,5 +22,5 @@ export const adminSidebarConfig = [
         ],
     },
     
-    { name: 'ServiceLogs', module: 'Logs', icong: 'mdi-list-status' },
+    { name: 'ServiceLogs', module: 'General Logs', icong: 'mdi-list-status' },
 ]

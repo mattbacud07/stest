@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\authLogin\UserModel;
+use App\Models\PreventiveMaintenance\PMPartsUsed;
 use App\Models\WorkOrder\EquipmentPeripherals;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -64,9 +65,9 @@ class EhServicesModel extends LogsBaseModel
     public const S_IT_DEPARTMENT = 7;
     public const S_SM_SER = 8;
     public const S_WIM = 9;
-    public const S_SERVICE = 10;
+    // public const S_SERVICE = 10;
+    public const S_OUTBOUND = 10;
     public const S_BILLING_WIM = 11;
-    public const S_OUTBOUND = 12;
 
     public const INSTALLATION_TL = 18;
     public const INSTALLATION_ENGINEER = 19;
@@ -81,6 +82,7 @@ class EhServicesModel extends LogsBaseModel
     public const INTERNAL_SERVICING = 3;
     public const INSTALLING = 4;
     public const COMPLETE = 5;
+    public const FOR_STORAGE = 6;
 
     /** External Request Option */
     public const REQUEST_TYPE = 4; //Shipment/Delivery
@@ -132,20 +134,26 @@ class EhServicesModel extends LogsBaseModel
 
     public function equipments()
     {
-        return $this->hasMany(EquipmentPeripherals::class, 'service_id', 'id');
+        return $this->hasMany(EquipmentPeripherals::class, 'service_id', 'id')
+        ->where('category', 'Equipment')
+        ->where('request_type', 'eh');
+    }
+    public function peripherals()
+    {
+        return $this->hasMany(EquipmentPeripherals::class, 'service_id', 'id')
+        ->where('category', 'Peripheral')
+        ->where('request_type', 'eh');
     }
 
-    // public function institutions(){
-    //     return $this->hasOne(MasterDataInstitution::class, 'id', 'institution');
-    // }
+    public function institution(){
+        return $this->belongsTo(MasterDataInstitution::class, 'institution', 'id')
+        ->select('id','name','address');
+    }
 
-    // public function users(){
-    //     return $this->hasOne(UserModel::class, 'id', 'requested_by');
-    // }
-    public function combineName()
-    {
-        if ($this->users) return " { $this->users->first_name} {$this->users->last_name}";
-        return null;
+    public function users(){
+        return $this->belongsTo(UserModel::class, 'requested_by', 'id')
+        ->select('id','first_name','last_name','department',
+        DB::raw(("CONCAT(first_name,' ',last_name) as full_name")));
     }
 
     public function internal_servicing_request()
@@ -153,6 +161,8 @@ class EhServicesModel extends LogsBaseModel
         return $this->hasOne(InternalRequest::class, 'service_id', 'id');
     }
 
+
+    /** Task Delegation Section  */
     public function task_delegation()
     {
         return $this->hasOne(EngineerTaskDelegation::class, 'service_id', 'id')
@@ -161,8 +171,24 @@ class EhServicesModel extends LogsBaseModel
             ->select('engineer_task_delegation.*', 'u.first_name', 'u.last_name')
             ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'engineer_task_delegation.assigned_to', '=', 'u.id');
     }
+
     public function task_delegation_all()
     {
         return $this->hasMany(EngineerTaskDelegation::class, 'service_id', 'id')->where('type', 'eh');
     }
+
+    public function latest_task_delegation()
+    {
+        return $this->hasOne(EngineerTaskDelegation::class, 'service_id','id')
+            ->latest(); // Orders by created_at DESC by default
+    }
+    
+    
+    public function approval_logs()
+    {
+        return $this->hasMany(Approvals::class, 'service_id','id')
+            ->select('id','service_id','user_id', 'level','status', 'remarks', 'acted_at')
+            ->where('type', 'eh'); // Approval Logs
+    }
+
 }

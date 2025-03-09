@@ -2,10 +2,12 @@
 
 namespace App\Models\authLogin;
 
+use App\Models\Roles;
 use App\Models\RoleUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -60,4 +62,9 @@ class UserModel extends Authenticatable
     //         'abilities' => $abilities,
     //     ]);
     // }
+
+
+    public function supervisor(){
+        return $this->hasMany(RoleUser::class, 'user_id', 'id');
+    }
 }

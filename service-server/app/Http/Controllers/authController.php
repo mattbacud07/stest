@@ -40,21 +40,21 @@ class authController extends Controller
 
                     /** Get Approval Config details [Approver Category - Equipment Handling Installation] */
                     $getApprovalConfigEHInstallation = DB::table('approval_configuration')
-                    ->select('approval_level')
-                    ->where('user_id', $user->id)
-                    ->where('approver_category', EhServicesModel::EH_INSTALLATION)
-                    ->get();
-                    
+                        ->select('approval_level')
+                        ->where('user_id', $user->id)
+                        ->where('approver_category', EhServicesModel::EH_INSTALLATION)
+                        ->get();
+
                     /** Get Approval Config details [Approver Category - Equipment Handling Pullout] */
                     $getApprovalConfigEHPullout = DB::table('approval_configuration')
-                    ->select('approval_level')
-                    ->where('user_id', $user->id)
-                    ->where('approver_category', EhServicesModel::EH_PULLOUT)
-                    ->get();
+                        ->select('approval_level')
+                        ->where('user_id', $user->id)
+                        ->where('approver_category', EhServicesModel::EH_PULLOUT)
+                        ->get();
 
                     /** Get user role */
                     $getRole = DB::table('role_user as rU')
-                        ->select('role_id', 'r.role_name', 'r.permissions', 'SBU')
+                        ->select('role_id', 'r.role_name', 'r.permissions', 'SBU', 'satellite')
                         ->join('roles as r', 'rU.role_id', '=', 'r.roleID')
                         ->where('user_id', $user->id)->get();
                     // ->pluck('r.role_id')
@@ -68,7 +68,7 @@ class authController extends Controller
                     } else {
                         $userApprovalConfigEHInstallation = [];
                     }
-                    
+
                     /** Approval Config - Pullout */
                     if (isset($getApprovalConfigEHPullout) && !empty($getApprovalConfigEHPullout)) {
                         $userApprovalConfigEHPullout = $getApprovalConfigEHPullout->pluck('approval_level');
@@ -116,7 +116,7 @@ class authController extends Controller
             // throw $th;
             Log::error($th->getMessage());
 
-            return response()->json(['error' => 'An error occurred.' . $th], 500);
+            return response()->json(['error' => 'An error occurred.' . $th->getMessage()], 500);
         }
     }
 
@@ -145,13 +145,13 @@ class authController extends Controller
             ->where('user_id', $user->id)
             ->leftJoin('roles as r', 'r.roleID', '=', 'role_user.role_id');
 
-            if($request->has('currentRole') && !empty($request->currentRole)){
-                $currentRole = $request->currentRole;
-                $data->where('role_id', $currentRole);
-            }
-        
+        if ($request->has('currentRole') && !empty($request->currentRole)) {
+            $currentRole = $request->currentRole;
+            $data->where('role_id', $currentRole);
+        }
+
         $userRoles = $data->get();
-         
+
 
         // $userDataWithRoles = ['roles' => $userRoles];
 
@@ -162,32 +162,32 @@ class authController extends Controller
 
 
 
-        /** Get the assigned Roles to all users */
-        public function get_user_assigned_roles(Request $request)
-        {
-            $role_id = $request->role;
-            $user_role = RoleUser::with(['users' => function ($q) {
-                $q->select(
-                    'users.*',
-                    'd.name',
-                    'p.position_name',
-                    DB::raw("CONCAT(users.first_name,' ',users.last_name) as fullname")
-                )
-                    // ->leftJoin(DB::connection('mysql')->getDatabaseName() . '.approval_configuration as a_p', 'users.id', '=', 'a_p.user_id')
-                    ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.departments as d', 'users.department', '=', 'd.id')
-                    ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.positions as p', 'users.position', '=', 'p.id');
-            }])
-                ->with('roles')
-                ->with('approver');
-    
-            if ($request->has('role') && !empty($role_id)) {
-                $user_role->where('role_id', $role_id);
-            }
-    
-            $role = $user_role->get();
-    
-            return response()->json([
-                'users_role' => $role,
-            ], 200);
+    /** Get the assigned Roles to all users */
+    public function get_user_assigned_roles(Request $request)
+    {
+        $role_id = $request->role;
+        $user_role = RoleUser::with(['users' => function ($q) {
+            $q->select(
+                'users.*',
+                'd.name',
+                'p.position_name',
+                DB::raw("CONCAT(users.first_name,' ',users.last_name) as fullname")
+            )
+                // ->leftJoin(DB::connection('mysql')->getDatabaseName() . '.approval_configuration as a_p', 'users.id', '=', 'a_p.user_id')
+                ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.departments as d', 'users.department', '=', 'd.id')
+                ->leftJoin(DB::connection('mysqlSecond')->getDatabaseName() . '.positions as p', 'users.position', '=', 'p.id');
+        }])
+            ->with('roles')
+            ->with('approver');
+
+        if ($request->has('role') && !empty($role_id)) {
+            $user_role->where('role_id', $role_id);
         }
+
+        $role = $user_role->get();
+
+        return response()->json([
+            'users_role' => $role,
+        ], 200);
+    }
 }

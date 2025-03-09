@@ -19,7 +19,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('app:PMUpdateStatus')->dailyAt('08:00');
         // $schedule->command('app:PMUpdateStatus')->everyFiveSeconds();
         $startOfMonitoringTime = '08:00';
-        $schedule->command('app:monitor-pm')->everyFiveMinutes();
+        $schedule->command('app:monitor-pm')->everyTenSeconds();
     }
 
     /**

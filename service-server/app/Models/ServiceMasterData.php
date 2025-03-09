@@ -6,6 +6,7 @@ use App\Models\authLogin\UserModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class ServiceMasterData extends LogsBaseModel
 {
@@ -50,20 +51,32 @@ class ServiceMasterData extends LogsBaseModel
     public const inActive = 'InActive';
     public const inStock = 'In-stock';
 
+    // public function institution(){
+    //     return $this->belongsTo(MasterDataInstitution::class, 'institution', 'id')
+    //     ->select('id','name','address');
+    // }
+
+    // public function users(){
+    //     return $this->belongsTo(UserModel::class, 'requested_by', 'id')
+    //     ->select('id','first_name','last_name','department',
+    //     DB::raw(("CONCAT(first_name,' ',last_name) as full_name")));
+    // }
 
     public function institution_data(){
-        return $this->hasOne(MasterDataInstitution::class, 'id', 'institution');
+        return $this->belongsTo(MasterDataInstitution::class, 'institution', 'id');
     }
     public function users_data(){
-        return $this->hasOne(UserModel::class, 'id','initially_installed')
-        ->select('id','first_name', 'last_name');
+        return $this->belongsTo(UserModel::class, 'requested_by', 'id')
+        ->select('id','first_name','last_name','department',
+        DB::raw(("CONCAT(first_name,' ',last_name) as full_name")));
     }
+
     public function suppliers_data(){
-        return $this->hasOne(MasterDataSupplier::class, 'id','supplier')
+        return $this->belongsTo(MasterDataSupplier::class, 'supplier','id')
         ->select('id','bp_code', 'name');
     }
     public function master_data(){
-        return $this->hasOne(MasterData::class, 'id', 'master_data_id')
+        return $this->belongsTo(MasterData::class, 'master_data_id', 'id')
         ->select('id','item_code','description');
     }
 }

@@ -53,8 +53,7 @@
                         <v-divider class="mb-5"></v-divider>
                         <!-- <template v-slot:actions> -->
                         <v-row justify="end" class="mb-3">
-                            <v-btn @click="dialogInternalRequest = false" background-color="red"
-                                size="small" class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                            <v-btn @click="dialogInternalRequest = false" elevation="0" size="small" class="text-none mr-2">
                                 Cancel</v-btn>
                             <v-btn type="submit" size="small" :loading="btnLoading" :disabled="btnDisable"
                                 color="#191970" class="text-none bg-primary mr-5"><v-icon

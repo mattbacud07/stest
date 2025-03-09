@@ -6,8 +6,11 @@
 .v-main{
   padding-left: 280px!important;
 } */
+ .v-main{
+  background: #f9f9f9!important;
+ }
 .v-navigation-drawer{
-  background: #fbfbfb!important;
+  background: #fff!important;
 }
 .cd__main {
   background: linear-gradient(to right, #8e9eab, #eef2f3) !important;
@@ -63,6 +66,12 @@ table.dataTable>tbody>tr.selected>* {
 .small-feather {
   width: 18px;
   height: 18px;
+}
+
+
+/* /** V Card Text */
+.vCardText .v-card-text{
+  min-height: 300px!important;
 }
 
 
@@ -148,6 +157,9 @@ table.dataTable>tbody>tr.selected>* {
   min-height: 50vh!important;
   /* min-height: 300px!important; */
 }
+.bh-datatable{
+  background-color: #fff!important;
+}
 
 .bh-table-responsive table.bh-table-bordered tbody tr td, .bh-table-responsive table.bh-table-bordered thead tr th {
    border-color: #f0f0f0!important;
@@ -194,6 +206,21 @@ table.bh-table-bordered tbody .highlightRow{
 .assignedRoleCellClass{
   padding: 4px .8em !important;
 }
+/* Target table header row */
+.vue3-datatable thead th {
+  background-color: lightgray; /* Example: Gray background */
+  font-weight: bold; /* Make headers bold */
+  text-align: center; /* Center align text */
+}
+
+/* Specific styling for a column by its label */
+.sticky-last-header .bh-table-responsive table.bh-table-bordered thead tr th:last-child, .sticky-last { 
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 2;
+}
+
 
 /* ****************************************************End  Table Vue3 DataTable ******************************************** */
 
@@ -282,4 +309,12 @@ table tbody tr td span:empty::before{
 /* Form Input Height */
 .v-field__input{
   min-height: 36px!important;
+}
+
+
+
+
+/** Vcard */
+.statusVCard{
+  background: #ffffff00!important;
 }

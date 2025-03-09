@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\authLogin\UserModel;
+use App\Models\WorkOrder\EquipmentPeripherals;
 use App\Traits\GlobalVariables;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -72,6 +74,19 @@ class Pullout extends LogsBaseModel
         return PulloutDecisionLog::where('service_id', $this->id)
         ->where('status', self::PENDING)->count();
     }
+
+
+    public function equipments(){
+        return $this->hasMany(EquipmentPeripherals::class, 'service_id', 'id')
+        ->where('category', 'Equipment')
+        ->where('request_type', 'pullout');
+    }
+
+    public function roleUser()
+    {
+        return $this->belongsTo(RoleUser::class, 'requested_by', 'user_id');
+    }
+    
 
     
     

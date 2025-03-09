@@ -10,7 +10,7 @@ class PMOptionsAction extends LogsBaseModel
 {
     use HasFactory;
 
-    protected $table='pm_options_action';
+    protected $table='predefined_actions';
 
     public $timestamps = true;
 

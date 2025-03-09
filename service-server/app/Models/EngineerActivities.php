@@ -25,7 +25,8 @@ class EngineerActivities extends LogsBaseModel
 
     /** Statusses */
 
-    public const InTransit = 'InTransit';
+    public const Accepted = 'Accepted';
+    public const InTransit = 'In Transit';
     public const Started = 'Started';
     public const Ended = 'Ended';
 

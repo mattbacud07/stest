@@ -20,5 +20,6 @@ class ChecklistItemAcquired extends LogsBaseModel
         'qty',
         'item',
         'remarks',
+        'work_type'
     ];
 }

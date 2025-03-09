@@ -28,7 +28,7 @@
                         <template v-slot:actions>
                             <v-row justify="end">
                                 <v-btn @click="dialog = false" background-color="red" color="#191970"
-                                    class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                    class="text-none mr-2">
                                     Cancel</v-btn>
                                 <v-btn @click="approveByWIM" :loading="btnSubmitLoading" :disabled="btnDisable"
                                     color="primary" elevation="2" class="text-none mr-3"
@@ -80,8 +80,7 @@
 
                             <v-divider class="mb-5"></v-divider>
                             <v-row justify="end" class="mb-3">
-                                <v-btn @click="dialogRedelegate = false" size="small"
-                                    class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                <v-btn @click="dialogRedelegate = false" size="small" class="text-none mr-2">
                                     Cancel</v-btn>
                                 <v-btn type="submit" size="small" :loading="btnSubmitLoading" :disabled="btnDisable"
                                     color="#191970" class="text-none bg-primary mr-5"><v-icon
@@ -100,8 +99,7 @@
                     <v-card text="Send to the warehouse for storage?" title="">
                         <template v-slot:actions>
                             <v-spacer></v-spacer>
-                            <v-btn @click="forStorageDialog = false" elevation="0"
-                                class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                            <v-btn @click="forStorageDialog = false" elevation="0" class="text-none mr-2">
                                 Cancel</v-btn>
                             <v-btn size="small" @click="forStorage" :loading="btnSubmitLoading" :disabled="btnDisable"
                                 color="#191970" class="text-none bg-primary"><v-icon class="mr-1">mdi-check</v-icon>
@@ -116,8 +114,8 @@
                 <span v-if="canAcceptDecline">
                     <v-dialog v-model="dialog" max-width="400" persistent>
                         <template v-slot:activator="{ props: activatorProps }">
-                            <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="tonal"
-                                class="text-none mr-2"><v-icon class="mr-2">mdi-close</v-icon>
+                            <v-btn :disabled="btnDisable" v-bind="activatorProps" color="primary" variant="plain"
+                                class="text-none mr-2">
                                 Decline</v-btn>
                         </template>
                         <v-card text="" title="Decline">
@@ -129,7 +127,7 @@
                             <template v-slot:actions>
                                 <v-row justify="end">
                                     <v-btn @click="dialog = false" background-color="red" color="#191970"
-                                        class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                        class="text-none mr-2">
                                         Cancel</v-btn>
                                     <v-btn @click="declineTask" :loading="btnSubmitLoading" :disabled="btnDisable"
                                         color="primary" class="text-none mr-3"
@@ -155,7 +153,7 @@
                                     <template v-slot:actions>
                                         <v-row justify="end">
                                             <v-btn @click="isActive.value = false" background-color="red"
-                                                color="#191970" class="text-none mr-2"><v-icon>mdi-close</v-icon>
+                                                color="#191970" class="text-none mr-2">
                                                 Cancel</v-btn>
                                             <v-btn @click="acceptInternalRequest" :loading="btnSubmitLoading"
                                                 :disabled="btnDisable" color="primary" elevation="2"
@@ -185,11 +183,15 @@
                     You have the option to either redelegate the machine for internal servicing or move it to storage
                 </v-alert>
                 <transition name="slide-x-transition">
-                    <v-card class="mt-5" elevation="0" v-if="!loading">
+                    <v-card class="mt-5 statusVCard" elevation="0" v-if="!loading">
                         <v-chip class="ma-2" :color="pub_var.getInternalStatus(status).color" label>
                             <v-icon icon="mdi-circle-medium" start></v-icon>
                             Status:
                             <strong>&nbsp;{{ pub_var.getInternalStatus(status).text }}</strong>
+                        </v-chip>
+                        <v-chip class="ma-2" color="red" label
+                            v-if="internalData?.option_type && status === pub_var.I_WAREHOUSE">
+                            <strong>&nbsp;For {{ _.upperFirst(internalData?.option_type) ?? '---' }}</strong>
                         </v-chip>
                     </v-card>
                 </transition>
@@ -244,7 +246,7 @@
                                     <v-row>
                                         <v-col cols="12" md="12" sm="12">
                                             <b class="text-primary ml-1">Select Items</b>
-                                            <vue3-datatable ref="datatable" :rows="rows" :columns="cols"
+                                            <vue3-datatable ref="datatable" :rows="checkListItems" :columns="cols"
                                                 :loading="loading" :selectRowOnClick="true" :hasCheckbox="true"
                                                 :pagination="false"
                                                 skin="bh-table-compact bh-table-bordered bh-table-striped bh-table-hover"
@@ -308,110 +310,17 @@
                     </v-card>
                 </v-form>
 
-
-                <!-- Service Report Tabs -->
-                <v-card class="mt-10" v-if="showReport">
-                    <v-tabs v-model="tabReport" density="compact" class="border-b-sm d-flex justify-between"
-                        bg-color="grey-lighten-5">
-                        <v-tab value="service_report" class="text-none" color="primary"><v-icon
-                                class="mr-2">mdi-poll</v-icon> Service
-                            Report</v-tab>
-                        <v-tab value="item_report" class="text-none" color="primary"><v-icon
-                                class="mr-2">mdi-chart-bar-stacked</v-icon>
-                            Item Report</v-tab>
-                    </v-tabs>
-
-                    <v-skeleton-loader :loading="loading" type="article">
-                        <v-card-text>
-                            <v-window v-model="tabReport">
-                                <v-window-item value="service_report">
-                                    <v-row>
-                                        <v-col cols="12">
-                                            <p class="mb-3"><b class="text-grey">Actions Taken</b></p>
-                                            <p v-for="action in actions_taken" :key="action"
-                                                v-if="actions_taken?.length > 0">
-                                                <span class="mt-3">
-                                                    <v-icon color="primary">mdi-check</v-icon> {{ action.action }}
-                                                </span>
-                                            </p>
-                                            <p v-else>
-                                                <span class="mt-3">
-                                                    <v-icon color="grey">mdi-text-box-search-outline</v-icon> <span
-                                                        class="text-grey small">No records
-                                                        found</span>
-                                                </span>
-                                            </p>
-                                        </v-col>
-                                        <v-col cols="12">
-                                            <p class="mb-3"><b class="text-grey">Status after service</b></p>
-                                            <v-chip label density="comfortable"
-                                                v-if="task_delegation?.status_after_service" color="primary"
-                                                variant="flat">
-                                                {{ task_delegation?.status_after_service }}
-                                            </v-chip>
-                                            <p v-else>---</p>
-                                        </v-col>
-                                    </v-row>
-                                </v-window-item>
-                                <v-window-item value="item_report">
-                                    <v-row>
-                                        <v-col cols="12">
-                                            <v-card v-if="Items.length > 0" class="mt-5">
-                                                <v-row class="mb-3">
-                                                    <v-col cols="12">
-                                                        <p class="mb-2"><b class="text-grey ml-1">Equipment Management
-                                                                Actions</b></p>
-                                                        <v-chip label density="comfortable"
-                                                            v-if="task_delegation?.option_type" color="primary"
-                                                            variant="flat">
-                                                            For {{ task_delegation?.option_type }}
-                                                        </v-chip>
-                                                        <p v-else>---</p>
-                                                    </v-col>
-                                                </v-row>
-
-                                                <!-- Checklist Item Form -->
-                                                <b class="text-grey ml-1">Checklist Items</b>
-                                                <table class="table table-sm table-bordered mt-3">
-                                                    <thead>
-                                                        <tr class="text-none">
-                                                            <td>Item</td>
-                                                            <td>Qty</td>
-                                                            <td>Remark</td>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr v-for="(item, index) in Items" :key="index">
-                                                            <td>{{ item.item }}</td>
-                                                            <td>{{ item.qty }}</td>
-                                                            <td>{{ item.remarks }}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </v-card>
-                                            <v-card v-else>
-                                                <span class="mt-3">
-                                                    <v-icon color="grey">mdi-text-box-search-outline</v-icon> <span
-                                                        class="text-grey">No
-                                                        records
-                                                        found</span>
-                                                </span>
-                                            </v-card>
-                                        </v-col>
-                                    </v-row>
-                                </v-window-item>
-                            </v-window>
-                        </v-card-text>
-                    </v-skeleton-loader>
-                </v-card>
-
                 <v-card class="mt-10">
-                    <v-tabs v-model="tab" density="compact" class="border-b-sm d-flex justify-between"
-                        bg-color="grey-lighten-5">
+                    <v-tabs v-model="tab" density="compact" class="border-b-sm d-flex justify-between">
                         <div>
                             <v-tab value="delegation_details" :disabled="loading" class="text-none"
                                 color="primary"><v-icon class="mr-2">mdi-gesture-tap-button</v-icon> Delegation
                                 Details</v-tab>
+                            <v-tab value="service_report" class="text-none" color="primary"><v-icon
+                                    class="mr-2">mdi-poll</v-icon>ServiceReport</v-tab>
+                            <v-tab value="item_report" class="text-none" color="primary"><v-icon
+                                    class="mr-2">mdi-chart-bar-stacked</v-icon>
+                                Checklist Item</v-tab>
                         </div>
                         <v-spacer></v-spacer>
                         <div class="d-flex">
@@ -422,19 +331,23 @@
                         </div>
                     </v-tabs>
 
-                    <v-card-text>
+                    <v-card-text class="vCardText">
                         <v-window v-model="tab" :disabled="true">
                             <v-window-item value="details">
                                 <RequestDetails :request_data="equipment_handling" :key="refreshKeyDetail" />
                                 <!-- @set-status="getStatus"  -->
                             </v-window-item>
                             <v-window-item value="equipments">
-                                <RequestedEquipments :service_id="parseInt(service_id)" :editSerial="false"
-                                    :category="pub_var.EH" />
+                                <RequestedEquipments :equipments="equipments" :editSerial="false" />
                             </v-window-item>
                             <v-window-item value="delegation_details">
-                                <InternalServicingActivity :id="parseInt(id)" :key="refreshKey"
-                                    :internalData="internalData" />
+                                <InternalServicingActivity :id="id" :key="refreshKey" :internalData="internalData" />
+                            </v-window-item>
+                            <v-window-item value="item_report">
+                                <ItemReportData :task_delegation="task_delegation" :items_acquired="items_acquired" />
+                            </v-window-item>
+                            <v-window-item value="service_report">
+                                <ServiceReportData :task_delegation="task_delegation" :actions_taken="actions_taken" />
                             </v-window-item>
                         </v-window>
                     </v-card-text>
@@ -448,6 +361,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getRole } from '@/stores/getRole'
 import { apiRequestAxios } from '@/api/api';
+import _ from 'lodash';
 
 const role = getRole()
 const currentUserRoleID = role.currentUserRole
@@ -475,7 +389,7 @@ import { useActions } from '@/helpers/getActionsTaken';
 const { actions_data } = useActions()
 
 import { permit } from '@/castl/permitted';
-import { IS } from '@/global/modules';
+import { A_IS, IS } from '@/global/modules';
 const { can } = permit()
 
 
@@ -515,7 +429,7 @@ const refreshKeyDetail = ref(0)
 const type_of_activity = ref('')
 
 
-const id = route.params.id ?? null
+const id = parseInt(route.params.id)
 const service_id = ref(null)
 const serialNumber = ref([])
 const status = ref(null)
@@ -558,29 +472,47 @@ const rowSelect = (data) => {
 /** Get Internal Row by ID */
 const internalData = ref([])
 const actions_taken = ref([])
+const items_acquired = ref([])
 const task_delegation = ref({})
 const equipment_handling = ref({})
+const equipments = ref({})
 const getInternalRowById = async () => {
     btnDisable.value = true
+    loading.value = true
     try {
         const response = await apiRequest.get('getInternalRowById', {
-            params: { id: id }
+            params: {
+                id: id,
+                module_type: A_IS
+            }
         })
-        if (response.data?.internal_request) {
+        if (response?.data?.internal_request) {
             btnDisable.value = true
-            const data = response.data.internal_request
-            status.value = data.status
+            const data = response.data?.internal_request
+            status.value = data?.status
             internalData.value = data
-            actions_taken.value = data?.task_delegation[0]?.actions_taken
-            task_delegation.value = data?.task_delegation[0]
-            delegation_id.value = data?.task_delegation?.find(v => v.active === 1)?.id
-            service_id.value = data.service_id
-            equipment_handling.value = data.equipment_handling
+            actions_taken.value = data?.task_delegation?.actions_taken
+            task_delegation.value = data?.task_delegation
+            items_acquired.value = data?.task_delegation?.items_acquired
+            delegation_id.value = data?.task_delegation?.id
+            service_id.value = data?.service_id
+
+
+            const eh = data.equipment_handling
+            equipment_handling.value = {
+                full_name: eh?.users?.full_name,
+                institution: eh?.institution?.name,
+                address: eh?.institution?.address,
+                proposed_delivery_date: eh?.proposed_delivery_date,
+                created_at: eh?.created_at,
+            }
+            equipments.value = data?.equipment_handling?.equipments
         }
     } catch (error) {
         console.log(error)
     } finally {
         btnDisable.value = false
+        loading.value = false
     }
 }
 
@@ -603,6 +535,7 @@ const delegateInternalServicing = async () => {
     const { valid } = await formRedelegate.value.validate()
     if (!valid) {
         btnSubmitLoading.value = false
+        btnDisable.value = false
         return
     }
 
@@ -616,9 +549,9 @@ const delegateInternalServicing = async () => {
             toast.success('Successfully delegated')
             getInternalRowById()
             tab.value = 'details'
-            refreshKey.value += 1;
-            btnDisable.value = true
-            dialogRedelegate.value = false
+            // refreshKey.value += 1;
+            // btnDisable.value = true
+            // dialogRedelegate.value = false
         } else {
             btnDisable.value = false
             dialogRedelegate.value = false
@@ -630,6 +563,7 @@ const delegateInternalServicing = async () => {
         alert(error)
     }
     finally {
+        btnDisable.value = false
         dialogRedelegate.value = false
         btnSubmitLoading.value = false
     }
@@ -656,9 +590,9 @@ const declineTask = async () => {
         if (response.data && response.data.success) {
             toast.success('Successfully declined')
             getInternalRowById()
-            tab.value = 'details'
-            refreshKey.value += 1;
-            btnDisable.value = true
+            // tab.value = 'details'
+            // refreshKey.value += 1;
+            // btnDisable.value = true
         } else {
             btnDisable.value = false
             toast.error(response.data.error)
@@ -687,9 +621,9 @@ const acceptInternalRequest = async () => {
         if (response.data && response.data.success) {
             toast.success('Successfully accepted')
             getInternalRowById()
-            tab.value = 'details'
-            refreshKey.value += 1;
-            btnDisable.value = true
+            // tab.value = 'details'
+            // refreshKey.value += 1;
+            // btnDisable.value = true
         } else {
             btnDisable.value = false
             toast.error(response.data.error)
@@ -748,9 +682,9 @@ const SubmitMarkAsCompleted = async () => {
             toast.success('Operation completed successfully')
             getInternalRowById()
             getItems()
-            tab.value = 'details'
-            refreshKey.value += 1;
-            btnDisable.value = true
+            // tab.value = 'details'
+            // refreshKey.value += 1;
+            // btnDisable.value = true
         } else {
             btnDisable.value = false
             toast.error(response.data.error)
@@ -773,13 +707,15 @@ const forStorage = async () => {
     try {
         const response = await apiRequest.post('for_storage', {
             internal_id: id,
+            service_id: service_id.value,
+            delegation_id: delegation_id.value,
         })
         if (response.data && response.data.success) {
             toast.success('Operation completed successfully')
             getInternalRowById()
-            tab.value = 'details'
-            refreshKey.value += 1;
-            btnDisable.value = true
+            // tab.value = 'details'
+            // refreshKey.value += 1;
+            // btnDisable.value = true
         }
     } catch (error) {
         console.log(error)
@@ -800,13 +736,14 @@ const approveByWIM = async () => {
         const response = await apiRequest.post('approve_by_wim', {
             internal_id: id,
             service_id: service_id.value,
+            option_type: internalData.value?.option_type
         })
         if (response.data && response.data.success) {
             toast.success('Operation completed successfully')
             getInternalRowById()
-            tab.value = 'details'
-            refreshKey.value += 1;
-            btnDisable.value = true
+            // tab.value = 'details'
+            // refreshKey.value += 1;
+            // btnDisable.value = true
         }
     } catch (error) {
         console.log(error)
@@ -819,7 +756,7 @@ const approveByWIM = async () => {
 
 
 /** Get Checklist Items */
-const rows = ref(null)
+// const rows = ref(null)
 const loading = ref(true);
 const cols =
     ref([
@@ -827,34 +764,12 @@ const cols =
         { field: 'item', title: 'Item' },
     ]) || [];
 
-const getChecklistItem = async () => {
-    loading.value = true
-    try {
-        const response = await apiRequest.get('getChecklistItem');
-        if (response.data && response.data.items) {
-            rows.value = response.data.items
-        }
-    } catch (error) {
-        console.log(error)
-    }
-    loading.value = false
-};
-
-const Items = ref([])
-const getItems = async () => {
-    loading.value = true
-    try {
-        const response = await apiRequest.get('getChecklistItemAcquired', {
-            params: { service_id: id }
-        });
-        if (response.data && response.data.items) {
-            Items.value = response.data.items
-        }
-    } catch (error) {
-        console.log(error)
-    }
-    loading.value = false
-};
+/** CHecklist Items */
+import { useChecklistItem } from '@/helpers/getChecklistItem';
+import ItemReportData from '@/components/Approver/EH/ItemReportData.vue';
+import ServiceReportData from '@/components/Approver/EH/ServiceReportData.vue';
+const { checkListItems } = useChecklistItem()
+// const { ItemsAcquired } = useItemsAcquired(id)
 
 
 /** Show Checklist Item Form */
@@ -901,8 +816,8 @@ const showReport = computed(() => {
 
 
 onMounted(() => {
-    getChecklistItem()
-    getItems()
+    // getChecklistItem()
+    // getItems()
     getInternalRowById()
 })
 

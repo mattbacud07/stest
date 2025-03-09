@@ -163,22 +163,22 @@
                             <v-row>
                                 <v-col cols="12" lg="6" md="6" sm="6">
                                     <p class="mb-2 text-grey-darken-1">Admission Date</p>
-                                    <VueDatePicker v-model="formData.admission_date" auto-apply
-                                        :teleport="true" :enable-time-picker="false" placeholder="Admission Date *"
+                                    <VueDatePicker v-model="formData.admission_date" auto-apply :teleport="true"
+                                        :enable-time-picker="false" placeholder="Admission Date *"
                                         :rules="[v => !!v || 'Required']" />
 
                                 </v-col>
                                 <v-col cols="12" lg="6" md="6" sm="6">
                                     <p class="mb-2 text-grey-darken-1">Date Installed</p>
-                                    <VueDatePicker v-model="formData.date_installed" auto-apply
-                                        :teleport="true" :enable-time-picker="false" placeholder="Date Installed" />
+                                    <VueDatePicker v-model="formData.date_installed" auto-apply :teleport="true"
+                                        :enable-time-picker="false" placeholder="Date Installed" />
                                 </v-col>
                             </v-row>
                             <v-row>
                                 <v-col cols="12" lg="6" md="6" sm="6">
                                     <p class="mb-2 text-grey-darken-1">Contract Due Date</p>
-                                    <VueDatePicker v-model="formData.contract_due_date" auto-apply
-                                        :teleport="true" :enable-time-picker="false" placeholder="Contract Due Date" />
+                                    <VueDatePicker v-model="formData.contract_due_date" auto-apply :teleport="true"
+                                        :enable-time-picker="false" placeholder="Contract Due Date" />
                                 </v-col>
                             </v-row>
                         </v-card>
@@ -232,6 +232,8 @@
                                 </v-col>
                             </v-row>
                         </v-card>
+                        <VDialog v-model="leaveDialog" title="Discard Changes" text="Are you sure you want to leave?"
+                            @confirm="leave" />
                     </v-container>
                 </transition>
             </template>
@@ -247,6 +249,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { mode, master_data_status, area_categorization, region, operation_time } from '@/global/master_data';
 import LayoutSinglePage from '@/components/layout/MainLayout/LayoutSinglePage.vue';
 import TextField from '@/components/layout/FormsComponent/TextField.vue';
+import _ from 'lodash'
 
 /** Vuue3 DataTable */
 import Vue3Datatable from '@bhplugin/vue3-datatable'
@@ -436,9 +439,8 @@ const get_supplier = async () => {
 
 // Users
 import { all_users } from '@/helpers/getUsers';
+import VDialog from '@/components/common/VDialog.vue';
 const { users } = all_users()
-
-const orginalFormData = ref({})
 const getMasterDataByID = async () => {
     try {
         loading.value = true;
@@ -453,23 +455,31 @@ const getMasterDataByID = async () => {
         formData.value.item_code = data.master_data?.item_code
         formData.value.description = data.master_data?.description
 
-        orginalFormData.value = JSON.parse(JSON.stringify(formData.value))
+        originalFormData.value = _.cloneDeep(formData.value)
     } catch (error) {
         console.log(error)
     } finally {
         loading.value = false;
     }
 };
-
+const originalFormData = ref({})
 const isChanged = computed(() => {
-    return JSON.stringify(formData.value) !== JSON.stringify(orginalFormData.value)
+    return !_.isEqual(formData.value, originalFormData.value)
 })
 
 /** Discard button */
+const leaveDialog = ref(false)
 const discard = () => {
+    if (isChanged.value) {
+        leaveDialog.value = true
+        return
+    }
+    leave()
+}
+const leave = () => {
+    leaveDialog.value = false
     router.push('/master-data')
 }
-
 
 onMounted(() => {
     getMasterDataByID()

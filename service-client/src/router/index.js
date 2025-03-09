@@ -264,7 +264,7 @@ const router = createRouter({
     },
 
     {
-      path: '/create-request/:work_type',
+      path: '/create-request',
       name: 'CreatePM',
       component: () => import('../views/PreventiveMaintenance/CreatePM.vue'),
       props: true,
@@ -277,7 +277,7 @@ const router = createRouter({
 
 
     {
-      path: '/pm-view/:id/:work_type',
+      path: '/pm-view/:id',
       name: 'PMView',
       component: () => import('../views/PreventiveMaintenance/PMView.vue'),
       props: true,

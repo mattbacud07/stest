@@ -3,25 +3,25 @@
         <v-row class="d-flex justify-space-between">
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Requested by</p>
-                <p class="text-grey-darken-1">{{ request_data.first_name }} {{ request_data.last_name }}</p>
+                <p class="text-grey-darken-1">{{ request_data?.full_name ?? '---' }}</p>
             </v-col>
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Date Created</p>
-                <p class="text-grey-darken-1">{{ pub_var.formatDate(request_data.created_at) }}</p>
+                <p class="text-grey-darken-1">{{ pub_var.formatDate(request_data?.created_at) }}</p>
             </v-col>
         </v-row>
         <v-row>
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Institution</p>
-                <p class="text-grey-darken-1">{{ request_data.name }}</p>
+                <p class="text-grey-darken-1">{{ request_data?.institution }}</p>
             </v-col>
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Address</p>
-                <p class="text-grey-darken-1">{{ request_data.address }}</p>
+                <p class="text-grey-darken-1">{{ request_data?.address }}</p>
             </v-col>
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Proposed Delivery Date</p>
-                <p class="text-grey-darken-1">{{ request_data.proposed_delivery_date }}</p>
+                <p class="text-grey-darken-1">{{ request_data?.proposed_delivery_date }}</p>
             </v-col>
         </v-row>
     </v-card>
@@ -43,7 +43,7 @@ const role = getRole()
 const props = defineProps({
     request_data : {
         type : Object,
-        default : () => {}
+        default : () => ({})
     }
 })
 
