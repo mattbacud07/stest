@@ -1,0 +1,1 @@
+import{_ as a}from"./Welcome-BgpLx6BU.js";import{B as o}from"./BaseLayout-qpe1goZP.js";import{f as t,w as r,o as e,h as s}from"./index-BFEiEqzV.js";import"./topBarUserProfile-DObMqA0B.js";import"./_plugin-vue_export-helper-DlAUqK2U.js";const l={__name:"AdminDashboard",setup(m){return(_,c)=>(e(),t(o,null,{default:r(()=>[s(a)]),_:1}))}};export{l as default};
