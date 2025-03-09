@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist --repo=https://github.com/mattbacud07/sbsi-service.git"
   },
   "dependencies": {
     "@bhplugin/vue3-datatable": "^1.1.4",
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@mdi/font": "^7.4.47",
     "@vitejs/plugin-vue": "^5.0.3",
+    "gh-pages": "^6.3.0",
     "vite": "^5.0.11"
   }
 }

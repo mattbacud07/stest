@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
-  base: 'mattbacud07',
+  base: 'stest',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
