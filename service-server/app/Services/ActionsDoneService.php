@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\PreventiveMaintenance\PMPartsUsed;
 use App\Models\WorksDone;
+use Exception;
 
 class ActionsDoneService
 {
@@ -13,6 +14,7 @@ class ActionsDoneService
             foreach ($data as $record) {
                 WorksDone::create($record); // Uses Eloquent and triggers events
             }
+            return true;
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
@@ -24,6 +26,7 @@ class ActionsDoneService
             foreach ($spareparts as $parts) {
                 PMPartsUsed::create($parts); // Uses Eloquent and triggers events
             }
+            return true;
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }

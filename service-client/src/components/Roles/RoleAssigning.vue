@@ -127,7 +127,7 @@ const rule = ref({
 // }
 watch(selectedRole, (val) => {
     selectedRoleID.value = get_role_name.value.find(v => v.roleID === val)
-    if (selectedRoleID.value?.roleID === pub_var.engineerRoleID || selectedRoleID.value?.roleID === pub_var.TLRoleID || selectedRoleID.value?.roleID === pub_var.SBUServiceAssistant) {
+    if ([pub_var.engineerRoleID, pub_var.TLRoleID, pub_var.SBUServiceAssistantID].includes(selectedRoleID.value?.roleID)) {
         showSBU.value = true
     } else {
         showSBU.value = false
@@ -225,12 +225,12 @@ const getUsers = async () => {
 
     loading.value = false;
 };
-const changeServer = (data) => {
-    params.current_page = data.current_page;
-    params.pagesize = data.pagesize;
+// const changeServer = (data) => {
+//     params.current_page = data.current_page;
+//     params.pagesize = data.pagesize;
 
-    getUsers();
-};
+//     getUsers();
+// };
 
 
 /** Get Roles */

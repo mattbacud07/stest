@@ -2,7 +2,7 @@
     <LayoutWithActions @searchText="getSearchText">
         <template #filter>
             <v-row>
-                <v-col cols="12" class="d-flex justify-space-between align-items-center pa-0">
+                <v-col cols="12" md="6" sm="6" class="d-flex justify-space-between align-items-center pa-0">
                     <v-badge color="warning" dense :content="filterCount" :offset-y="5">
                         <v-checkbox false-icon="mdi-filter-menu" true-icon="mdi-close" color="primary"
                             v-model="showFilter">
@@ -14,7 +14,7 @@
                         <v-col class="d-flex"
                             :style="{ visibility: showFilter ? 'visible' : 'hidden', opacity: showFilter ? '1' : '0' }">
                             <!-- Filter by Institution  -->
-                            <v-col cols="3" class="pa-0 mr-1">
+                            <v-col cols="12" md="6" sm="6" class="pa-0 mr-1">
                                 <v-combobox transition="slide-x-transition" color="primary"
                                     v-model="filter.filterInstitution" label="Institution" density="compact"
                                     :items="institutionData" chips closable-chips single-line itemValue="institution_id"
@@ -30,7 +30,7 @@
                                     </template>
                                     Status <v-icon>mdi-chevron-down</v-icon>
                                     <v-menu transition="slide-x-transition" :close-on-content-click="false"
-                                    height="auto" location="bottom" activator="parent">
+                                        height="auto" location="bottom" activator="parent">
                                         <v-card width="auto" class="pr-3">
                                             <v-checkbox v-model="filter.filterStatus"
                                                 v-for="(status) in m_var.status_pm" class="columnChooserCheckBox"
@@ -42,16 +42,22 @@
                             </v-col>
                         </v-col>
                     </transition>
-
-                    <!-- Filter Next Month Assignment -->
-                    <v-checkbox v-if="can('delegate', PM)" label="Show Next Month's Assignments" class="mr-3" color="primary" inline v-model="filter.assignment" />
-
-                    <!-- Download Excel Data -->
+                </v-col>
+                <v-col cols="12" md="6" sm="6"
+                    class="d-flex d-inline-flex align-center align-content-center justify-end">
+                    <v-col cols="8">
+                        <!-- Filter Next Month Assignment -->
+                        <v-checkbox v-if="can('delegate', PM)" label="Next Month Assignments" class="mr-3"
+                            color="primary" inline v-model="filter.assignment" />
+                    </v-col>
+                    <v-col cols="auto">
+                        <!-- Download Excel Data -->
                     <download-excel :data="rows" type="xlsx" :fields="colField"
                         :name="'PreventiveMaintenance - ' + moment().format('MM-DD-YYYY')">
-                        <v-btn text="Export" prepend-icon="mdi-download" variant="tonal" color="primary"
-                            class='text-none'></v-btn>
+                        <v-btn text="Export" prepend-icon="mdi-download" density="compact" variant="tonal"
+                            color="primary" class='text-none'></v-btn>
                     </download-excel>
+                    </v-col>
                 </v-col>
             </v-row>
 
@@ -75,7 +81,12 @@
                     <span color="primary">{{ pub_var.setReportNumber(data.value.service_id) }}</span>
                 </template>
                 <template #sbu="data">
-                    <span><i v-if="data.value.sbu">SBU - </i>{{data.value.sbu }}</span>
+                    <span><i v-if="data.value.sbu">SBU - </i>{{ data.value.sbu }}</span>
+                </template>
+                <template #created_at="data">
+                    <span>
+                        {{ pub_var.formatDate(data.value.created_at) }}
+                    </span>
                 </template>
                 <template #status="data">
                     <span>
@@ -164,16 +175,16 @@ const selectedId = ref(null)
 if (can('create', 'Preventive Maintenance')) createRequest.value = 'CreatePM'
 
 /** Delete Data */
-const deleteData = async() => {
+const deleteData = async () => {
     try {
         const response = await apiRequest.delete(`delete_pm/${selectedId.value}`)
-        if(response.data?.success){
+        if (response.data?.success) {
             toast.success('Deleted successfully')
             getPM()
             btnDisable.value = true
         }
     } catch (error) {
-       console.log(error) 
+        console.log(error)
     }
 }
 
@@ -189,7 +200,7 @@ provide('data', actions)
 /**
  * @ Row Select Table Event
  */
- const selectedRows = ref([])
+const selectedRows = ref([])
 const rowSelect = (row) => {
     selectedRows.value = datatable.value.getSelectedRows()
     if (row.length === 1) btnDisable.value = false
@@ -225,6 +236,7 @@ const cols =
         { field: 'service_id', title: 'Service No', hide: true, },
         { field: 'item_id', title: 'Item No', hide: true },
         { field: 'item_code', title: 'Item Code' },
+        { field: 'equipment', title: 'Equipment' },
         { field: 'description', title: 'Item Description', hide: true, },
         { field: 'serial', title: 'Serial No.' },
         { field: 'institution_name', title: 'Institution' },
@@ -235,15 +247,7 @@ const cols =
         { field: 'sbu', title: 'SBU', hide: false },
         { field: 'delegated_by', title: 'Delegated by' },
         { field: 'delegated_to', title: 'Delegated to' },
-        // { field: 'delegation_date', title: 'Delegation Date' },
-        // { field: 'date_accepted', title: 'Date Accepted' },
-        // { field: 'departed_date', title: 'Date Out' },
-        // { field: 'travel_duration', title: 'Travel Time' },
-        // { field: 'start_date', title: 'Time In' },
-        // { field: 'end_date', title: 'Time Out' },
-        // { field: 'monitoring_end', title: 'Enf of Monitoring' },
-        { field: 'status_after_service', title: 'Status After Service' },
-        { field: 'tag', title: 'Tag' },
+        { field: 'created_at', title: 'Date Created' },
         { field: 'status', title: 'Status', cellClass: "sticky-last", headerClass: "sticky-last-header", },
     ]) || [];
 

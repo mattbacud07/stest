@@ -158,16 +158,17 @@ class InternalRequest extends Controller
         $user_id = Auth::user()->id;
 
         try {
-            $data = InternalServicingModel::from('internal_request as it')
-                ->with(['task_delegation.task_activity' => function ($q) {
-                    $q->where('type', self::IS)->get();
+            $data = InternalServicingModel::with(['task_delegation' => function ($q) {
+                    $q->with(['items_acquired'])
+                        ->with(['task_activity'])
+                        ->with(['actions_taken'])
+                        ->with(['spareparts' => function($q){
+                            $q->where('type', self::IS)
+                                    ->with('equipment');
+                        }])
+                        ->where('type', self::IS);
                 }])
-                ->with(['task_delegation.actions_taken' => function ($q) {
-                    $q->where('work_type', self::IS)->get();
-                }])
-                ->with(['task_delegation.items_acquired' => function ($q) {
-                    $q->where('work_type', self::IS)->get();
-                }])
+
                 ->with(['equipment_handling' => function ($q) {
                     $q->with(['users']);
                     $q->with(['institution']);
@@ -183,8 +184,7 @@ class InternalRequest extends Controller
                         'i.address',
                     )
                         ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'equipment_handling.requested_by', '=', 'u.id')
-                        ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id')
-                        ->get();
+                        ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.mt_bp_institutions as i', 'equipment_handling.institution', '=', 'i.id');
                 }])
                 ->with(['task_delegation_all' => function ($q) {
                     $q->select(
@@ -194,15 +194,16 @@ class InternalRequest extends Controller
                     $q->with(['items_acquired']);
                     $q->with(['task_activity']);
                     $q->with(['actions_taken']);
+                    $q->with(['spareparts']);
                 }])
                 ->select(
-                    'it.*',
+                    'internal_request.*',
                     DB::raw("CONCAT(assigned_to.first_name,' ',assigned_to.last_name) as assigned_to"),
                     DB::raw("CONCAT(assigned_by.first_name,' ',assigned_by.last_name) as assigned_by"),
                 )
-                ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as assigned_to', 'it.current_assigned_to', '=', 'assigned_to.id')
-                ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as assigned_by', 'it.current_assigned_by', '=', 'assigned_by.id')
-                ->where('it.id', $id)->first();
+                ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as assigned_to', 'internal_request.current_assigned_to', '=', 'assigned_to.id')
+                ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as assigned_by', 'internal_request.current_assigned_by', '=', 'assigned_by.id')
+                ->find($id);
 
             return response()->json([
                 'internal_request' => $data,
@@ -538,8 +539,12 @@ class InternalRequest extends Controller
         $service_id = $request->service_id ?? null;
         $option_type = $request->option_type;
         $status_after_service = $request->status_after_service;
-        $actions_taken = $request->actions_taken ?? [];
+        $remarks =  $request->remarks;
+        $complaint =  $request->complaint ?? '';
+        $problem =  $request->problem ?? '';
+        $actions_taken = $request->fields ?? [];
         $items = $request->items ?? [];
+        $spareparts = $request->spareparts ?? [];
 
         $request->validate([
             'option_type' => 'required',
@@ -558,14 +563,16 @@ class InternalRequest extends Controller
                 ];
             }
 
-            $this->action->declare_actions_done($dataToInsert);
+            $actions = $this->action->declare_actions_done($dataToInsert);
+            if ($actions !== true) throw new Exception("Error adding actions done");
 
             $statusInternal = ($status_after_service == 'Operational') ? self::SENTWAREHOUSE : self::RETURNEDHEAD;
 
             //Update Internal Status
-            InternalServicingModel::where('id', $internal_id)->update([
+            $updateIS = InternalServicingModel::where('id', $internal_id)->update([
                 'status' => $statusInternal,
             ]);
+            if (!$updateIS) throw new Exception("Error updating Internal servicing table");
 
             /** Submit Selected Items */
             $itemsToInsert = [];
@@ -578,15 +585,15 @@ class InternalRequest extends Controller
                     'work_type' => self::IS
                 ];
             }
-            $insert_items = ChecklistItemAcquired::insert($itemsToInsert);
-            if (!$insert_items) {
-                throw new Exception('Error inserting items');
-            }
+            ChecklistItemAcquired::insert($itemsToInsert);
 
 
             $update_delegation = EngineerTaskDelegation::where('id', $delegation_id)->first()?->update([
                 'option_type' => $option_type,
                 'status_after_service' => $status_after_service,
+                'complaint' => $complaint,
+                'problem' => $problem,
+                'sr_remarks' => $remarks,
                 'status' => self::COMPLETED,
             ]);
             if (!$update_delegation) {
@@ -599,6 +606,24 @@ class InternalRequest extends Controller
                 Carbon::now(),
                 self::IS
             );
+
+
+            /** Spareparts Used */
+            $sparePartsToInsert = [];
+            foreach ($spareparts as $parts) {
+                $sparePartsToInsert[] = [
+                    'service_id' => $delegation_id,
+                    'item_id' => $parts['item_id'],
+                    'qty' => (int) $parts['qty'],
+                    'dr' => $parts['dr'],
+                    'si' => $parts['si'],
+                    'remarks' => $parts['remarks'],
+                    'type' => self::IS
+                ];
+            }
+            $add_spareparts = $this->action->declare_spareparts_used($sparePartsToInsert);
+            if ($add_spareparts !== true) throw new Exception("Error adding spareparts");
+
 
             DB::commit();
 

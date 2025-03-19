@@ -5,11 +5,12 @@
                 <v-breadcrumbs class="pt-7">
                     <v-breadcrumbs-item v-for="(item, index) in breadcrumbItems" :key="index"
                         :class="{ 'custom-pointer': !item.disabled }" @click="navigateTo(item)"
-                        :disabled="item.disabled">
+                        :style="{ 'display': width <= 768 ? item.display : '' }" :disabled="item.disabled">
                         {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
                     </v-breadcrumbs-item>
-                    
-                <v-icon color="grey" @click="refreshData(true)"><v-tooltip activator="parent" location="bottom">Refresh</v-tooltip> mdi-refresh</v-icon>
+
+                    <v-icon color="grey" @click="refreshData(true)"><v-tooltip activator="parent"
+                            location="bottom">Refresh</v-tooltip> mdi-refresh</v-icon>
                 </v-breadcrumbs>
 
                 <!-- <v-btn @click="printPreview(isPrintPreview)" class="text-none" prepend-icon="mdi-printer-eye" color="primary" density="compact">{{ isPrintPreview ? 'Back' : 'Print Preview'}}</v-btn> -->
@@ -43,8 +44,8 @@
                 </div>
 
                 <div v-if="can('installer', PM) && canAcceptDecline && task_delegation?.status === m_var.InProgress">
-                    <v-btn @click="markAsCompleted" text="Mark as Completed" :disabled="btnDisable" color="primary"
-                        variant="flat" class="text-none mr-5" />
+                    <v-btn @click="markAsCompleted" text="Mark as Completed" :disabled="btnDisable" :loading="loading"
+                        color="primary" variant="flat" class="text-none mr-5" />
                 </div>
 
             </div>
@@ -75,59 +76,66 @@
                                 <v-tooltip activator="parent" location="bottom">Status</v-tooltip>
                                 &nbsp;{{ m_var.setPMStatus(pm_data?.status).text ?? '---' }}
                             </v-chip>
-                            <v-chip class="ma-2 mt-5" color="purple" label
-                                v-if="latestTaskDelegation?.status_after_service">
+                            <v-chip class="ma-2 mt-5" color="indigo" label v-if="task_delegation?.status_after_service">
                                 <v-tooltip activator="parent" location="bottom">Status after service</v-tooltip>
-                                &nbsp;{{ latestTaskDelegation?.status_after_service ?? '---' }}
+                                &nbsp;{{ task_delegation?.status_after_service ?? '---' }}
                             </v-chip>
-                            <v-chip class="ma-2 mt-5" v-if="pm_data?.tag" color="purple" label>
+                            <v-chip class="ma-2 mt-5" v-if="task_delegation?.tag" color="warning" label>
                                 <v-tooltip activator="parent" location="bottom">Tag</v-tooltip>
-                                &nbsp;{{ pm_data?.tag ?? '---' }}
+                                &nbsp;{{ task_delegation?.tag ?? '---' }}
                             </v-chip>
+                            
+                            <PMPrint :data="pm_data"/>
                         </div>
                     </transition>
+                    <p class="mt-3 text-danger" v-if="pm_data?.status === m_var.Scheduled">
+                        * The system will automatically update the status to 'Ready for Delegation' and email SBU Head one
+                        week before the scheduled date
+                    </p>
+                    <OperationAfterService :data="pm_data" v-if="canOperateAfterService" @refresh-data="refreshData" />
 
                     <ServiceReportForm v-model="service_report_data" ref="serviceFormRef" class="mt-7"
-                    v-if="can('installer', PM) && canAcceptDecline && task_delegation?.status === m_var.InProgress" />
+                        :type="pm_data?.task_delegation?.type"
+                        v-if="can('installer', PM) && canAcceptDecline && task_delegation?.status === m_var.InProgress" />
 
                     <PMCustomerDetails :customer_details="pm_data" />
-               
-                <!-- <PMPrint /> -->
-                <v-card class="mt-10">
-                    <v-tabs v-model="tab" density="compact" class="border-b-sm">
-                        <div>
-                            <v-tab value="delegation_details" class="text-none" color="primary"><v-icon
-                                    class="mr-2">mdi-gesture-tap-button</v-icon> Delegation
-                                Details</v-tab>
-                            <v-tab value="service_report" class="text-none" color="primary"><v-icon
-                                    class="mr-2">mdi-poll</v-icon>
-                                Service Report</v-tab>
-                        </div>
-                        <v-spacer></v-spacer>
-                        <v-tab value="customer_details" class="text-none" color="primary"><v-icon
-                                class="mr-2">mdi-badge-account</v-icon>
-                            Customer Details</v-tab>
-                        <div>
 
-                        </div>
-                    </v-tabs>
+                    <!-- <PMPrint /> -->
+                    <v-card class="mt-10">
+                        <v-tabs v-model="tab" density="compact" class="border-b-sm">
+                            <div>
+                                <v-tab value="delegation_details" class="text-none" color="primary"><v-icon
+                                        class="mr-2">mdi-gesture-tap-button</v-icon> Delegation
+                                    Details</v-tab>
+                                <v-tab value="service_report" class="text-none" color="primary"><v-icon
+                                        class="mr-2">mdi-poll</v-icon>
+                                    Service Report</v-tab>
+                            </div>
+                            <v-spacer></v-spacer>
+                            <v-tab value="customer_details" class="text-none" color="primary"><v-icon
+                                    class="mr-2">mdi-badge-account</v-icon>
+                                Customer Details</v-tab>
+                            <div>
 
-                    <v-card-text>
-                        <v-window v-model="tab">
-                            <v-window-item value="delegation_details">
-                                <InternalServicingActivity :internalData="pm_data" />
-                            </v-window-item>
-                            <v-window-item value="service_report">
-                                <ServiceReportData :task_delegation="task_delegation" :actions_taken="actions_taken"
-                                    :spareparts="spareparts" />
-                            </v-window-item>
-                            <v-window-item value="customer_details">
+                            </div>
+                        </v-tabs>
 
-                            </v-window-item>
-                        </v-window>
-                    </v-card-text>
-                </v-card>
-            </template>
+                        <v-card-text>
+                            <v-window v-model="tab">
+                                <v-window-item value="delegation_details">
+                                    <InternalServicingActivity :internalData="pm_data" />
+                                </v-window-item>
+                                <v-window-item value="service_report">
+                                    <ServiceReportData :task_delegation="task_delegation" :actions_taken="actions_taken"
+                                        :spareparts="spareparts" />
+                                </v-window-item>
+                                <v-window-item value="customer_details">
+                                    <PMCustomerSignature :customer_details="pm_data" />
+                                </v-window-item>
+                            </v-window>
+                        </v-card-text>
+                    </v-card>
+                </template>
             </v-container>
         </template>
     </LayoutSinglePage>
@@ -143,6 +151,7 @@ import * as pub_var from '@/global/global'
 /** Import Components */
 // import PMPrint from '@/components/Print/PMPrint.vue';
 import PMCustomerDetails from '@/components/PreventiveMaintenance/PMComponents/PMCustomerDetails.vue';
+import PMCustomerSignature from '@/components/PreventiveMaintenance/PMComponents/PMCustomerSignature.vue';
 import InternalServicingActivity from '@/components/Approver/EH/InternalServicingActivity.vue';
 import ServiceReportData from '@/components/Approver/EH/ServiceReportData.vue';
 import PMDelegateEngineer from '@/components/PreventiveMaintenance/PMComponents/PMDelegateEngineer.vue';
@@ -151,6 +160,8 @@ import PMDelegateEngineer from '@/components/PreventiveMaintenance/PMComponents/
 import { useToast } from 'vue-toast-notification'
 const toast = useToast()
 
+import { useDisplay } from 'vuetify/lib/framework.mjs';
+const { width } = useDisplay()
 
 
 import { user_data } from '@/stores/auth/userData';
@@ -178,12 +189,13 @@ import PMAcceptDecline from '@/components/PreventiveMaintenance/PMComponents/PMA
 import PMPrint from '@/components/Print/PMPrint.vue';
 import VDialog from '@/components/common/VDialog.vue';
 import ServiceReportForm from '@/components/Approver/EH/ServiceReportForm.vue';
+import OperationAfterService from '@/components/PreventiveMaintenance/PMComponents/OperationAfterService.vue';
 
 
 const breadcrumbItems = [
-    { title: 'Back', disabled: false, href: '/preventive-maintenance' },
-    { title: 'Preventive Maintenance', disabled: true, href: '' },
-    { title: 'PM-Details', disabled: true, href: '' },
+    { title: 'Back', disabled: false, href: '/preventive-maintenance', display: 'block' },
+    { title: 'Preventive Maintenance', disabled: true, href: '', display: 'none' },
+    { title: 'PM-Details', disabled: true, href: '', display: 'none' },
 ]
 const navigateTo = (item) => {
     if (!item.disabled && item.href) {
@@ -196,13 +208,6 @@ const btnDisable = ref(false)
 const btnLoading = ref(false)
 const loading = ref(false)
 const id = parseInt(route.params.id)
-
-/** Signature */
-const signature = ref(null)
-const setSignature = (data) => {
-    signature.value = data
-}
-
 
 
 
@@ -239,12 +244,12 @@ const getPMDataByRowID = async () => {
 };
 
 
-/** Delegate Engineer ->  */  //subject to edit later tonight -------------------->>>>>>
+/** Delegate Engineer ->  */
 const rolesToAccess = [pub_var.TLRoleID, pub_var.SBUServiceAssistantID, pub_var.engineerRoleID]
 const user_sbu = user.user?.user_roles?.find(v => rolesToAccess.includes(v.role_id))?.SBU
 const canDelegate = computed(() => {
-    if ((pm_data.value.status === m_var.Scheduled || pm_data.value?.status === m_var.Declined)
-        && pm_data.value?.equipment?.sbu === user_sbu) return true
+    if ((pm_data.value.status === m_var.ReadyForDelegation || pm_data.value?.status === m_var.Declined)
+        && (pm_data.value?.equipment?.sbu === user_sbu || user.user?.user_roles?.some(v => v.role_id === pub_var.NationalServiceManagerID))) return true
     return false //subject to change the scheduled status to waiting for schedule
 })
 
@@ -301,9 +306,12 @@ const service_report_data = ref({
     status_after_service: '',
     fields: [],
     spareparts: [],
-    remarks : '',
-    complaint : '',
-    problem : '',
+    remarks: '',
+    complaint: '',
+    problem: '',
+    name: '',
+    designation: '',
+    signature: null
 })
 
 
@@ -323,8 +331,14 @@ const markAsCompleted = async () => {
         btnDisable.value = false
         return
     }
+    if ([null, undefined].includes(service_report_data.value.signature)) {
+        toast.error('Required signature')
+        btnLoading.value = false
+        btnDisable.value = false
+        return
+    }
     try {
-        const response = await apiRequest.post('mark_as_completed', {
+        const response = await apiRequest.post('pm_mark_as_completed', {
             id: id,
             delegation_id: task_delegation.value?.id,
             ...service_report_data.value
@@ -354,9 +368,19 @@ const markAsCompleted = async () => {
 /** Accept Decline the Delegation */
 const canAcceptDecline = computed(() => {
     const assigned_to = task_delegation.value?.assigned_to
-    // const isDelegated = task_delegation.value?.status === 'Delegated'
     const user_id = user.user.id
     return assigned_to === user_id
+})
+
+const canOperateAfterService = computed(() => {
+    const assigned_to = task_delegation.value?.assigned_to
+    const user_id = user.user.id
+    if ((pm_data.value?.status === m_var.Completed)
+        && (pm_data.value?.equipment?.sbu === user_sbu
+            || user.user?.user_roles?.some(v => v.role_id === pub_var.NationalServiceManagerID
+                || assigned_to === user_id
+            ))) return true
+    return false
 })
 
 

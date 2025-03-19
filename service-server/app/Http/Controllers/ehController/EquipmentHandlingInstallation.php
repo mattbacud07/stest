@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\EhServicesModel;
 use App\Models\EngineerActivities;
 use App\Models\EngineerTaskDelegation;
+use App\Models\MasterData;
+use App\Models\ServiceMasterData;
 use App\Models\WorkOrder\EquipmentPeripherals;
 use App\Services\ActionsDoneService;
 use App\Services\PM\GeneratePMSched;
@@ -146,7 +148,7 @@ class EquipmentHandlingInstallation extends Controller
             $this->checkIfRequestExist($id);
 
             /** Get all the Equipments for automation of PM Sched */
-            $equipments = EquipmentPeripherals::select('equipment_peripherals.*', 'smd.serial', 'smd.frequency', 'eh.institution')
+            $equipments = EquipmentPeripherals::select('equipment_peripherals.*', 'smd.serial', 'smd.frequency', 'eh.institution as ehInstitution')
                 ->leftJoin('service_master_data as smd', 'equipment_peripherals.service_master_data_id', '=', 'smd.id')
                 ->leftJoin('equipment_handling as eh', 'equipment_peripherals.service_id', '=', 'eh.id')
                 ->where('equipment_peripherals.service_id', $id)
@@ -202,12 +204,24 @@ class EquipmentHandlingInstallation extends Controller
             /** Update Task Delegation to Complete */
             $update_delegation = EngineerTaskDelegation::where('id', $delegation_id)->first()?->update([
                 'status_after_service' => $status_after_service,
-                'remarks' => $remarks,
+                'complaint' => $complaint,
+                'problem' => $problem,
+                'sr_remarks' => $remarks,
                 'status' => self::COMPLETED,
             ]);
             if (!$update_delegation) {
                 throw new Exception('Error updating delegation');
             }
+
+            /** Update Master Data - Institution and Status*/
+            foreach($equipments as $equipment){
+                $machine = ServiceMasterData::find($equipment->service_master_data_id);
+                $machine->update([
+                    'institution' => $equipment->ehInstitution,
+                    'status' => 'Active'
+                ]);
+            }
+
             /** Log Engineer Activities */
             $this->task_log->task_activities(
                 $delegation_id,

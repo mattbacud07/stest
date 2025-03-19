@@ -15,7 +15,7 @@ class AutomatePM extends Command
      *
      * @var string
      */
-    protected $signature = 'app:PMUpdateStatus';
+    protected $signature = 'app:update-pm-status-to-ready';
 
     /**
      * The console command description.
@@ -29,12 +29,19 @@ class AutomatePM extends Command
      */
     public function handle()
     {
-        $dateToday = Carbon::now();
         try {
             DB::beginTransaction();
-            $getScheduledToday = PM::whereDate('scheduled_at', '=', $dateToday)->where('status', PM::Scheduled)->get();
-            foreach ($getScheduledToday as $data) {
-                $data->update(['status' => PM::ReadyForDelegation]);
+            $dateToday = Carbon::now(); // Example: March 7, 2024
+            $getScheduledRecords = PM::where('status', PM::Scheduled)->get();
+    
+            foreach ($getScheduledRecords as $data) {
+                $dateThreshold = Carbon::parse($data->scheduled_at)->subDays(7); // Scheduled date - 7 days
+    
+                if ($dateToday->greaterThanOrEqualTo($dateThreshold) && $dateToday->lessThanOrEqualTo($data->scheduled_at)) {
+                    $data->update(['status' => PM::ReadyForDelegation]);
+                }
+
+                // SEND EMAIL FOR SBU's Head and Assistant = to SBU assigned to Machine 
             }
             DB::commit();
         } catch (\Throwable $th) {

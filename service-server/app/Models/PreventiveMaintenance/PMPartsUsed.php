@@ -17,7 +17,6 @@ class PMPartsUsed extends LogsBaseModel
     protected $fillable = [
         'service_id',
         'item_id',
-        'item_description',
         'qty',
         'dr',
         'si',
@@ -28,6 +27,7 @@ class PMPartsUsed extends LogsBaseModel
 
 
     public function equipment(){
-        return $this->belongsTo(MasterData::class, 'item_id','id');
+        return $this->belongsTo(MasterData::class, 'item_id','id')
+        ->select('id','item_code','description');
     }
 }

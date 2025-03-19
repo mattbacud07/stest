@@ -12,11 +12,13 @@ use App\Models\WorksDone;
 use App\Traits\GlobalVariables;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 class InternalRequest extends LogsBaseModel
 {
     use HasFactory;
+    use SoftDeletes;
     use GlobalVariables;
 
     protected $table = 'internal_request';
@@ -31,7 +33,8 @@ class InternalRequest extends LogsBaseModel
         'option_type',
         'status',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'deleted_at',
     ];
 
     public const OPTION_TYPE_STORAGE = 'storage';

@@ -7,6 +7,7 @@ use App\Models\WorkOrder\EquipmentPeripherals;
 use App\Traits\GlobalVariables;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Pullout extends LogsBaseModel
 {
@@ -34,7 +35,7 @@ class Pullout extends LogsBaseModel
 
     public const SUPERVISOR = 1;
     public const OPERATION_SERVICE = 2;
-    public const OPERATION_SERVICE_DELEGATION = 3;
+    public const PMCOMPLETED = null;
 
     public const INSTALLATION_TL = 9;
     public const INSTALLATION_ENGINEER = 10;
@@ -56,6 +57,7 @@ class Pullout extends LogsBaseModel
     //Status
     public const pending='Pending';
     public const disapproved='Disapproved';
+    public const uninstalling='Pending Pullout';
     public const completed='Completed';
 
 
@@ -85,6 +87,31 @@ class Pullout extends LogsBaseModel
     public function roleUser()
     {
         return $this->belongsTo(RoleUser::class, 'requested_by', 'user_id');
+    }
+
+
+
+
+
+    /** Task Delegation Section  */
+    public function task_delegation()
+    {
+        return $this->hasOne(EngineerTaskDelegation::class, 'service_id', 'id')
+            ->where('type', 'pullout')
+            ->where('active', 1)
+            ->select('engineer_task_delegation.*', 'u.first_name', 'u.last_name')
+            ->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'engineer_task_delegation.assigned_to', '=', 'u.id');
+    }
+
+    public function task_delegation_all()
+    {
+        return $this->hasMany(EngineerTaskDelegation::class, 'service_id', 'id')->where('type', 'pullout');
+    }
+
+    public function latest_task_delegation()
+    {
+        return $this->hasOne(EngineerTaskDelegation::class, 'service_id','id')
+            ->latest(); // Orders by created_at DESC by default
     }
     
 

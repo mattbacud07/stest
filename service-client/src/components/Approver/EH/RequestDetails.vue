@@ -1,23 +1,23 @@
 <template>
-    <v-card flat style="padding-top: 1em;" class="mb-7 pa-5 mt-5">
+    <v-card elevation="0" flat style="padding-top: 1em;" class="mb-7 pa-5 mt-5">
         <v-row class="d-flex justify-space-between">
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Requested by</p>
                 <p class="text-grey-darken-1">{{ request_data?.full_name ?? '---' }}</p>
             </v-col>
             <v-col lg="4" md="4" sm="6" cols="12">
-                <p>Date Created</p>
+                <p>Date Created <span class="text-disabled small">(yyyy-mm-dd)</span></p>
                 <p class="text-grey-darken-1">{{ pub_var.formatDate(request_data?.created_at) }}</p>
             </v-col>
         </v-row>
         <v-row>
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Institution</p>
-                <p class="text-grey-darken-1">{{ request_data?.institution }}</p>
+                <p class="text-grey-darken-1 textTransform">{{ request_data?.institution?.toLowerCase() }}</p>
             </v-col>
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Address</p>
-                <p class="text-grey-darken-1">{{ request_data?.address }}</p>
+                <p class="text-grey-darken-1 textTransform">{{ request_data?.address?.toLowerCase() }}</p>
             </v-col>
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Proposed Delivery Date</p>

@@ -46,7 +46,7 @@
                                         </template>
                                         <template v-slot:selection="{ item, index }">
                                             <span class="small text-primary" style="font-size: 12px;"><b>{{ item.title
-                                            }}</b> <span class="text-disabled" v-if="item.title">- [SBU : {{
+                                                    }}</b> <span class="text-disabled" v-if="item.title">- [SBU : {{
                                                         item.raw.sbu }}]</span></span>
                                         </template>
                                     </v-combobox>
@@ -128,10 +128,13 @@
             </template>
             <template v-else>
                 <transition name="slide-x-transition">
-                    <v-chip class="ma-2 mt-5" color="purple" label>
-                        <v-tooltip activator="parent" location="bottom">Status of Installation</v-tooltip>
-                        &nbsp;{{ latestTaskDelegation?.status ?? '---' }}
-                    </v-chip>
+                    <div>
+                        <v-chip class="ma-2 mt-5" color="purple" label>
+                            <v-tooltip activator="parent" location="bottom">Status of Installation</v-tooltip>
+                            &nbsp;{{ latestTaskDelegation?.status ?? '---' }}
+                        </v-chip>
+                        <PMPrint :data="request" />
+                    </div>
                 </transition>
 
                 <ServiceReportForm v-model="service_report_data" ref="serviceFormRef"
@@ -174,11 +177,8 @@
                             <InternalServicingActivity :internalData="request" />
                         </v-window-item>
                         <v-window-item value="service_report">
-                            <ServiceReportData 
-                            :task_delegation="task_delegation" 
-                            :actions_taken="actions_taken"
-                            :spareparts="spareparts"
-                             />
+                            <ServiceReportData :task_delegation="task_delegation" :actions_taken="actions_taken"
+                                :spareparts="spareparts" />
                         </v-window-item>
                     </v-window>
                 </v-card-text>
@@ -332,7 +332,9 @@ const service_report_data = ref({
     status_after_service: '',
     fields: [],
     spareparts: [],
-    remarks : ''
+    remarks: '',
+    complaint: '',
+    problem: '',
 })
 
 
@@ -487,7 +489,7 @@ const equipment_sbu = computed(() => {
 /** Delegate Engineer ->  */
 const canDelegate = computed(() => {
     if (request.value.main_status === pub_var.INSTALLING &&
-        equipment_sbu.value.includes(user_sbu_as_approver)) {
+        (equipment_sbu.value.includes(user_sbu_as_approver) || user.user?.user_roles?.some(v => v.role_id === pub_var.NationalServiceManagerID))) {
         if (!task_delegation.value || task_delegation.value?.status === 'Declined') return true
     }
     return false
@@ -513,6 +515,7 @@ const canSetComplete = computed(() => {
 import ServiceReportData from '@/components/Approver/EH/ServiceReportData.vue';
 import ServiceReportForm from '@/components/Approver/EH/ServiceReportForm.vue';
 import { service_department, sm_department } from '@/global/department';
+import PMPrint from '@/components/Print/PMPrint.vue';
 
 
 

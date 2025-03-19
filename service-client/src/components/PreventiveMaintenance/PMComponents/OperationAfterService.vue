@@ -1,18 +1,17 @@
 <template>
     <!-- v-if="statusAfterServiceData === m_var.StatusAfterService.operational && currentRole === pub_var.TLRoleID && tag === m_var.pm_tag_under_observation" -->
     <!-- <v-skeleton-loader :loading="pm_data_loading" type="card"> -->
-    <v-card class="bg-orange-lighten-5 p-2 mb-7"
-        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.operational && can('delegate','Preventive Maintenance') && get_pm_data.tag === m_var.pm_tag_under_observation"
-        transition="fab-transition" elevation="0">
+    <v-card class="bg-orange-lighten-5 p-2 mb-7" v-if="afterServiceOperational" transition="fab-transition"
+        elevation="0">
         <v-col cols="12">
             <v-row>
                 <!-- After Service - Operational -->
                 <v-col cols="12">
-                    <p>After {{ work_type === 'PM' ? '30' : '10' }} days with no issues, it will be tagged as completed.
+                    <p>After {{ data?.task_delegation?.type === 'pm' ? '30' : '10' }} days with no issues, it will be tagged as completed.
                         If sent for CM or a problem occurs, it will be tagged as backjob</p>
 
                     <p class="mt-4 text-primary">Date montoring ends: <b>{{
-                        moment(get_pm_data.monitoring_end).format('MMMM DD, YYYY') }}</b></p>
+                        moment(monitoring_end).format('MMMM DD, YYYY') }}</b></p>
                     <p class="mt-4 text-danger">Monitoring days left: <b>{{ set_days_observation() }}</b></p>
 
                     <v-dialog max-width="500">
@@ -44,10 +43,10 @@
 
     <!-- Set Observation Period -->
     <v-card class="bg-teal-lighten-5 p-2 mb-7" transition="fab-transition" elevation="0"
-        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.further_monitoring && (can('delegate','Preventive Maintenance') || can('installer','Preventive Maintenance') ) && get_pm_data.tag === m_var.pm_tag_set_observation">
+        v-if="afterServiceFurtherMonitoring">
         <v-col cols="12">
             <v-row>
-                <!-- After Service - Operational -->
+                <!-- After Service - Further Monitoring -->
                 <v-col cols="12">
                     <p>
                         Set the number of days for the observation period.
@@ -86,21 +85,20 @@
 
 
     <!-- After Service - Further Monitoring -->
-    <v-card class="bg-teal-lighten-5 p-2 mb-7" transition="fab-transition" elevation="0"
-        v-if="get_pm_data.status_after_service === m_var.StatusAfterService.further_monitoring && (can('delegate','Preventive Maintenance') || can('installer','Preventive Maintenance') ) && get_pm_data.tag === m_var.pm_tag_under_observation">
+    <v-card class="bg-teal-lighten-5 p-2 mb-7" transition="fab-transition" elevation="0" v-if="afterServiceFurtherMonitoringObserve">
         <v-col cols="12">
             <v-row>
-                <!-- After Service - Operational -->
+                <!-- After Service - Further Monitoring -->
                 <v-col cols="12">
                     <p>
-                        After <b class="text-danger">{{ moment(get_pm_data.monitoring_end).format('MMMM DD, YYYY')
-                            }}</b>
+                        After <b class="text-danger">{{ moment(monitoring_end).format('MMMM DD, YYYY')
+                        }}</b>
                         with no issues, it will be marked as completed.
                         If sent for CM or a problem occurs, it will be tagged as non-operational
                     </p>
 
                     <p class="mt-4 text-primary">Monitoring days left: <b class="text-danger">{{ set_days_observation()
-                            }}</b></p>
+                    }}</b></p>
 
                     <v-dialog max-width="500">
                         <template v-slot:activator="{ props: activatorProps }">
@@ -133,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, defineProps, toRefs, inject, watch } from 'vue'
+import { ref, onMounted, defineProps, toRefs, inject, watch, computed } from 'vue'
 import * as pub_var from '@/global/global'
 import * as m_var from '@/global/maintenance'
 import { user_data } from '@/stores/auth/userData'
@@ -148,6 +146,7 @@ const route = useRoute()
 
 /** Permissions */
 import { permit } from '@/castl/permitted'
+import { PM } from '@/global/modules'
 const { can } = permit()
 
 const apiRequest = apiRequestAxios()
@@ -156,40 +155,49 @@ const pm_data_loading = ref(true)
 const work_type = route.params.work_type
 
 const props = defineProps({
-    pm_id: {
-        type: Number,
-        default: 0
-    },
-    currentRole: {
-        type: Number,
-        default: ''
-    },
-    pm_data: {
+    data: {
         type: Object,
         default: () => ({})
     }
 })
 
-const refreshPMData = inject('refreshPMData')
-const { pm_id, pm_data } = toRefs(props)
+const { data } = toRefs(props)
+const emit = defineEmits(['refresh-data'])
 
+const monitoring_end = computed(() => data.value?.task_delegation?.monitoring_end)
+const delegation_id = computed(() => data.value?.task_delegation?.id)
 
-const get_pm_data = ref({
-    status_after_service: pm_data.value?.status_after_service,
-    tag: pm_data.value?.tag,
-    monitoring_end: pm_data.value?.monitoring_end || ''
+const afterServiceOperational = computed(() => {
+    return data.value?.task_delegation?.status_after_service === m_var.StatusAfterService.operational
+        && (can('delegate', PM) || can('installer', PM))
+        && data.value?.task_delegation?.tag === m_var.pm_tag_under_observation
 })
 
+const afterServiceFurtherMonitoring = computed(() => {
+    return data.value?.task_delegation?.status_after_service === m_var.StatusAfterService.further_monitoring
+        && (can('delegate', PM) || can('installer', PM))
+        && data.value?.task_delegation?.tag === m_var.pm_tag_set_observation
+})
+
+const afterServiceFurtherMonitoringObserve = computed(() => {
+    return data.value?.task_delegation?.status_after_service === m_var.StatusAfterService.further_monitoring
+        && (can('delegate', PM) || can('installer', PM))
+        && data.value?.task_delegation?.tag === m_var.pm_tag_under_observation
+})
 
 
 /** Send for CM */
 const sendToCM = async () => {
     loading.value = true
     try {
-        const response = await apiRequest.post('sendToCM', { pm_id: pm_id.value })
-        if (response.data && response.data.success) {
+        const response = await apiRequest.post('sendToCM', { 
+            id: delegation_id.value,
+            pm_id : data.value?.id,
+            module : data.value?.task_delegation?.type
+         })
+        if (response?.data?.success) {
             toast.success('Successfully created for corrective maintenance')
-            await refreshPMData()
+            emit('refresh-data', true)
         }
     } catch (error) {
         console.log(error)
@@ -200,7 +208,7 @@ const sendToCM = async () => {
 
 
 const set_days_observation = () => {
-    const date_monitoring_end = moment(get_pm_data.value?.monitoring_end, 'YYYY-MM-DD')
+    const date_monitoring_end = moment(monitoring_end.value, 'YYYY-MM-DD')
     const today = moment().startOf('day')
 
     const daysToWait = date_monitoring_end.diff(today, 'days')
@@ -220,10 +228,10 @@ const setDaysObservation = async () => {
     }
     try {
         const response = await apiRequest.post('setDaysObservation',
-            { id: pm_id.value, set_days: parseInt(set_days.value) })
-        if (response.data && response.data.success) {
+            { id: delegation_id.value, set_days: parseInt(set_days.value) })
+        if (response?.data?.success) {
             toast.success('Successfully set')
-            await refreshPMData()
+            emit('refresh-data', true)
         }
     } catch (error) {
         console.log(error)

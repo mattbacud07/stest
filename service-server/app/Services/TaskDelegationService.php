@@ -28,6 +28,8 @@ class TaskDelegationService
         if(!$query){
             throw new Exception('Error inserting task log');
         }
+
+        return $query;
     }
     
     

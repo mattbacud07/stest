@@ -93,7 +93,7 @@
                                     <p class="text-remarks">{{ task_log.status_after_service }}</p>
                                 </div>
                                 <div class="mt-3">
-                                    <v-chip color="warning" size="small" variant="tonal" label>
+                                    <v-chip color="primary" size="small" variant="flat" label>
                                         <v-icon icon="mdi-chevron-right"></v-icon> &nbsp; {{ task_log?.status }}</v-chip>
                                 </div>
                             </div>

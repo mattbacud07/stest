@@ -12,7 +12,7 @@ export const declined = 'Declined';
 export const cancelled = 'Cancelled';
 export const delegated = 'Delegated';
 export const installing = 'Installing';
-export const uninstalling = 'Uninstalling';
+export const uninstalling = 'Pending Pullout';
 
 
 

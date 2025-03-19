@@ -46,7 +46,7 @@
 
 
                 <v-btn @click="handleRefresh" color="lighten-3" variant="text" class="mr-1 text-none">
-                    <v-icon class="mr-1">mdi-refresh</v-icon> {{ width < 768 ? '' : ' Refresh' }} </v-btn>
+                    <v-icon class="mr-1">mdi-refresh</v-icon> {{ width < 768 ? '' : '' }} </v-btn>
 
 
                         <v-btn variant="tonal" :disabled="btnDisable" @click="dialogDelete = true" color="error"

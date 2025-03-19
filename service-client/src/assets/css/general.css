@@ -74,6 +74,13 @@ table.dataTable>tbody>tr.selected>* {
   min-height: 300px!important;
 }
 
+.textHTML{
+  white-space: pre-wrap;
+}
+.textTransform{
+  text-transform: capitalize;
+}
+
 
 
 
@@ -288,13 +295,13 @@ table tbody tr td span:empty::before{
 /* Printing Options Custom */
 @media print {
   #printThisA4 {
-    width: 210mm; /*A4 width */
-    height: 297mm; /* A4 height */
-    margin: auto;
+    width: 210mm; /* A4 width */
+    /* height: 297mm; A4 height */
+    margin: 7px auto 7px auto!important;
     /* padding: 10mm;  */
     box-sizing: border-box;
-    max-height: calc(297mm - 20mm); /* Adjust height to leave space for margins */
-    overflow: hidden; /* Avoid overflow from spilling out */
+    /* max-height: calc(297mm - 20mm); Adjust height to leave space for margins */
+    /* overflow: hidden; Avoid overflow from spilling out */
   }
   body {
     -webkit-print-color-adjust: exact;

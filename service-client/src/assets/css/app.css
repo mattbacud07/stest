@@ -98,10 +98,12 @@
   font-weight: 500 !important;
 }
 .v-btn--size-default{
-  font-size: 12px!important;
+  font-size: 11px!important;
+  padding: 0 13px!important;
+  /* font-weight: 100!important; */
 }
 .v-btn--size-small{
-  font-size: 12px!important;
+  font-size: 11px!important;
 }
 input, optgroup, select, textarea{
   font-size: 12px !important;

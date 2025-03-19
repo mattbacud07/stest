@@ -8,7 +8,7 @@ export const cm = 2
 
 /** Status */
 export const Scheduled = 'Scheduled';
-export const ReadyForDelegation = 'ReadyForDelegation';
+export const ReadyForDelegation = 'Ready for Delegation';
 export const NotSet = 'Not Set';
 export const Delegated = 'Delegated';
 export const Accepted = 'Accepted';
@@ -29,7 +29,7 @@ export const Declined = 'Declined';
 // ];
 export const status_pm = [
     {key: Scheduled, color: 'blue', text: 'Pending Assignment' },
-    {key: ReadyForDelegation, color: 'brown-darken-4', text: 'Ready For Delegation' },
+    {key: ReadyForDelegation, color: 'teal', text: 'Ready For Delegation' },
     {key: NotSet, color: 'grey', text: 'Not Set' },
     {key: Delegated, color: 'orange', text: 'Waiting for Acceptance' },
     {key: Accepted, color: 'purple', text: 'Request Accepted' },
@@ -39,6 +39,8 @@ export const status_pm = [
     {key: Closed, color: 'grey', text: 'Closed' },
     {key: Declined, color: 'red', text: 'Declined' },
 ]
+
+export const status_cm = status_pm.filter(v => v.text !== ReadyForDelegation)
 export const setPMStatus = (key) => {
     return status_pm.find(v => v.key === key) || { color: 'brown', text: '' }
 }
@@ -51,7 +53,7 @@ export const setPMStatus = (key) => {
 /** Status after Service */
 export const StatusAfterService = {
     operational: 'Operational',
-    further_monitoring: 'For Further Monitoring',
+    further_monitoring: 'Further Monitoring',
     non_operational: 'Non-Operational',
 }
 

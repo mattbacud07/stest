@@ -20,7 +20,7 @@
                     </v-btn>
                     <v-btn type="submit" :loading="btnLoading" :disabled="btnDisable" color="primary" variant="flat"
                         class="text-none btnSubmit">
-                        <v-icon class="mr-2">mdi-note-plus-outline</v-icon> Create
+                        <v-icon class="mr-1">mdi-plus</v-icon> Create
                     </v-btn>
                 </v-col>
             </template>
@@ -65,8 +65,7 @@
                                 <v-checkbox v-model="formData.ocular" color="primary" label="Request for Ocular"
                                     value="1" class="vCheckbox" density="compact"></v-checkbox>
                                 <v-checkbox v-model="formData.bypass" color="primary"
-                                    label="Bypass Internal Servicing Procedures" value="1" class="vCheckbox"
-                                    :disabled="disableExternalCheckbox" density="compact"></v-checkbox>
+                                    label="Bypass Internal Servicing Procedures" value="1" class="vCheckbox" density="compact"></v-checkbox>
                                 <v-checkbox v-model="formData.ship" color="primary"
                                     label="Ship & Deliver direct to customer immediately" class="vCheckbox" value="1"
                                     density="compact"></v-checkbox>
@@ -83,7 +82,9 @@
                         <v-row class="mt-3">
                             <v-col cols="12" md="6" sm="6">
                                 <h5 class="mb-2" style="font-weight: 500;color: #191970;">External Request</h5>
-                                <v-radio-group v-model="formData.externalRequest" :rules="rule.ruleExternal" column
+                                <v-select v-model="formData.externalRequest" variant="outlined" clearable placeholder="Choose external request" color="primary"
+                                :items="externalRequest" item-title="label" item-value="value" density="compact" :rules="rule.ruleExternal"></v-select>
+                                <!-- <v-radio-group v-model="formData.externalRequest" :rules="rule.ruleExternal" column
                                     density="compact">
                                     <v-radio color="primary" label="For Demonstration" value="1"></v-radio>
                                     <v-radio color="primary" label="Reagent Tie-up" value="2"></v-radio>
@@ -91,9 +92,10 @@
                                     <v-radio color="primary" label="Shipment / Delivery" value="4"></v-radio>
                                     <v-radio color="primary" label="Service Unit" value="5"></v-radio>
                                     <v-radio color="primary" label="Other" value="6"></v-radio>
-                                </v-radio-group>
-                                <v-text-field v-if="formData.externalRequest === '6'" density="compact"
-                                    variant="outlined" placeholder="Other External Request" w-90 v-model="other"
+                                </v-radio-group> -->
+
+                                <v-text-field v-if="formData.externalRequest === otherExternal" density="compact"
+                                    variant="outlined" placeholder="Other External Request" w-90 v-model="formData.other"
                                     :rules="rule.otherRule"></v-text-field>
                                 <v-checkbox v-model="formData.attached_gate" :disabled="disableExternalCheckbox"
                                     class="vCheckbox" color="primary" label="Attached gate/entry pass"
@@ -102,14 +104,16 @@
                                     class="vCheckbox" color="primary" label="with contract/other docs"
                                     value="1"></v-checkbox>
 
-                                <v-select v-if="formData.externalRequest === '4'" color="primary" density="compact"
+                                <v-select v-if="formData.externalRequest === shipmentDelivery" color="primary" density="compact"
                                     class="mt-3" clearable variant="outlined" label="Satellite Office"
                                     placeholder="Satellite Office" w-90 v-model="formData.satellite"
                                     :rules="[v => !!v || 'Required']" :items="satellite"></v-select>
                             </v-col>
                             <v-col cols="12" md="6" sm="6">
                                 <h5 class="mb-2" style="font-weight: 500;color: #191970;">Internal Request</h5>
-                                <v-radio-group v-model="formData.internalRequest" :rules="rule.ruleInternal" column
+                                <v-select v-model="formData.internalRequest" variant="outlined" placeholder="Choose internal request" clearable color="primary"
+                                :items="internalRequest" item-title="label" item-value="value" density="compact" :rules="rule.ruleInternal"></v-select>
+                                <!-- <v-radio-group v-model="formData.internalRequest" :rules="rule.ruleInternal" column
                                     density="compact">
                                     <v-radio color="primary" label="For Corrective" value="7"></v-radio>
                                     <v-radio color="primary" label="For Refurbishment" value="8"></v-radio>
@@ -117,8 +121,8 @@
                                     <v-radio color="primary" label="Training Purposes" value="10"></v-radio>
                                     <v-radio color="primary" label="For Disposal" value="11"></v-radio>
                                     <v-radio color="primary" label="Other" value="12"></v-radio>
-                                </v-radio-group>
-                                <v-text-field v-if="formData.internalRequest === '12'" density="compact"
+                                </v-radio-group> -->
+                                <v-text-field v-if="formData.internalRequest === otherInternal" density="compact"
                                     variant="outlined" placeholder="Other External Request" w-90
                                     v-model="formData.other" :rules="rule.otherRule"></v-text-field>
                             </v-col>
@@ -163,7 +167,7 @@
                                             <tr>
                                                 <td colspan="5" class="text-center p-1" style="opacity: .2;">
                                                     <v-icon class="mb-3"
-                                                        style="font-size: 50px">mdi-file-document-alert-outline</v-icon><br>
+                                                        style="font-size: 30px">mdi-file-document-alert-outline</v-icon><br>
                                                     No records found
                                                 </td>
                                             </tr>
@@ -172,23 +176,23 @@
                                 </div>
 
                                 <!-- Overlay box for Equipment Peripherals -->
-                                <div class="d-flex justify-content-center">
+                                <div class="d-flex justify-content-end">
                                     <v-btn color="primary" size="medium" flat class="text-none mt-3 p-2"
                                         @click="overlayMasterData = !overlayMasterData">
                                         <v-icon class="mr-3">mdi-database-cog</v-icon>
-                                        Select Equipment & Peripherals
+                                        Add equipment
                                     </v-btn>
                                     <v-overlay v-model="overlayMasterData"
-                                        class="d-flex align-items-center justify-content-center"
-                                        :width="width <= 600 ? 400 : 1000" location-strategy="connected">
-                                        <v-card class="pa-7" min-height="500">
+                                        class="d-flex align-items-start justify-content-center"
+                                        :width="overlayWidth" scroll-strategy="reposition">
+                                        <v-card class="pa-7">
                                             <v-row>
-                                                <v-col cols="5" xl="4" md="4" sm="5">
+                                                <v-col cols="10" xl="4" md="4" sm="5">
                                                     <v-text-field v-model="params_md.search" clearable density="compact"
                                                         label="Search all fields" variant="outlined"
                                                         color="primary"></v-text-field>
                                                 </v-col>
-                                                <v-col cols="5" xl="4" md="4" sm="5">
+                                                <v-col cols="10" xl="4" md="4" sm="5">
                                                     <v-select v-model="serviceStatusSelected" clearable
                                                         density="compact" label="Status" variant="outlined"
                                                         :items="serviceStatus" color="primary"></v-select>
@@ -250,10 +254,6 @@
                                                     <v-text-field class="hideID">{{ peripheral.id }}</v-text-field>
                                                 </td>
                                                 <td>{{ peripheral.description }}</td>
-                                                <!-- <td><v-text-field clearable density="compact" variant="plain"
-                                                        :rules="rule.rulePeripheralSerial" placeholder="Serial number ...."
-                                                        w-100 v-model="peripheral.peripheralSerial"></v-text-field>
-                                                </td> -->
                                                 <td><v-text-field clearable density="compact" variant="plain"
                                                         placeholder="Remarks..." w-100
                                                         v-model="peripheral.remarks"></v-text-field>
@@ -265,9 +265,9 @@
                                         </tbody>
                                         <tbody v-else>
                                             <tr>
-                                                <td colspan="5" class="text-center p-3" style="opacity: .3;">
+                                                <td colspan="5" class="text-center p-3" style="opacity: .2;">
                                                     <v-icon class="mb-3"
-                                                        style="font-size: 50px">mdi-file-document-alert-outline</v-icon><br>
+                                                        style="font-size: 30px">mdi-file-document-alert-outline</v-icon><br>
                                                     No records found
                                                 </td>
                                             </tr>
@@ -276,16 +276,16 @@
                                 </div>
 
                                 <!-- Overlay box for Equipment Peripherals -->
-                                <div class="d-flex justify-content-center">
+                                <div class="d-flex justify-content-end">
                                     <v-btn color="primary" size="medium" flat class="text-none mt-3 p-2"
                                         @click="overlayMasterDataPeripherals = !overlayMasterDataPeripherals">
                                         <v-icon class="mr-3">mdi-database-plus</v-icon>
-                                        Select Additional Peripherals
+                                        Add peripherals
                                     </v-btn>
                                     <v-overlay v-model="overlayMasterDataPeripherals"
-                                        class="d-flex align-items-center justify-content-center"
-                                        :width="width <= 600 ? 400 : 1000" location-strategy="connected">
-                                        <v-card class="pa-7" min-height="600">
+                                        class="d-flex align-items-start justify-content-center"
+                                        :width="overlayWidth" scroll-strategy="reposition">
+                                        <v-card class="pa-7">
                                             <v-row>
                                                 <v-col cols="10" xl="4" md="4" sm="5">
                                                     <v-text-field v-model="params.search" clearable density="compact"
@@ -360,7 +360,7 @@ import { apiRequestAxios } from '@/api/api';
 import { master_data_status } from '@/global/master_data';
 import * as pub_var from '@/global/global'
 import { satellite } from '@/global/satellite';
-
+import {internalRequest, externalRequest, otherExternal, shipmentDelivery, otherInternal} from '@/global/equippment_handling'; 
 /** data declarations */
 const router = useRouter()
 const user = user_data()
@@ -459,30 +459,29 @@ const rule = ref({
 })
 
 watch(() => formData.value.internalRequest, (val) => {
-    if (val !== null) {
+    if (![null, undefined, ''].includes(val)) {
         formData.value.externalRequest = null
         rule.value.ruleExternal = []
         disableExternalCheckbox.value = true
         formData.value.attached_gate = ''
         formData.value.with_contract = ''
-        formData.value.bypass = ''
+        // formData.value.bypass = ''
         formData.value.satellite = ''
     } else {
         disableExternalCheckbox.value = false
     }
 
-
-    if (val !== 12) {
+    if (val !== otherInternal) {
         formData.value.other = ''
     }
 })
 watch(() => formData.value.externalRequest, (val) => {
-    if (val !== null) {
+    if (![null, undefined, ''].includes(val)) {
         formData.value.internalRequest = null
         rule.value.ruleInternal = []
     }
 
-    if (val !== 6) {
+    if (val !== otherExternal) {
         formData.value.other = ''
     }
 })
@@ -736,6 +735,13 @@ onBeforeRouteLeave(async (to, from, next) => {
 const discard = () => {
     router.push('/equipment-handling')
 }
+
+/** OVerlay Width Responsive */
+const overlayWidth = computed(() => {
+    if (width.value <= 400) return 300; // Small screens
+    else if (width.value <= 728) return 400; // Medium screens
+    else return 800; // Larger screens
+});
 
 
 onMounted(() => {

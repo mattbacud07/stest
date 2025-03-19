@@ -169,6 +169,10 @@ import { useRouter } from 'vue-router';
 import { useInstitutionData } from '@/helpers/getInstitution';
 const { institutionData } = useInstitutionData()
 
+/** Toast */
+import { useToast } from 'vue-toast-notification';
+const toast = useToast()
+
 const router = useRouter()
 
 /** Permissions */
@@ -179,10 +183,8 @@ const { can } = permit()
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
-//** Datepicker */
-// import VueDatePicker from '@vuepic/vue-datepicker';
-// import '@vuepic/vue-datepicker/dist/main.css'
 import { nonEmptyCountFilter } from '@/helpers/filters';
+import { EH } from '@/global/modules';
 
 
 
@@ -259,7 +261,7 @@ provide('column', cols)
  */
 const rolesToAccess = [pub_var.TLRoleID, pub_var.SBUServiceAssistantID, pub_var.engineerRoleID]
 const doubleClickViewData = (row) => {
-    if (rolesToAccess.includes(currentUserRoleID)) {
+    if (row?.main_status === pub_var.INSTALLING) {
         router.push({ name: 'WorkOrderInstallation', params: { id: row.id } })
     } else
         router.push({ name: 'WorkOrderApprover', params: { id: row.id } })
@@ -273,10 +275,10 @@ const rowSelect = (row) => {
         btnDisable.value = true
     }
 
-    const extractId = row.map((data) => { return data.id })
-    const statusId = row.map((data) => { return data.status })
-    selectedId.value = extractId[0]
-    status.value = statusId[0]
+    // const extractId = row.map((data) => { return data.id })
+    selectedId.value = row[0]?.id
+    // status.value = row[0]?.main_status
+    routeView.value = row[0]?.main_status === pub_var.INSTALLING ? 'WorkOrderInstallation' : 'WorkOrderApprover'
 }
 const getRowClass = (row) => {
     const rowID = selectedRows.value.map(v => v.id)
@@ -288,18 +290,32 @@ const getRowClass = (row) => {
 
 /** Sent to Topbar */  // Subject to Change [Set Roles and Permission Dynamically]
 const category = ref(null)
-const routeView = ref(rolesToAccess.includes(currentUserRoleID) ? 'WorkOrderInstallation' : 'WorkOrderApprover')
+const routeView = ref(null)
 const createRequest = ref(null)
 const service_id = ref(null)
 
-if (can('create', 'Equipment Handling') && role.currentUserRole === requestorID) createRequest.value = 'WorkOrder'
+if (can('create', EH) && role.currentUserRole === requestorID) createRequest.value = 'WorkOrder'
 
+/** Delete Data */
+const deleteData = async() => {
+    try {
+        const response = await apiRequest.delete(`delete_eh/${selectedId.value}`)
+        if(response.data?.success){
+            toast.success('Deleted successfully')
+            getRequest()
+            btnDisable.value = true
+        }
+    } catch (error) {
+       console.log(error) 
+    }
+}
 
 const actions = {
     selectedId: selectedId,
     btnDisable: btnDisable,
     routeView: routeView,
     createRequest: createRequest.value,
+    deleteFunction: can('delete', EH) ? deleteData : null
 }
 
 provide('data', actions)

@@ -1,0 +1,1 @@
+import{_ as a}from"./Welcome-BRR7mhTd.js";import{B as o}from"./BaseLayout-xaaN6njh.js";import{f as t,w as r,o as e,h as s}from"./index-BVXPU9zS.js";import"./topBarUserProfile-DtdqdVcI.js";import"./_plugin-vue_export-helper-DlAUqK2U.js";const l={__name:"Dashboard",setup(_){return(m,c)=>(e(),t(o,null,{default:r(()=>[s(a)]),_:1}))}};export{l as default};

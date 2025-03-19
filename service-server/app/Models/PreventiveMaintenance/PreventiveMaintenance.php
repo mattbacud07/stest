@@ -11,7 +11,7 @@ use App\Models\MasterData;
 use App\Models\MasterDataInstitution;
 use App\Models\ServiceMasterData;
 use App\Models\WorkOrder\EquipmentPeripherals;
-use App\Models\WorksDone;
+use App\Models\WorkOrder\InternalRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -44,8 +44,6 @@ class PreventiveMaintenance extends LogsBaseModel
         'deleted_at',
     ];
 
-
-
     /** Status */
     public const Scheduled = 'Scheduled';
     public const ReadyForDelegation = 'Ready for Delegation';
@@ -70,7 +68,6 @@ class PreventiveMaintenance extends LogsBaseModel
     public const operational = 'Operational';
     public const further_monitoring = 'Further Monitoring';
     public const non_operational = 'Non-Operational';
-
 
     public function institution()
     {
@@ -104,30 +101,4 @@ class PreventiveMaintenance extends LogsBaseModel
         return $this->hasOne(EngineerTaskDelegation::class, 'service_id', 'id')
             ->latest(); // Orders by created_at DESC by default
     }
-
-
-    // public function equipment(){
-    //     return $this->hasOne(MasterData::class, 'id', 'item_id');
-    // }
-    // public function eh(){
-    //     return $this->hasOne(EhServicesModel::class, 'id', 'service_id');
-    // }
-
-    // public function equipment_peripherals(){
-    //     return $this->hasOne(EquipmentPeripherals::class, 'id','equipment_peripheral_id');
-    // }
-
-    // public function user(){
-    //     return $this->hasOne(UserModel::class, 'id', 'engineer');
-    // }
-
-    // public function service_equipment(){
-    //     return $this->hasOne(ServiceMasterData::class, 'id','item_id');
-    // }
-    // public function actions(){
-    //     return $this->hasMany(WorksDone::class, 'pm_id', 'id');
-    // }
-    // public function pm_actions(){
-    //     return $this->hasMany(PMActions::class, 'maintenance_id', 'id');
-    // }
 }

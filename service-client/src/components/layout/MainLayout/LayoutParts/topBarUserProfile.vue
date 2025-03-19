@@ -3,7 +3,7 @@
         <v-btn @click="dialog = true" color="primary"  class="text-none" prepend-icon="mdi-account">
             <span class="text-dark"><b>{{ user.user.first_name }} {{ user.user.last_name }}</b></span>  | Logout
         </v-btn><br/>
-        <span class="small mr-4" v-if="user?.user?.user_roles?.length === 1">Logged in as : <b class="text-dark">{{ user.user.user_roles[0]?.role_name }}</b></span>
+        <span class="small mr-4 text-disabled">Logged in as : <b class="text-disabled">{{ currentUserROle }}</b></span>
 
         <v-dialog v-model="dialog" width="auto">
             <v-card min-width="300" prepend-icon="mdi-account"
@@ -19,7 +19,7 @@
     </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { user_data } from '@/stores/auth/userData';
 import { logout } from '@/stores/auth/logout'
 import { useRouter } from 'vue-router';
@@ -29,6 +29,11 @@ const logMeOut = logout()
 const router = useRouter()
 const loading = ref(false)
 const dialog = ref(false)
+
+import { getRole } from '@/stores/getRole';
+const role = getRole()
+
+const currentUserROle = computed(() => user.user.user_roles.find(v => role.currentUserRole === v.role_id)?.role_name)
 
 const logOut = async () => {
     loading.value = true

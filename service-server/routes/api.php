@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SSUController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\authController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Corrective\CM;
 use App\Http\Controllers\ehController\ChecklistItem;
 use App\Http\Controllers\ehController\EhMainApproverController;
 use App\Http\Controllers\ehController\EhMainController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\PreventiveMaintenance\PMSparepartsUsed;
 use App\Http\Controllers\PreventiveMaintenance\PreventiveMaintenance;
 use App\Http\Controllers\PreventiveMaintenance\SendToCM;
 use App\Http\Controllers\Pullout\Pullout;
+use App\Http\Controllers\Pullout\PulloutUninstallation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -107,13 +109,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/submit-work-order', [WorkOrder::class, 'submit_work_order']); // Submit Work Order
     Route::get('/get-equipment-handling', [EquipmentHandlingController::class, 'index']);
     Route::get('/get-specific-equipment-handling', [EquipmentHandlingController::class, 'getEquipmentHandlingById']);
-    // Route::get('/get-approver', [ApprovalConfiguration::class, 'get_approvers_data']); // use also both in Approver and admin
+    Route::delete('/delete_eh/{id}', [EquipmentHandlingController::class, 'delete_eh']);
 
     /** Pullout Request */
-    Route::get('/view-pullout', [Pullout::class, 'index']);
+    Route::get('/view_pullout', [Pullout::class, 'index']);
     Route::get('/view-pullout-id', [Pullout::class, 'view']);
     Route::post('/create-pullout', [Pullout::class, 'create']);
     Route::post('/approve-pullout', [Pullout::class, 'approve']);
+    Route::post('/disapprove-pullout', [Pullout::class, 'disapproved']);
+
+    /** Pullout Uninstallation */
+    Route::post('/pr_delegate_engineer', [PulloutUninstallation::class, 'delegate_engineer']);
 
 
     /** Service Action Controller */
@@ -169,11 +175,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/accept-decline-delegated', [PreventiveMaintenance::class, 'accept_decline']);
     Route::post('/in-transit', [PreventiveMaintenance::class, 'in_transit']);
     Route::post('/start-task', [PreventiveMaintenance::class, 'start_task']);
-    Route::post('/pm_task_processing', [PreventiveMaintenance::class, 'pm_task_processing']);
+    Route::post('/pm_mark_as_completed', [PreventiveMaintenance::class, 'mark_as_completed']);
     Route::delete('/delete_pm/{id}', [PreventiveMaintenance::class, 'delete_pm']);
-    // Route::get('/getStandardActions', [PreventiveMaintenance::class, 'getStandardActions']);
+    
+    
+    /** Corrective Maintenance */
+    Route::get('/get-corrective-maintenance', [CM::class, 'get_all']);
+    Route::get('/get_cm_record_details', [CM::class, 'get_cm_record_details']);
+    // Route::post('/createPMRequest', [PreventiveMaintenance::class, 'createPMRequests']);
+    Route::post('/pm_delegate_engineer', [CM::class, 'pm_delegate_engineer']);
+    Route::post('/accept-decline-delegated', [CM::class, 'accept_decline']);
+    Route::post('/in-transit', [CM::class, 'in_transit']);
+    Route::post('/start-task', [CM::class, 'start_task']);
+    Route::post('/cm_mark_as_completed', [CM::class, 'mark_as_completed']);
+    Route::delete('/delete_cm/{id}', [CM::class, 'delete_cm']);
 
-    Route::get('/spareparts', [PMSparepartsUsed::class, 'view']);
+    // Route::get('/spareparts', [PMSparepartsUsed::class, 'view']);
     Route::post('/sendToCM', [SendToCM::class, 'sendToCM']); //send to CM
     Route::post('/setDaysObservation', [SendToCM::class, 'setDaysObservation']); //send to CM
 

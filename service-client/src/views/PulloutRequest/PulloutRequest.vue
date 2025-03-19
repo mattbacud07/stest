@@ -115,7 +115,8 @@ provide('column', cols)
  * @ Row Select or Double Click Table Event
  */
 const doubleClickViewData = (row) => {
-    router.push({ name: 'PullOutRequestView', params: { id: row.id } })
+    const routeV = row.status === pub_var.uninstalling ? 'PulloutUninstallation' : 'PullOutRequestView'
+    router.push({ name: routeV, params: { id: row.id } })
 }
 const selectedRows = ref([])
 const rowSelect = (row) => {
@@ -130,6 +131,7 @@ const rowSelect = (row) => {
     const statusId = row.map((data) => { return data.status })
     selectedId.value = extractId[0]
     status.value = statusId[0]
+    routeView.value = row[0]?.status === pub_var.uninstalling ? 'PulloutUninstallation' : 'PullOutRequestView'
 }
 const getRowClass = (row) => {
     const rowID = selectedRows.value.map(v => v.id)
@@ -162,23 +164,23 @@ provide('data', actions)
 const getRequest = async () => {
     try {
         loading.value = true;
-        const response = await apiRequest.get('view-pullout', {
+        const response = await apiRequest.get('view_pullout', {
             params: { 
                 ...params,
                 user_id: user.user.id, 
                 current_role: currentUserRoleID 
             },
         });
-        if (response.data && response.data.pullout_request) {
-            const result = response.data.pullout_request
+        if (response?.data?.pullout_request) {
+            const result = response.data?.pullout_request
             rows.value = result.data
             total_rows.value = result.total
         }
     } catch (error) {
         console.log(error)
+    }finally {
+        loading.value = false;
     }
-
-    loading.value = false;
 };
 
 

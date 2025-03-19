@@ -10,11 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\WorkOrder\InternalRequest;
 use App\Services\TaskDelegationService;
 use App\Traits\GlobalVariables;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 class EhServicesModel extends LogsBaseModel
 {
     use HasFactory;
+    use SoftDeletes;
 
     const model_name = 'Equipment Handling';
 
@@ -47,9 +49,19 @@ class EhServicesModel extends LogsBaseModel
         'level',
         'main_status',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'deleted_at'
     ];
 
+
+    
+    protected static function boot(){
+        parent::boot();
+
+        static::deleting(function($eh_request){
+            $eh_request->internal_servicing_request()->delete();
+        });
+    }
 
 
     /**

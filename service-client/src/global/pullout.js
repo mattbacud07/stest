@@ -3,7 +3,7 @@ import { completed, disapproved, uninstalling, pending } from "./global";
 /** Level of Approver */
 export const SUPERVISOR = 1;
 export const OPERATION_SERVICE = 2;
-export const SERVICE_DEPT = 2;
+export const finish = 0;
 
 export const pullout_approver = (approver) => {
     switch (approver) {
@@ -13,9 +13,11 @@ export const pullout_approver = (approver) => {
         case OPERATION_SERVICE:
             return 'Operations - Outbound Supervisor - SBU Service Head'
             break 
+        case finish:
+            return 'Pending Pullout'
+            break 
     }
 }
-
 
 /** Pullout Request Status */
 export const pullOutStatus = (status) => {
@@ -27,7 +29,7 @@ export const pullOutStatus = (status) => {
             return { text: 'Disapproved', color: 'red' }
             break;
         case uninstalling:
-            return { text: 'Pullout in Progress', color: 'warning' }
+            return { text: 'Pending Pullout', color: 'warning' }
             break;
         case completed:
             return { text: 'Completed', color: 'green' }

@@ -96,6 +96,7 @@ class EquipmentHandlingController extends Controller
                                 if ($level == EhServicesModel::SM_SER) {
                                     $query->orWhere(function ($subQuery) use ($user_department, $user_sbu) {
                                         $subQuery->where('equipment_handling.level', EhServicesModel::SM_SER)
+                                        ->where('equipment_handling.main_status', EhServicesModel::ONGOING)
                                             ->whereExists(function ($existQuery) use ($user_department, $user_sbu) {
                                                 $existQuery->select(DB::raw(1))
                                                     ->from(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u')
@@ -133,11 +134,13 @@ class EquipmentHandlingController extends Controller
                                 } else if ($level === EhServicesModel::SERVICE) {
                                     $query->orwhere(function ($subQuery) use ($user_sbu) {
                                         $subQuery->where('equipment_handling.level', EhServicesModel::SERVICE)
+                                        ->whereIn('equipment_handling.main_status', [EhServicesModel::ONGOING, EhServicesModel::INTERNAL_SERVICING])
                                             ->whereExists(function ($existQuery) use ($user_sbu) {
                                                 $existQuery->select(DB::raw(1))
                                                     ->from('equipment_peripherals as ep')
                                                     ->join('service_master_data as md', 'md.id', '=', 'ep.service_master_data_id')
                                                     ->where('md.sbu', '=', $user_sbu)
+                                                    ->where('ep.request_type','eh')
                                                     ->whereColumn('ep.service_id', 'equipment_handling.id')
                                                     ->orWhereExists(function ($query_manager) {
                                                         $query_manager->select(DB::raw(1))
@@ -148,7 +151,8 @@ class EquipmentHandlingController extends Controller
                                             });
                                     });
                                 } else {
-                                    $query->orWhere('equipment_handling.level', $level);
+                                    $query->orWhere('equipment_handling.level', $level)
+                                    ->where('equipment_handling.main_status', EhServicesModel::ONGOING);
                                 }
                             }
                         });
@@ -309,7 +313,7 @@ class EquipmentHandlingController extends Controller
     }
 
 
-    //     public function getApproverForEachLevel($service_id, $service_id){
-
-    //     }
+    public function delete_eh($id){
+        return $this->soft_delete_data(EhServicesModel::class, $id);
+    }
 }

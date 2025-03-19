@@ -16,10 +16,12 @@ class EHNotification extends Mailable
     /**
      * Create a new message instance.
      */
-    public $userName;
-    public function __construct($name)
+    public $link;
+    public $subject;
+    public function __construct($link, $subject)
     {
-        $this->userName = $name;
+        $this->link = $link;
+        $this->subject = $subject;
     }
 
     /**
@@ -28,7 +30,7 @@ class EHNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Equipment Handling - Pending Approval',
+            subject: $this->subject,
         );
     }
 
@@ -40,7 +42,8 @@ class EHNotification extends Mailable
         return new Content(
             view: 'EmailNotification.ApprovalConfirmation',
             with: [
-                'userName' => $this->userName,
+                'link' => $this->link,
+                // 'userName' => $this->userName,
             ],
         );
     }

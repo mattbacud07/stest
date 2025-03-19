@@ -67,10 +67,9 @@
     
     <div class="container">
         <div class="content">
-            <p>{{ $userName }},</p>
             <p>A new request is awaiting your approval. Please review the details and take the necessary action at your earliest convenience.</p>
             <p>To review the request, please click the button below:</p><br>
-            <a href="#" class="btn">Review</a>
+            <a href="{{$link}}" class="btn">Review</a>
         </div>
         <div class="footer">
             <p>For any questions, feel free to contact administrator</p>

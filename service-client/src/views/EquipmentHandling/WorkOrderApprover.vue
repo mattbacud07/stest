@@ -9,6 +9,9 @@
                         :disabled="item.disabled">
                         {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
                     </v-breadcrumbs-item>
+                    <v-btn @click="refreshData" variant="plain" color="grey"><v-icon>mdi-refresh</v-icon>
+                        <v-tooltip activator="parent" location="bottom">Refresh</v-tooltip>
+                    </v-btn>
                 </v-breadcrumbs>
             </div>
             <v-spacer></v-spacer>
@@ -23,23 +26,24 @@
                                 class="text-none mr-2">
                                 Disapprove</v-btn>
                         </template>
-                        <v-card text="" title="Disapprove">
-                            <v-col cols="12">
-                                <v-textarea class="mr-2 ml-2" v-model="disApproveRemark" :rules="[
-                                    v => !!v?.trim() || 'Please provide a reason for disapproval'
-                                ]" clearable label="Reason of Disapproval" color="primary"
-                                    variant="outlined"></v-textarea>
-                            </v-col>
-                            <template v-slot:actions>
-                                <v-row justify="end">
-                                    <v-btn @click="dialog = false" class="text-none mr-2">
-                                        Cancel</v-btn>
-                                    <v-btn @click="disapproveRequest" color="primary" elevation="2"
-                                        class="text-none mr-3"
-                                        style="background-color: #191970;color: #fff!important;">Disapprove</v-btn>
-                                </v-row>
-                            </template>
-                        </v-card>
+                        <v-form @submit.prevent="disapproveRequest" ref="formDisapprove">
+                            <v-card text="" title="Disapprove">
+                                <v-col cols="12">
+                                    <v-textarea class="mr-2 ml-2" v-model="disApproveRemark" :rules="[
+                                        v => !!v?.trim() || 'Please provide a reason for disapproval'
+                                    ]" clearable label="Reason of Disapproval" color="primary"
+                                        variant="outlined"></v-textarea>
+                                </v-col>
+                                <template v-slot:actions>
+                                    <v-row justify="end">
+                                        <v-btn @click="dialog = false" class="text-none mr-2">
+                                            Cancel</v-btn>
+                                        <v-btn type="submit" color="primary" elevation="2" class="text-none mr-3"
+                                            style="background-color: #191970;color: #fff!important;">Disapprove</v-btn>
+                                    </v-row>
+                                </template>
+                            </v-card>
+                        </v-form>
                     </v-dialog>
 
                     <!-- Approve Button -->
@@ -121,6 +125,7 @@
                             <v-tooltip activator="parent" location="bottom">Status</v-tooltip>
                             <strong>&nbsp;{{ pub_var.setJOStatus(request.main_status).text }}</strong>
                         </v-chip>
+                        <PMPrint :data="request" />
                     </v-card>
                 </transition>
                 <InternalServicingDelegation v-if="showInternalProcess" :service_id="id" @refresh="refreshData"
@@ -190,6 +195,8 @@ const currentUserRole = role.currentUserRole
 import { permit } from '@/castl/permitted';
 import InternalServicingDelegation from '@/components/Approver/EH/InternalServicingDelegation.vue';
 import { service_department, sm_department } from '@/global/department';
+import PMPrint from '@/components/Print/PMPrint.vue';
+import { A_EH } from '@/global/modules';
 const { can } = permit()
 
 
@@ -243,7 +250,7 @@ const navigateTo = (item) => {
 const approveRequest = async () => {
     btnLoading.value = true
 
-    if (user.user.approval_level.includes(IT_DEPARTMENT)) {
+    if (user.user.approval_level.includes(IT_DEPARTMENT) && request.value?.level === IT_DEPARTMENT) {
         if (!submmitApproveStatus.value) {
             toast.error('Please ensure all serial number fields are filled in')
             btnLoading.value = false
@@ -289,9 +296,19 @@ const approveRequest = async () => {
 /** 
  * Disapprove Request
  * */
+const formDisapprove = ref(false)
 const disApproveRemark = ref('')
 const disapproveRequest = async () => {
     btnDisable.value = true
+    btnLoading.value = true
+
+    const { valid } = formDisapprove.value.validate()
+    if (!valid) {
+        btnDisable.value = false
+        btnLoading.value = false
+
+        return
+    }
     try {
         const response = await apiRequest.post('disapprove-request', {
             service_id: id,
@@ -307,6 +324,8 @@ const disapproveRequest = async () => {
     }
     finally {
         btnDisable.value = false
+        btnLoading.value = false
+
     }
 }
 
@@ -327,6 +346,7 @@ const getRequest = async () => {
         const response = await apiRequest.get('get-specific-equipment-handling', {
             params: {
                 service_id: id,
+                module_type: A_EH
             },
         });
         if (response?.data?.request) {

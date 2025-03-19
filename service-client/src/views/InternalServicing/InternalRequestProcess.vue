@@ -8,6 +8,9 @@
                     :disabled="item.disabled">
                     {{ item.title }} <v-icon class="ml-1" icon="mdi-chevron-right"></v-icon>
                 </v-breadcrumbs-item>
+                <v-btn @click="refreshData" variant="plain" color="grey"><v-icon>mdi-refresh</v-icon>
+                    <v-tooltip activator="parent" location="bottom">Refresh</v-tooltip>
+                </v-btn>
             </v-breadcrumbs>
             <v-spacer></v-spacer>
 
@@ -122,7 +125,6 @@
                             <v-col cols="12">
                                 <v-textarea class="mr-2 ml-2" v-model="declineRemark" clearable label="Reason"
                                     color="primary" variant="outlined"></v-textarea>
-                                <!-- <p class="text-danger ml-3">{{ disApproveRemarkError }}</p> -->
                             </v-col>
                             <template v-slot:actions>
                                 <v-row justify="end">
@@ -148,7 +150,6 @@
                                     <v-col cols="12">
                                         <v-textarea class="mr-2 ml-2" v-model="acceptRemark" clearable
                                             label="Remark (optional)" color="primary" variant="outlined"></v-textarea>
-                                        <!-- <p class="text-danger ml-3">{{ disApproveRemarkError }}</p> -->
                                     </v-col>
                                     <template v-slot:actions>
                                         <v-row justify="end">
@@ -193,13 +194,14 @@
                             v-if="internalData?.option_type && status === pub_var.I_WAREHOUSE">
                             <strong>&nbsp;For {{ _.upperFirst(internalData?.option_type) ?? '---' }}</strong>
                         </v-chip>
+
+                        <PMPrint :data="internalData" />
                     </v-card>
                 </transition>
                 <!-- Checklist Item Form -->
-                <v-form @submit.prevent="SubmitMarkAsCompleted" ref="form">
+                <v-form ref="formItem">
                     <v-card text="" title="" class="mb-5" v-if="can('installer', IS) && completeTheAction">
                         <v-col cols="12">
-                            <!-- Checklist Item Form -->
                             <b class="text-primary ml-1">Checklist Items</b>
 
                             <v-radio-group inline v-model="option_type" :rules="[v => !!v || 'Required']">
@@ -221,7 +223,7 @@
                                         <td>{{ selected.item }}</td>
                                         <td class="pa-0 w-25">
                                             <v-text-field class="ml-2" :rules="[
-                                                v => !!v || 'Required',
+                                                v => !!v?.trim() || 'Required',
                                                 v => !isNaN(v) || 'Mus tbe a number'
                                             ]" variant="plain" v-model="selected.qty" label="qty" density="compact"
                                                 single-line></v-text-field>
@@ -258,57 +260,9 @@
                             </v-dialog>
                         </v-col>
                     </v-card>
-
-                    <v-card density="compact" class="p-3" elevation="1"
-                        v-if="can('installer', IS) && completeTheAction">
-                        <v-row>
-                            <v-col cols="12">
-                                <b class="text-primary">Status after service</b>
-                                <v-radio-group v-model="status_after_service" :rules="[v => !!v || 'Required']" inline>
-                                    <v-radio label="Operational" value="Operational"></v-radio>
-                                    <v-radio label="For further monitoring" value="Further Monitoring"></v-radio>
-                                    <v-radio label="Non-operational" value="Non-Operational"></v-radio>
-                                </v-radio-group>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col class="d-flex justify-content-between align-items-center">
-                                <b class="text-primary">Actions Taken</b>
-
-                                <v-btn @click="addField" class="text-none" color="primary" variant="text"
-                                    prepend-icon="mdi-comment-plus-outline">Add
-                                    Field</v-btn>
-                            </v-col>
-                        </v-row>
-
-                        <v-col cols="12">
-                            <v-card elevation="0">
-                                <v-row>
-                                    <v-col cols="12" v-for="(field, index) in fields" v-if="fields.length > 0"
-                                        :key="index">
-                                        <v-combobox v-model="field.action" :items="actions_data" item-title="actions"
-                                            item-value="actions" label="Select an option or enter your action manually"
-                                            append-inner-icon="mdi-trash-can-outline" variant="outlined" color="primary"
-                                            class="mt-3" density="compact" clearable :rules="[
-                                                v => !!v || 'Required',
-                                                v => (v && v.length <= 120) || 'Please limit your input to 120 characters'
-                                            ]" @click:append-inner="removeField(index)">
-                                            <template v-slot:item="{ item, props }">
-                                                <p v-bind="props" class="pa-2 selecting_action">
-                                                    <v-icon>mdi-circle-medium</v-icon> {{ item.title }}
-                                                </p>
-                                                <!-- <v-list-item v-bind="props" class="pa-2"></v-list-item> -->
-                                            </template>
-                                        </v-combobox>
-                                    </v-col>
-                                    <v-col v-else>
-                                        <p>No records found</p>
-                                    </v-col>
-                                </v-row>
-                            </v-card>
-                        </v-col>
-                    </v-card>
                 </v-form>
+
+                <ServiceReportForm v-model="service_report_data" ref="serviceFormRef" v-if="canComplete" />
 
                 <v-card class="mt-10">
                     <v-tabs v-model="tab" density="compact" class="border-b-sm d-flex justify-between">
@@ -335,7 +289,6 @@
                         <v-window v-model="tab" :disabled="true">
                             <v-window-item value="details">
                                 <RequestDetails :request_data="equipment_handling" :key="refreshKeyDetail" />
-                                <!-- @set-status="getStatus"  -->
                             </v-window-item>
                             <v-window-item value="equipments">
                                 <RequestedEquipments :equipments="equipments" :editSerial="false" />
@@ -347,7 +300,7 @@
                                 <ItemReportData :task_delegation="task_delegation" :items_acquired="items_acquired" />
                             </v-window-item>
                             <v-window-item value="service_report">
-                                <ServiceReportData :task_delegation="task_delegation" :actions_taken="actions_taken" />
+                                <ServiceReportData :task_delegation="task_delegation" :actions_taken="actions_taken" :spareparts="task_delegation?.spareparts" />
                             </v-window-item>
                         </v-window>
                     </v-card-text>
@@ -389,7 +342,7 @@ import { useActions } from '@/helpers/getActionsTaken';
 const { actions_data } = useActions()
 
 import { permit } from '@/castl/permitted';
-import { A_IS, IS } from '@/global/modules';
+import { A_IS, EH, IS } from '@/global/modules';
 const { can } = permit()
 
 
@@ -436,24 +389,8 @@ const status = ref(null)
 
 
 /** Servie Report Details */
-const form = ref(false)
+const formItem = ref(false)
 const option_type = ref('')
-const status_after_service = ref('')
-/** Actions Taken */
-const fields = ref([]);
-const addField = () => {
-    if (fields.value.length < 8) {
-        fields.value.push({
-            action: ''
-        });
-    }
-};
-
-const removeField = (index) => {
-    fields.value.splice(index, 1);
-};
-
-
 
 /** Selected Row */
 const selectedItems = ref([])
@@ -549,9 +486,6 @@ const delegateInternalServicing = async () => {
             toast.success('Successfully delegated')
             getInternalRowById()
             tab.value = 'details'
-            // refreshKey.value += 1;
-            // btnDisable.value = true
-            // dialogRedelegate.value = false
         } else {
             btnDisable.value = false
             dialogRedelegate.value = false
@@ -590,9 +524,6 @@ const declineTask = async () => {
         if (response.data && response.data.success) {
             toast.success('Successfully declined')
             getInternalRowById()
-            // tab.value = 'details'
-            // refreshKey.value += 1;
-            // btnDisable.value = true
         } else {
             btnDisable.value = false
             toast.error(response.data.error)
@@ -621,9 +552,6 @@ const acceptInternalRequest = async () => {
         if (response.data && response.data.success) {
             toast.success('Successfully accepted')
             getInternalRowById()
-            // tab.value = 'details'
-            // refreshKey.value += 1;
-            // btnDisable.value = true
         } else {
             btnDisable.value = false
             toast.error(response.data.error)
@@ -637,68 +565,57 @@ const acceptInternalRequest = async () => {
 }
 
 /** Mark Internal Request Servicing as Completed */
+
+const serviceFormRef = ref(null)
+const service_report_data = ref({
+    status_after_service: '',
+    fields: [],
+    spareparts: [],
+    remarks: '',
+    complaint: '',
+    problem: '',
+})
+
 const markAsCompleted = async () => {
     btnDisable.value = true
     btnSubmitLoading.value = true
-    const { valid } = await form.value.validate()
-    if (!valid) {
-        btnDisable.value = false
+    const validForm = await serviceFormRef.value?.validateServiceForm()
+    const { valid } = await formItem.value?.validate()
+    if (!validForm || !valid) {
         btnSubmitLoading.value = false
+        btnDisable.value = false
         return
     }
-
-    if (fields.value.length === 0) {
-        btnDisable.value = false
-        btnSubmitLoading.value = false
+    if (service_report_data.value.fields?.length === 0) {
         toast.error('Required actions taken')
-        return
-    }
-    const checkIfTheresEmpty = fields.value.some(val => {
-        return typeof val === 'string' ? val.trim() === '' : val === undefined || val === null
-    })
-    if (checkIfTheresEmpty) {
-        toast.error('Please fill in required fields')
-        btnDisable.value = false
         btnSubmitLoading.value = false
+        btnDisable.value = false
         return
     }
 
-    SubmitMarkAsCompleted()
-}
-const SubmitMarkAsCompleted = async () => {
-    btnDisable.value = true
-    btnSubmitLoading.value = true
     try {
         const response = await apiRequest.post('internal-servicing-completed', {
-            option_type: option_type.value,
-            status_after_service: status_after_service.value,
-            items: selectedItems.value,
-            actions_taken: fields.value,
-            delegation_id: delegation_id.value,
             internal_id: id,
-            service_id: service_id.value
+            service_id: service_id.value,
+            delegation_id: delegation_id.value,
+            items: selectedItems.value,
+            option_type: option_type.value,
+            ...service_report_data.value
         })
-        if (response.data && response.data.success) {
-            toast.success('Operation completed successfully')
+        if (response?.data?.success) {
+            toast.success('Completed successfully')
             getInternalRowById()
-            getItems()
-            // tab.value = 'details'
-            // refreshKey.value += 1;
-            // btnDisable.value = true
         } else {
             btnDisable.value = false
             toast.error(response.data.error)
         }
     } catch (error) {
         console.log(error)
-    }
-    finally {
+    } finally {
         btnSubmitLoading.value = false
         btnDisable.value = false
     }
 }
-
-
 
 /** Send to warehouse - For Storage */
 const forStorage = async () => {
@@ -713,9 +630,6 @@ const forStorage = async () => {
         if (response.data && response.data.success) {
             toast.success('Operation completed successfully')
             getInternalRowById()
-            // tab.value = 'details'
-            // refreshKey.value += 1;
-            // btnDisable.value = true
         }
     } catch (error) {
         console.log(error)
@@ -741,9 +655,6 @@ const approveByWIM = async () => {
         if (response.data && response.data.success) {
             toast.success('Operation completed successfully')
             getInternalRowById()
-            // tab.value = 'details'
-            // refreshKey.value += 1;
-            // btnDisable.value = true
         }
     } catch (error) {
         console.log(error)
@@ -768,6 +679,8 @@ const cols =
 import { useChecklistItem } from '@/helpers/getChecklistItem';
 import ItemReportData from '@/components/Approver/EH/ItemReportData.vue';
 import ServiceReportData from '@/components/Approver/EH/ServiceReportData.vue';
+import ServiceReportForm from '@/components/Approver/EH/ServiceReportForm.vue';
+import PMPrint from '@/components/Print/PMPrint.vue';
 const { checkListItems } = useChecklistItem()
 // const { ItemsAcquired } = useItemsAcquired(id)
 
@@ -786,7 +699,11 @@ const canAcceptDecline = computed(() => {
         && internalData.value.status === pub_var.I_DELEGATED
         && internalData.value.current_assigned_to === user.user.id
 })
-
+const canComplete = computed(() => {
+    return can('installer', IS)
+        && internalData.value.status === pub_var.I_INPROGRESS
+        && internalData.value.current_assigned_to === user.user.id
+})
 
 /** Can Redelegate Logic */
 const canRedelegate = computed(() => {
@@ -815,9 +732,13 @@ const showReport = computed(() => {
 })
 
 
+/** Referesh */
+const refreshData = () => {
+    getInternalRowById()
+}
+
+
 onMounted(() => {
-    // getChecklistItem()
-    // getItems()
     getInternalRowById()
 })
 

@@ -3,49 +3,57 @@
 namespace App\Http\Controllers\PreventiveMaintenance;
 
 use App\Http\Controllers\Controller;
+use App\Models\CorrectiveMaintenance\CorrectiveMaintenance;
+use App\Models\EngineerTaskDelegation;
 use App\Models\PreventiveMaintenance\PreventiveMaintenance as PM;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class SendToCM extends Controller
 {
-    public function sendToCM(Request $request){
-        $id = $request->pm_id ?? 0;
+    public function sendToCM(Request $request)
+    {
+        $id = $request->id ?? 0;
+        $pm_id = $request->pm_id ?? 0;
+        $module = $request->module ?? null;
 
         try {
             DB::beginTransaction();
 
-        /** Generate another Schedule after this submitted */
-         $pm_data = PM::where('id', $id)->first();
-        $tag = null;
-         if($pm_data->status_after_service == PM::operational) $tag = PM::pm_tag_backjob;
-         else if($pm_data->status_after_service == PM::further_monitoring) $tag = PM::pm_tag_non_operational;
-         else $tag = PM::pm_tag_backlog;
+            /** Generate another Schedule after this submitted */
+            $task_delegation = EngineerTaskDelegation::where('id', $id)->first();
+            $tag = null;
 
-         PM::where('id', $pm_data->id)->update([
-            'tag' => $tag,
-         ]);
+            if($task_delegation->tag != PM::pm_tag_under_observation){
+                throw new Exception('Tag is not for update');
+            }
+            if ($task_delegation->status_after_service == PM::operational) $tag = PM::pm_tag_backjob;
+            else if ($task_delegation->status_after_service == PM::further_monitoring) $tag = PM::pm_tag_non_operational;
+            else $tag = PM::pm_tag_backlog;
 
-         PM::create([
-             'equipment_peripheral_id' => $pm_data['equipment_peripheral_id'],
-             'service_id' => $pm_data['service_id'],
-             'item_id' => $pm_data['item_id'],
-             'serial' => $pm_data['serial'],
-             'institution' => $pm_data['institution'],
-             'ssu' => $pm_data['ssu'],
-             'date_installed' => $pm_data['date_installed'],
-             'status' => PM::Scheduled,
-             'work_type' => 'CM',
-             'created_at' => Carbon::now(),
-             'updated_at' => Carbon::now(),
-         ]);
+            EngineerTaskDelegation::where('id', $id)->update([
+                'tag' => $tag,
+            ]);
 
-         DB::commit();
+            $data = $module == 'cm' ? CorrectiveMaintenance::find($pm_id) : PM::find($pm_id);
 
-         return response()->json([
-            'success' => true,
-         ]);
+            CorrectiveMaintenance::create([
+                'equipment_peripheral_id' => $data['equipment_peripheral_id'],
+                'service_id' => $data['service_id'],
+                'item_id' => $data['item_id'],
+                'serial' => $data['serial'],
+                'institution' => $data['institution'],
+                // 'date_installed' => $data['date_installed'],
+                'status' => PM::ReadyForDelegation,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
@@ -58,23 +66,24 @@ class SendToCM extends Controller
 
 
     /** Set Days of Observation */
-    public function setDaysObservation(Request $request){
+    public function setDaysObservation(Request $request)
+    {
         $id = $request->id ?? 0;
         $set_days = $request->set_days ?? 0;
 
         try {
             DB::beginTransaction();
-            $getDateObservation = Carbon::now()->startOfDay()->addDays($set_days);
+            $setDaysToObserve = Carbon::now()->startOfDay()->addDays($set_days);
 
-            $update = PM::find($id);
+            $update = EngineerTaskDelegation::find($id);
             $update->update([
-                'monitoring_end' => $getDateObservation,
+                'monitoring_end' => $setDaysToObserve,
                 'tag' => PM::pm_tag_under_observation,
             ]);
             DB::commit();
-        return response()->json([
-            'success' => $update,
-        ]);
+            return response()->json([
+                'success' => true,
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([

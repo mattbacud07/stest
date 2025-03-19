@@ -17,6 +17,8 @@ class PulloutDecisionLog extends LogsBaseModel
     protected $fillable = [
         'service_id',
         'assigned_by',
+        'engineer',
+        'driver',
         'scheduled_date',
         'preferred_schedule',
         'remarks',

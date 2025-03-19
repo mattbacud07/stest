@@ -3,11 +3,11 @@
         <v-row class="d-flex justify-space-between">
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Institution</p>
-                <p class="text-grey-darken-1">{{ institution?.name ?? '---' }}</p>
+                <p class="text-grey-darken-1 textTransform">{{ institution?.name?.toLowerCase() ?? '---' }}</p>
             </v-col>
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Address</p>
-                <p class="text-grey-darken-1">{{ institution?.address }}</p>
+                <p class="text-grey-darken-1 textTransform">{{ institution?.address.toLowerCase() }}</p>
             </v-col>
         </v-row>
         <v-row>
@@ -22,6 +22,12 @@
             <v-col lg="4" md="4" sm="6" cols="12">
                 <p>Frequency</p>
                 <p class="text-grey-darken-1">{{ equipment?.frequency }}</p>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col lg="4" md="4" sm="6" cols="12">
+                <p>Scheduled</p>
+                <p class="text-grey-darken-1">{{ customer_details?.scheduled_at }}</p>
             </v-col>
         </v-row>
     </v-card>

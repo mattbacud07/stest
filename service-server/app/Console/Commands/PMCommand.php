@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\EngineerTaskDelegation;
 use App\Models\PreventiveMaintenance\PreventiveMaintenance as PM;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -14,7 +15,7 @@ class PMCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:monitor-pm';
+    protected $signature = 'app:monitor-pm-cm-after-service';
 
     /**
      * The console command description.
@@ -35,15 +36,19 @@ class PMCommand extends Command
             $today = Carbon::today();
 
             $afterService = [PM::operational, PM::further_monitoring];
-            $get_expires_end_of_monitoring = PM::whereIn('status_after_service', $afterService)
-                ->where('tag', PM::pm_tag_under_observation)
+            $get_expires_end_of_monitoring = EngineerTaskDelegation::whereIn('status_after_service', $afterService)
+                ->where('tag', PM::pm_tag_under_observation) //only PM and CM have this column
+                ->where('active', 1)
                 ->get();
             foreach ($get_expires_end_of_monitoring as $dataMonitoring) {
-                if ($dataMonitoring['monitoring_end'] < $today) {
-                    PM::where('id', $dataMonitoring['id'])->update([
+                if (Carbon::parse($dataMonitoring['monitoring_end'])->lessThanOrEqualTo($today)) {
+                    EngineerTaskDelegation::where('id', (int) $dataMonitoring['id'])->update([
                         'status' => PM::Completed,
                         'tag' => PM::pm_tag_completed
                     ]);
+
+                    //SEND EMAIL TO HEAD(Assigned by) AND ENGINEER(Assigned_to) OF THE RECORD
+                    //PUT HERE ===============>
                 }
             }
 

@@ -28,12 +28,11 @@
                         </v-col>
                         <template v-slot:actions>
                             <v-row justify="end">
-                                <v-btn elevation="2" @click="dialog_disapprove = false" background-color="red"
-                                    color="#191970" class="text-none mr-2">
+                                <v-btn elevation="0" @click="dialog_disapprove = false" color="#191970"
+                                    class="text-none mr-2">
                                     Cancel</v-btn>
                                 <v-btn @click="disapproveRequest" color="primary" elevation="2" class="text-none mr-3"
-                                    style="background-color: #191970;color: #fff!important;"><v-icon
-                                        class="mr-1">mdi-text-box-remove-outline</v-icon> Disapprove</v-btn>
+                                    style="background-color: #191970;color: #fff!important;"> Disapprove</v-btn>
                             </v-row>
                         </template>
                     </v-card>
@@ -69,6 +68,43 @@
 
                                 <v-textarea v-else class="mr-2 ml-2" v-model="remark" clearable
                                     label="Remarks (optional)" color="primary" variant="outlined"></v-textarea>
+
+                                <v-divider></v-divider>
+
+                                <transition name="slide-x-transition">
+                                        <v-row>
+                                            <v-col cols="12" md="12" sm="12" v-if="showDelegationField">
+                                                <v-combobox color="primary" class="mt-5" v-model="sched.engineer"
+                                                    clearable label="Delegate to" placeholder="Delegate to"
+                                                    density="compact" :items="sort_engineers" variant="outlined"
+                                                    itemValue="value" :rules="[
+                                                        v => !!v || 'Required',
+                                                        v => v.key !== undefined ? true : 'Select one of the options listed'
+                                                    ]" itemTitle="key">
+                                                    <template v-slot:item="{ item, props }">
+                                                        <v-list-item v-bind="props">
+                                                            <v-list-item-title>
+                                                                <p class="small text-disabled">SBU {{ item.raw.sbu }}
+                                                                </p>
+                                                            </v-list-item-title>
+                                                        </v-list-item>
+                                                    </template>
+                                                    <template v-slot:selection="{ item, index }">
+                                                        <span class="small text-primary" style="font-size: 12px;"><b>{{
+                                                                item.title
+                                                                }}</b> <span class="text-disabled" v-if="item.title">-
+                                                                [SBU : {{
+                                                                item.raw.sbu }}]</span></span>
+                                                    </template>
+                                                </v-combobox>
+                                            </v-col>
+                                            <v-col cols="12" md="12" sm="12" v-if="showDriver">
+                                                <v-text-field v-model="sched.driver" :rules="[
+                                                    v=>!!v.trim() || 'Required'
+                                                ]" label="Driver" variant="outlined" density="compact" color="primary"></v-text-field>
+                                            </v-col>
+                                        </v-row>
+                                </transition>
                             </v-col>
                             <!-- <template v-slot:actions> -->
                             <v-divider></v-divider>
@@ -96,7 +132,8 @@
                             Pending approval
                         </v-tooltip>
                     </v-chip>
-                    <v-chip class="ma-2" variant="flat" size="small" :color="pullOutStatus(formData.status.value).color" label>
+                    <v-chip class="ma-2" variant="flat" size="small" :color="pullOutStatus(formData.status.value).color"
+                        label>
                         <strong>&nbsp; {{ pullOutStatus(formData.status.value).text }}</strong>
                         <v-tooltip activator="parent" location="bottom">
                             Status
@@ -118,7 +155,7 @@
                                 <p class="mt-4 mb-4">Set Schedule: <span class="font-weight-bold">{{
                                     pub_var.FullMonthWithTime(serviceData?.scheduled_date) }}</span></p>
 
-                                <v-alert dense color="danger" variant="tonal" class="pa-1">
+                                <v-alert dense color="grey" variant="tonal" class="pa-1">
                                     * If the schedule does not match, please refer to this as the suggested schedule.
                                 </v-alert>
                                 <p class="mt-4 mb-4">Preferred Schedule: <span class="font-weight-bold">{{
@@ -135,7 +172,7 @@
                                 <p class="mt-4 mb-4">Set Schedule: <span class="font-weight-bold">{{
                                     pub_var.FullMonthWithTime(outboundData?.scheduled_date) }}</span></p>
 
-                                <v-alert dense color="danger" variant="tonal" class="pa-1">
+                                <v-alert dense color="grey" variant="tonal" class="pa-1">
                                     * If the schedule does not match, please refer to this as the suggested schedule.
                                 </v-alert>
                                 <p class="mt-4 mb-4">Preferred Schedule: <span class="font-weight-bold">{{
@@ -144,42 +181,6 @@
                                 <p class="mt-4">Remarks: </p>
                                 <p class="font-weight-bold text-primary">{{ outboundData?.remarks ?? '---' }}</p>
                             </v-card>
-                        </v-col>
-                    </v-row>
-                </v-card>
-            </transition>
-
-            <transition name="slide-x-transition" v-if="can('approve', PR) && showDelegationSetting">
-                <v-card flat style="padding-top: 1em;" class="mb-7 pa-5 mt-5">
-                    <v-row>
-                        <v-col :cols="column">
-                            <p class="mb-3">Set by Operation and Service Dept.</p>
-                            <v-alert variant="tonal" color="primary" dense class="pa-1"><b>Final Schedule: </b> <span>
-                                    {{
-                                        finalSchedule }}</span></v-alert>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-col :cols="column">
-                            <v-combobox color="primary" class="mt-5" v-model="selected_engineer" clearable
-                                label="Delegate to" placeholder="Delegate to" density="compact" :items="sort_engineers"
-                                variant="outlined" itemValue="value" :rules="[
-                                    v => !!v || 'Required',
-                                    v => v.key !== undefined ? true : 'Select one of the options listed'
-                                ]" itemTitle="key">
-                                <template v-slot:item="{ item, props }">
-                                    <v-list-item v-bind="props">
-                                        <v-list-item-title>
-                                            <p class="small text-disabled">SBU {{ item.raw.sbu }}</p>
-                                        </v-list-item-title>
-                                    </v-list-item>
-                                </template>
-                                <template v-slot:selection="{ item, index }">
-                                    <span class="small text-primary" style="font-size: 12px;"><b>{{ item.title
-                                            }}</b> <span class="text-disabled" v-if="item.title">- [SBU : {{
-                                                item.raw.sbu }}]</span></span>
-                                </template>
-                            </v-combobox>
                         </v-col>
                     </v-row>
                 </v-card>
@@ -226,7 +227,7 @@
                 <v-card-text>
                     <v-window v-model="tab" :disabled="true">
                         <v-window-item value="equipments">
-                            <PulloutRequestedEquipment :equipments="equipments"/>
+                            <PulloutRequestedEquipment :equipments="equipments" />
                         </v-window-item>
                         <v-window-item value="history">
                             <PulloutHistoryLog :service_id="id" :status="formData.level.value" />
@@ -312,7 +313,8 @@ const sched = ref({
     scheduled_date: null,
     preferred_schedule: null,
     remarks: null,
-    // driver: '',
+    engineer: null,
+    driver: '',
 })
 
 const remark = ref('')
@@ -334,7 +336,6 @@ const navigateTo = (item) => {
 
 /** Disapprove Details */
 const dialog_disapprove = ref(false)
-
 /** Disapprove Details */
 const dialog_approve = ref(false)
 
@@ -348,7 +349,7 @@ const showSettingSchedule = computed(() => {
             return true
         }
         if (user.user?.department === service_department) {
-            return equipment_sbu.value.includes(user_sbu_as_approver)
+            return equipment_sbu.value.includes(user_sbu_as_approver) || user.user?.user_roles?.some(v => v.role_id === pub_var.NationalServiceManagerID)
         }
         return false
     }
@@ -368,11 +369,20 @@ const showDelegationSetting = computed(() => {
             return true
         }
         if (user.user?.department === service_department) {
-            return equipment_sbu.value.includes(user_sbu_as_approver)
+            return equipment_sbu.value.includes(user_sbu_as_approver) || user.user?.user_roles?.some(v => v.role_id === pub_var.NationalServiceManagerID)
         }
         return false
     }
     return false
+})
+
+const showDelegationField = computed(() => {
+    return user.user.department === service_department && formData.status.value === pub_var.pending
+    && formData.level.value === OPERATION_SERVICE 
+})
+const showDriver = computed(() => {
+    return user.user.department !== service_department && formData.status.value === pub_var.pending
+    && formData.level.value === OPERATION_SERVICE 
 })
 
 
@@ -382,7 +392,7 @@ const canApprove = computed(() => {
     const userApprovalLevels = user.user?.approval_level_pullout || [];
     const userID = user.user?.id;
     const userDepartment = user.user?.department;
-    
+
     if (userApprovalLevels.includes(formData.level.value)) {
         if (!allowedStatuses.includes(formData.status.value)) return false
         if (formData.level.value === SUPERVISOR) {
@@ -391,7 +401,7 @@ const canApprove = computed(() => {
         if (formData.level.value === OPERATION_SERVICE) {
             if (userDepartment === operation_department) return true
             if (userDepartment === service_department) {
-                return equipment_sbu.value.includes(user_sbu_as_approver)
+                return equipment_sbu.value.includes(user_sbu_as_approver) || user.user?.user_roles?.some(v => v.role_id === pub_var.NationalServiceManagerID)
             }
         }
         return true
@@ -415,18 +425,19 @@ const approveRequest = async () => {
         const response = await apiRequest.post('approve-pullout', {
             service_id: id,
             level: formData.level.value,
+            status: formData.status.value,
             remark: remark.value,
             ...sched.value
         })
         if (response?.data?.success) {
-            if(response?.data?.matched){
+            if (response?.data?.matched) {
                 toast.success('Schedule Matched')
                 getRequest()
             }
-            else if(response?.data?.under_operation_service){
+            else if (response?.data?.under_operation_service) {
                 toast.success('You set schedule successfully')
                 getRequest()
-            }else{
+            } else {
                 toast.success('Approved successfully')
                 router.push('/pull-out-request')
             }
@@ -451,26 +462,26 @@ const approveRequest = async () => {
  * */
 const disApproveRemark = ref('')
 const disapproveRequest = async () => {
-    if (disApproveRemark.value === '') {
+    if ([undefined, null, ''].includes(disApproveRemark.value)) {
         toast.error('Please provide a reason for disapproval')
         return
     }
 
     try {
-        const response = await apiRequest.post('pullout-disapprove-request', {
+        const response = await apiRequest.post('disapprove-pullout', {
             service_id: id,
             remark: disApproveRemark.value,
         })
 
         if (response.data && response.data.success) {
-            toast.success('Disapproval completed successfully')
-            router.push('/pull-out-request')
+            toast.success('Disapproval successfull')
+            getRequest()
         }
     } catch (error) {
         console.log(error)
     }
     finally {
-
+        dialog_disapprove.value = false
     }
 }
 

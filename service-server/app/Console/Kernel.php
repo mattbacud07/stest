@@ -18,8 +18,14 @@ class Kernel extends ConsoleKernel
         // $schedule->command('app:PMUpdateStatus')->twiceDaily(8, 13);
         // $schedule->command('app:PMUpdateStatus')->dailyAt('08:00');
         // $schedule->command('app:PMUpdateStatus')->everyFiveSeconds();
-        $startOfMonitoringTime = '08:00';
-        $schedule->command('app:monitor-pm')->everyTenSeconds();
+
+        // $startOfMonitoringTime = '08:00';
+        $startOfMonitoringTime = '8';
+        $anotherMonitoringTime = '13';
+        // $schedule->command('app:monitor-pm-cm-after-service')->everyMinute();
+        // $schedule->command('app:update-pm-status-to-ready')->everyMinute();
+        $schedule->command('app:monitor-pm-cm-after-service')->twiceDaily($startOfMonitoringTime, $anotherMonitoringTime);
+        $schedule->command('app:update-pm-status-to-ready')->twiceDaily($startOfMonitoringTime, $anotherMonitoringTime);
     }
 
     /**

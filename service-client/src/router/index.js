@@ -219,6 +219,16 @@ const router = createRouter({
       },
       beforeEnter: canAccess('read', PR)
     },
+    {
+      path: '/pull-out-view-uninstallation/:id',
+      name: 'PulloutUninstallation',
+      component : () => import('../views/PulloutRequest/PulloutUninstallation.vue'),
+      meta: {
+        title: 'Pullout Request',
+        requiresAuth: true
+      },
+      beforeEnter: canAccess('read', PR)
+    },
 
 
     /** ========================================== Internal Servicing Routes =================================================== */
@@ -301,6 +311,18 @@ const router = createRouter({
         title: 'Corrective Maintenance',
         requiresAuth: true
       }
+    },
+
+    {
+      path: '/cm-view/:id',
+      name: 'CMView',
+      component: () => import('../views/Corrective/CMView.vue'),
+      props: true,
+      meta: {
+        title: 'Corrective Maintenance',
+        requiresAuth: true
+      },
+      beforeEnter : preventiveMaintenanceRequest(['read','installer','delegate'], CM)
     },
 
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PreventiveMaintenance;
 
 use App\Http\Controllers\Controller;
 use App\Models\CorrectiveMaintenance\CorrectiveMaintenance as CM;
+use App\Models\CustomerDetails;
 use App\Models\EngineerActivities;
 use App\Models\EngineerTaskDelegation;
 use App\Models\PreventiveMaintenance\ComplaintProblems;
@@ -56,7 +57,7 @@ class PreventiveMaintenance extends Controller
 
 
     /** Get Preventive Mantenance Schedule */
-    public function get_preventive_maintenance(Request $request, Guard $guard)
+    public function get_preventive_maintenance(Request $request)
     {
         $user_id = Auth::user()->id;
         $tl_assitant_sbu = RoleUser::where('user_id', $user_id)->whereIn('role_id', [Roles::TLRoleID, Roles::SBUAssistantRoleID])->value('sbu');
@@ -64,6 +65,7 @@ class PreventiveMaintenance extends Controller
 
         /** Search Column */
         $columnMappings = [
+            'id' => ['table' => 'preventive_maintenance', 'db' => 'mysql', 'column' => 'id'],
             'item_code' => ['table' => 'm', 'db' => 'mysqlSecond', 'column' => 'item_code'],
             'description' => ['table' => 'm', 'db' => 'mysqlSecond', 'column' => 'description'],
 
@@ -72,17 +74,10 @@ class PreventiveMaintenance extends Controller
             'institution_name' => ['table' => 'i', 'db' => 'mysqlSecond', 'column' => 'name'],
             'address' => ['table' => 'i', 'db' => 'mysqlSecond', 'column' => 'address'],
 
-            // 'scheduled_at' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'scheduled_at'],
-            // 'delegation_date' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'delegation_date'],
-            // 'date_accepted' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'date_accepted'],
-            // 'departed_date' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'departed_date'],
-            // 'start_date' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'start_date'],
-            // 'end_date' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'end_date'],
-
-            // 'schedule' => ['table' => 'ps', 'db' => 'mysql', 'column' => 'schedule'],
-            // 'SBU' => ['table' => 'eh', 'db' => 'mysql', 'column' => 'SBU'],
-            'username' => ['table' => 'user', 'db' => 'mysqlSecond', 'column' => 'first_name'],
-            'username' => ['table' => 'user', 'db' => 'mysqlSecond', 'column' => 'last_name'],
+            'first_name' => ['table' => 'u_by', 'db' => 'mysqlSecond', 'column' => 'first_name'],
+            'last_name' => ['table' => 'u_by', 'db' => 'mysqlSecond', 'column' => 'last_name'],
+            'first_names' => ['table' => 'u_to', 'db' => 'mysqlSecond', 'column' => 'first_name'],
+            'last_names' => ['table' => 'u_to', 'db' => 'mysqlSecond', 'column' => 'last_name'],
             // 'status_after_service' => ['table' => 'pm', 'db' => 'mysql', 'column' => 'status_after_service'],
             'status' => ['table' => 'preventive_maintenance', 'db' => 'mysql', 'column' => 'status']
         ];
@@ -162,7 +157,7 @@ class PreventiveMaintenance extends Controller
                         // $firstDayOfNextMonth = Carbon::today()->addMonth()->firstOfMonth();
                         // $query->whereBetween('pm.scheduled_at', [$firstDayOfNextMonth, $lastDayOfNextMonth]);
                         $query->where('preventive_maintenance.scheduled_at', "<=", $lastDayOfNextMonth);
-                        $query->where('preventive_maintenance.status', PM::Scheduled);
+                        $query->whereIn('preventive_maintenance.status', [PM::Scheduled, PM::ReadyForDelegation]);
                     }
                 }
                 if ($request->has('filterInstitution')) {
@@ -214,6 +209,9 @@ class PreventiveMaintenance extends Controller
                             'spareparts' => function ($q) use ($module_type) {
                                 $q->where('type', $module_type)
                                     ->with('equipment'); // Nested eager loading
+                            },
+                            'customer' => function ($q) use ($module_type) {
+                                $q->where('type', $module_type);
                             }
                         ]);
                     }
@@ -411,7 +409,7 @@ class PreventiveMaintenance extends Controller
                     'status' => EngineerTaskDelegation::DECLINED,
                     'delegated_by' => null,
                     'delegated_to' => null,
-                ];
+                ]; 
             }
 
             /** Update PM status */
@@ -584,7 +582,7 @@ class PreventiveMaintenance extends Controller
                         'item_id' => $pm_data->item_id,
                         'institution' => $pm_data->institution,
                         'date_installed' => $pm_data->scheduled_at,
-                        'status' => PM::Scheduled
+                        'status' => PM::ReadyForDelegation
                     ]);
                 }
 
@@ -595,26 +593,14 @@ class PreventiveMaintenance extends Controller
                     $tag = PM::pm_tag_under_observation;
                 }
 
-                /********** Signature ************/
-                $signatureData = $request->signature ?? null;
-                $signatureData = str_replace('data:image/png;base64,', '', $signatureData);
-                $signatureData = str_replace(' ', '+', $signatureData);
-                //Decode
-                $signatureImage = base64_decode($signatureData);
-
-                $filename = 'signatures/' . $id . '-' . Carbon::today()->format('m-d-y') . '.png';
-
-                Storage::disk('public')->put($filename, $signatureImage);
-
-        
 
                 /** Generate another Schedule after this submitted */
                 $dateInstalled = Carbon::parse($pm_data->scheduled_at);
 
-                $scheduled_at = $this->generatePMSched->calculateSchedFrequency($dateInstalled, $pm_data->equipment->frequency ?? null);
+                $scheduled_at = $this->generatePMSched->calculateSchedFrequency($dateInstalled, $withEquipment->equipment->frequency ?? null);
 
                 /** Create PM Schedule for next Schedule */
-                PM::create([
+                $createPM = PM::create([
                     'equipment_peripheral_id' => $pm_data->equipment_peripheral_id,
                     'service_id' => $pm_data->service_id,
                     'item_id' => $pm_data->item_id,
@@ -623,27 +609,29 @@ class PreventiveMaintenance extends Controller
                     'status' => PM::Scheduled,
                     'scheduled_at' => $scheduled_at,
                 ]);
+                if(!$createPM) return throw new Exception('Error adding PM');
 
 
                 $updatePM = $pm_data->update([
                     'status' => PM::Completed
                 ]);
-                if (!$updatePM) {
+                if (!$updatePM || !$pm_data->wasChanged()) {
                     throw new Exception('Error updating PM record');
                 }
 
 
                 /** Update Task Delegation to Complete */
-                $update_delegation = EngineerTaskDelegation::where('id', $delegation_id)->first()?->update([
+                $q_delegation_update = EngineerTaskDelegation::find($delegation_id);
+                $update_delegation = $q_delegation_update->update([
                     'status_after_service' => $status_after_service,
                     'complaint' => $complaint,
                     'problem' => $problem,
                     'monitoring_end' => $monitoring_end,
                     'tag' => $tag,
-                    'remarks' => $remarks,
+                    'sr_remarks' => $remarks,
                     'status' => self::COMPLETED,
                 ]);
-                if (!$update_delegation) {
+                if (!$update_delegation || !$q_delegation_update->wasChanged()) {
                     throw new Exception('Error updating delegation');
                 }
 
@@ -665,7 +653,8 @@ class PreventiveMaintenance extends Controller
                         'work_type' => self::PM
                     ];
                 }
-                $this->action->declare_actions_done($dataToInsert);
+                $actions = $this->action->declare_actions_done($dataToInsert);
+                if($actions !== true) throw new Exception("Error adding actions");
 
 
                 /** Spareparts Used */
@@ -674,14 +663,36 @@ class PreventiveMaintenance extends Controller
                     $sparePartsToInsert[] = [
                         'service_id' => $delegation_id,
                         'item_id' => $parts['item_id'],
-                        'qty' => $parts['qty'],
+                        'qty' =>(int) $parts['qty'],
                         'dr' => $parts['dr'],
                         'si' => $parts['si'],
                         'remarks' => $parts['remarks'],
-                        'type' => self::EH
+                        'type' => self::PM
                     ];
                 }
-                $this->action->declare_spareparts_used($sparePartsToInsert);
+                $add_spareparts = $this->action->declare_spareparts_used($sparePartsToInsert);
+                if($add_spareparts !== true) throw new Exception("Error adding spareparts");
+
+
+                /********** Customer Details and Signature ************/
+                $signatureData = $request->signature ?? null;
+                $signatureData = str_replace('data:image/png;base64,', '', $signatureData);
+                $signatureData = str_replace(' ', '+', $signatureData);
+                //Decode
+                $signatureImage = base64_decode($signatureData);
+
+                $filename = 'signatures/' . $id . '-' . Carbon::today()->format('m-d-y') . '.png';
+
+                Storage::disk('public')->put($filename, $signatureImage);
+
+                $add_customer = CustomerDetails::create([
+                    'service_id' => $delegation_id,
+                    'name' => $request->name,
+                    'designation' => $request->designation,
+                    'signature' => $filename,
+                    'type' => self::PM,
+                ]);
+                if(!$add_customer) throw new Exception('Error adding customer details');
             }
 
             DB::commit();

@@ -2,7 +2,7 @@
     <v-card>
         <v-timeline density="comfortable" align="start" side="end" line-thickness="1">
             <template v-for="(detail, index) in history" :key="index">
-                <v-timeline-item size="md" dot-color="grey">
+                <v-timeline-item size="md" dot-color="grey-lighten-2">
                     <div class="d-flex justify-space-between">
                         <div>   
                             <p class="font-weight-bold text-grey-darken-1 cursor-pointer">{{ pub_var.getApproverByLevel(detail.level, 1) }}
@@ -62,8 +62,8 @@
                     <v-divider></v-divider>
                 </v-timeline-item>
             </template>
-                <v-timeline-item size="md" dot-color="primary" v-if="status === pub_var.COMPLETE || status === pub_var.STORAGE || status === pub_var.INSTALLING">
-                    <strong>{{ pub_var.setJOStatus(status).text }}</strong>
+                <v-timeline-item size="md" dot-color="grey-lighten-1" v-if="status === pub_var.COMPLETE || status === pub_var.STORAGE || status === pub_var.INSTALLING">
+                    <p>{{ pub_var.setJOStatus(status).text }}</p>
                 </v-timeline-item>
         </v-timeline>
     </v-card>

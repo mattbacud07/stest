@@ -25,6 +25,9 @@ class EngineerTaskDelegation extends LogsBaseModel
         'travel_duration',
         'option_type',
         'status_after_service',
+        'complaint',
+        'problem',
+        'sr_remarks',
         'tag',
         'monitoring_end',
         'status',
@@ -60,5 +63,10 @@ class EngineerTaskDelegation extends LogsBaseModel
     public function spareparts()
     {
         return $this->hasMany(PMPartsUsed::class, 'service_id','id');
+    }
+    
+    public function customer()
+    {
+        return $this->hasOne(CustomerDetails::class, 'service_id','id');
     }
 }

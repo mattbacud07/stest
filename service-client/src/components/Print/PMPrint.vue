@@ -1,22 +1,15 @@
 <template>
-  <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
-    <template v-slot:activator="{ props: activatorProps }">
-      <v-btn prepend-icon="mdi-printer" class="text-none" variant="plain" text="Print Preview"
-        v-bind="activatorProps"></v-btn>
-    </template>
 
+  <v-btn prepend-icon="mdi-printer" class="text-none" variant="plain" text="Service Report"
+    @click="dialog = true"></v-btn>
+  <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
     <v-card>
       <v-toolbar dense style="position: fixed;z-index:999;">
         <v-btn icon="mdi-close" @click="dialog = false"></v-btn>
 
-        <!-- <p><v-icon>mdi-printer</v-icon> Print Preview</p> -->
-
         <v-spacer></v-spacer>
         <v-btn v-print="'#printThisA4'" prepend-icon="mdi-printer" class="text-none" variant="plain"
           text="Print"></v-btn>
-        <!-- <v-toolbar-items>
-            <v-btn text="Save" variant="text" @click="dialog = false"></v-btn>
-          </v-toolbar-items> -->
       </v-toolbar>
 
 
@@ -37,10 +30,10 @@
                       <td>
                         <v-row>
                           <v-col cols="7">
-                            <span class="printText">Date In:</span> {{ pub_var.formatDateNoTime(pm_data.created_at) }}
+                            <span class="printText">Date In:</span> {{ pub_var.formatDateNoTime(sr?.created_at) }}
                           </v-col>
                           <v-col cols="5">
-                            <span class="printText">Report No:</span> {{ 'SR-' + pm_data.id }}
+                            <span class="printText">Report No:</span> {{ 'SR-' + sr?.id }}
                           </v-col>
                         </v-row>
                       </td>
@@ -62,13 +55,13 @@
               </td>
             </tr>
             <tr>
-              <td class="w-50"><span class="printText">Institution:</span> {{ pm_data.institution_name }}</td>
-              <td><span class="printText">Equipment:</span> {{ pm_data.service_equipment.item_code }}</td>
+              <td class="w-50"><span class="printText">Institution:</span> {{ is ? data?.equipment_handling?.institution?.name : data?.institution?.name }}</td>
+              <td><span class="printText">Equipment:</span> {{ equipment }}</td>
               <td><span class="printText">ID/IR No:</span></td>
             </tr>
             <tr>
-              <td><span class="printText">Address: </span>{{ pm_data.address }}</td>
-              <td><span class="printText">Serial Number: </span>{{ pm_data.serial }}</td>
+              <td><span class="printText">Address: </span>{{ is ? data?.equipment_handling?.institution?.address : data?.institution?.address }}</td>
+              <td><span class="printText">Serial Number: </span>{{ serial }}</td>
               <td></td>
             </tr>
           </tbody>
@@ -104,10 +97,10 @@
                 &nbsp;&nbsp;<input disabled type="checkbox" /> Repair 4
               </td>
               <td>
-                <input disabled type="checkbox" /> Equipment Handling<br />
+                <input disabled type="checkbox" :checked="eh || pullout || is" /> Equipment Handling<br />
                 &nbsp;&nbsp;<input disabled type="checkbox" /> Pack/Move/Transfer<br />
-                &nbsp;&nbsp;<input disabled type="checkbox" /> Installation<br />
-                &nbsp;&nbsp;<input disabled type="checkbox" /> Pull-out <br />
+                &nbsp;&nbsp;<input v-model="eh_is" disabled type="checkbox" /> Installation<br />
+                &nbsp;&nbsp;<input v-model="pullout" disabled type="checkbox" /> Pull-out <br />
                 <b>MODE: <span
                     style="border-bottom: 2px solid #222;width: 12px;color: transparent!important;">_________</span></b>
               </td>
@@ -142,8 +135,8 @@
               <td class="text-center w-50">Cause of Problem</td>
             </tr>
             <tr>
-              <td></td>
-              <td></td>
+              <td>{{ sr?.complaint }}</td>
+              <td> {{ sr?.problem }}</td>
             </tr>
             <tr>
               <td></td>
@@ -166,28 +159,10 @@
             <tr>
               <td class="text-center bg-grey-lighten-3">Actions Taken</td>
             </tr>
-            <tr>
-              <td></td>
+            <tr v-for="action in sr?.actions_taken">
+              <td>{{ action?.action }}</td>
             </tr>
-            <tr>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-            </tr>
-            <tr>
+            <tr v-for="n in Math.max(7 - (sr?.actions_taken?.length || 0), 0)">
               <td></td>
             </tr>
           </tbody>
@@ -200,7 +175,7 @@
               <td class="text-center bg-grey-lighten-3">Remarks & Recommendations</td>
             </tr>
             <tr>
-              <td></td>
+              <td>{{ sr?.sr_remarks }}</td>
             </tr>
             <tr>
               <td></td>
@@ -220,17 +195,17 @@
                 <v-row>
                   <v-col cols="4" class="d-flex align-items-center">
                     <input disabled type="checkbox"
-                      :checked="pm_data.status_after_service === m_var.StatusAfterService.operational" /> <label
+                      :checked="sr?.status_after_service === m_var.StatusAfterService.operational" /> <label
                       class="ml-2">Operational</label>
                   </v-col>
                   <v-col cols="4" class="d-flex align-items-center">
                     <input disabled type="checkbox"
-                      :checked="pm_data.status_after_service === m_var.StatusAfterService.further_monitoring" /> <label
+                      :checked="sr?.status_after_service === m_var.StatusAfterService.further_monitoring" /> <label
                       class="ml-2">For Further Monitoring</label>
                   </v-col>
                   <v-col cols="4" class="d-flex align-items-center">
                     <input disabled type="checkbox"
-                      :checked="pm_data.status_after_service === m_var.StatusAfterService.non_operational" /> <label
+                      :checked="sr?.status_after_service === m_var.StatusAfterService.non_operational" /> <label
                       class="ml-2">Non-Operational</label>
                   </v-col>
                 </v-row>
@@ -255,39 +230,15 @@
               <td>SI#</td>
               <td>Remarks</td>
             </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
+            <tr v-for="part in sr?.spareparts">
+              <td>{{ part?.equipment?.id }}</td>
+              <td>{{ part?.equipment?.description }}</td>
+              <td>{{ part?.qty }}</td>
+              <td>{{ part?.dr }}</td>
+              <td>{{ part?.si }}</td>
+              <td>{{ part?.remarks }}</td>
             </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
+            <tr v-for="n in Math.max(6 - (sr?.spareparts?.length || 0), 0)">
               <td></td>
               <td></td>
               <td></td>
@@ -311,19 +262,20 @@
               <tbody>
                 <tr>
                   <td class="w-25">Name</td>
-                  <td></td>
+                  <td>{{ sr?.customer?.name }}</td>
                 </tr>
                 <tr>
                   <td>Designation</td>
-                  <td></td>
+                  <td>{{ sr?.customer?.designation }}</td>
                 </tr>
                 <tr>
                   <td>Signature</td>
-                  <td></td>
+                  <td><v-img :src="'/' + sr?.customer?.signature" alt="Signature" max-width="80" class="rounded-lg" />
+                  </td>
                 </tr>
                 <tr>
                   <td>Remarks</td>
-                  <td></td>
+                  <td>{{ sr?.customer?.remarks }}</td>
                 </tr>
               </tbody>
             </table>
@@ -339,17 +291,17 @@
               <tbody>
                 <tr>
                   <td class="w-25">Date Out</td>
-                  <td class="w-50"></td>
-                  <td>Time In:</td>
+                  <td class="w-50">{{ inTransit }}</td>
+                  <td>Time In: {{ started }}</td>
                 </tr>
                 <tr>
                   <td>Travel Time</td>
-                  <td></td>
-                  <td>Time Out:</td>
+                  <td>{{ sr?.travel_duration }}</td>
+                  <td>Time Out: {{ ended }}</td>
                 </tr>
                 <tr>
                   <td>Name</td>
-                  <td colspan="2"></td>
+                  <td colspan="2">{{ sr?.first_name }} {{ sr?.last_name }}</td>
                 </tr>
                 <tr>
                   <td>Signature</td>
@@ -403,43 +355,66 @@
 </template>
 
 <script setup>
-import { ref, inject, watch, computed } from 'vue';
+import { ref, inject, watch, computed, toRefs } from 'vue';
 import * as pub_var from '@/global/global'
 import * as m_var from '@/global/maintenance'
 import header_logo from '@/assets/logo_header.jpg'
 import { useRoute } from 'vue-router';
+import { A_CM, A_EH, A_IS, A_PM, A_PR } from '@/global/modules';
+import { pull } from 'lodash';
 const route = useRoute()
 
-const pm_data = inject('pm_data')
-const pm_data_sched = ref(null)
 
 
-// Watch for changes to pm_data.schedule
-watch(pm_data, (newValue) => {
-  if (newValue) {
-
-    pm_data_sched.value = newValue.service_equipment.frequency
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({})
   }
-},
-  { immediate: true } // Ensures the watcher runs immediately and checks the initial value
-)
+})
+
+const { data } = toRefs(props)
+
+const sr = computed(() => data.value?.task_delegation)
 
 const pm_frequency = (frequency) => {
-  const work_type_pm = route.params.work_type
-  // const work_type_cm = route.params.work_type === 'CM'
-  if (work_type_pm === 'PM') {
-    if (frequency === pm_data_sched.value) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-  return false
+  return data.value?.equipment?.frequency === frequency && sr.value?.type === A_PM
 }
 
+const pm_checkbox = computed(() => sr.value?.type === A_PM)
+const cm_checkbox = computed(() => sr.value?.type === A_CM)
+const eh = computed(() => sr.value?.type === A_EH)
+const eh_is = computed(() => sr.value?.type === A_EH || sr.value?.type === A_IS)
+const pullout = computed(() => sr.value?.type === A_PR)
+const is = computed(() => sr.value?.type === A_IS)
 
-const pm_checkbox = computed(() => route.params.work_type === 'PM')
-const cm_checkbox = computed(() => route.params.work_type === 'CM')
+
+const started = computed(() => pub_var.formatDate(sr.value?.task_activity?.find(v => v.status === 'Started')?.acted_at))
+const inTransit = computed(() => pub_var.formatDate(sr.value?.task_activity?.find(v => v.status === 'In Transit')?.acted_at))
+const ended = computed(() => pub_var.formatDate(sr.value?.task_activity?.find(v => v.status === 'Ended')?.acted_at))
+
+
+const equipment = computed(() => {
+  if (pm_checkbox.value || cm_checkbox.value) {
+    return data.value?.equipment?.equipment
+  }else if(eh.value || pullout.value){
+    return data.value?.equipments?.map(e => e.master_data?.equipment).join(', ')
+  } 
+  else {
+    return data.value?.equipment_handling?.equipments?.map(e => e.master_data?.equipment).join(', ')
+  }
+})
+const serial = computed(() => {
+  if (pm_checkbox.value || cm_checkbox.value) {
+    return data.value?.equipment?.serial
+  }else if(eh.value || pullout.value){
+    return data.value?.equipments?.map(e => e.master_data?.serial).join(', ')
+  }
+  else {
+    return data.value?.equipment_handling?.equipments?.map(e => e.master_data?.serial).join(', ')
+
+  }
+})
 
 const dialog = ref(false)
 </script>

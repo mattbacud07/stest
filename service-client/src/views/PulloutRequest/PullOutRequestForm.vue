@@ -348,6 +348,7 @@ const cols_md =
         { field: 'master_data_id', title: 'Master Data ID', type: 'number', hide: true },
         { field: 'name', title: 'Institution' },
         { field: 'item_code', title: 'Item Code' },
+        { field: 'equipment', title: 'Equipment' },
         { field: 'serial', title: 'Serial No.' },
         { field: 'description', title: 'Item Description' },
         { field: 'status', title: 'Status' },

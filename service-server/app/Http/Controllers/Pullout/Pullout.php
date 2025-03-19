@@ -12,11 +12,13 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\ehController\WorkOrder;
 use App\Models\ApprovalConfigModel;
 use App\Models\EhServicesModel;
+use App\Models\Pullout as ModelsPullout;
 use App\Models\PulloutDecisionLog;
 use App\Models\Roles;
 use App\Models\RoleUser;
 use App\Services\ApprovalService;
 use App\Services\Pullout\PulloutService;
+use App\Services\TaskDelegationService;
 use App\Services\Validation\UserRolesValidator;
 use Carbon\Carbon;
 
@@ -26,18 +28,24 @@ class Pullout extends Controller
     public $approval_service;
     public $user_role_validator;
     protected $pullout_service;
+    protected $task_delegation;
 
-    public function __construct(ApprovalService $serviceApproval, UserRolesValidator $user_role_validator, PulloutService $pullout_service)
+    public function __construct(TaskDelegationService $task_delegation, ApprovalService $serviceApproval, UserRolesValidator $user_role_validator, PulloutService $pullout_service)
     {
+        $this->task_delegation = $task_delegation;
         $this->approval_service = $serviceApproval;
         $this->user_role_validator = $user_role_validator;
         $this->pullout_service = $pullout_service;
     }
 
+
     public function index(Request $request)
     {
         $user_id = Auth::user()->id;
+        $user_sbu = RoleUser::where(['user_id' => $user_id, 'role_id' => Roles::approverRoleID])->value('sbu');
+        $tl_assitant_sbu = RoleUser::where('user_id', $user_id)->whereIn('role_id', [Roles::TLRoleID, Roles::SBUAssistantRoleID])->value('sbu');
         $current_role = (int) $request->current_role ?? 0;
+        $user_department = Auth::user()->department;
         try {
 
             /** Search Column */
@@ -77,48 +85,88 @@ class Pullout extends Controller
             }
 
             if ($this->user_role_validator->userHasRole($current_role)) {
-                // if ($current_role === Roles::approverRoleID) {
-                //     $assigned_levels = $this->user_role_validator->getUserApprovalLevel(PM::approver_category);
-                //     if(!empty($assigned_levels)){
-                //         $query->where(function ($query) use ($assigned_levels, $user_id) {
-                //             foreach ($assigned_levels as $level) {
-                //                 if ($level == 1) {
-                //                     $query->orWhere(function ($subQuery) use ($user_id) {
-                //                         $subQuery->where('pullout.level', PM::SUPERVISOR)
-                //                             ->whereExists(function ($existQuery) use ($user_id) {
-                //                                     $existQuery->select(DB::raw(1))
-                //                                         ->from('role_user as ru')
-                //                                         ->join(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'ru.user_id', 'u.id')
-                //                                         ->where('ru.supervisor_id', $user_id)
-                //                                         ->whereColumn('u.id', 'pullout.requested_by');
-                //                             });
-                //                     });
-                //                 } //add more if neccessary
-                //                 elseif($level == 2){
-                //                     $query->orWhere(function($subQuery) use($user_id){
-                //                         //for Operations Dept
-                //                         $subQuery->whereExists(function($existQuery) use($user_id){
-                //                             $existQuery->select(DB::raw(1))
-                //                                 ->from('role_user as ru')
-                //                                 ->join(DB::connection('mysqlSecond')->getDatabaseName() .'.users as u','ru.user_id','u.id')
-                //                                 ->join('service_master_data as smd', 'smd.id', '=', 'pullout.equipment_id')
-                //                                 ->where('u.department', PM::operations_dept)
-                //                                 ->whereColumn('ru.satellite');
-                //                         });
-                //                 });
-                //                 }
-                //                 else {
-                //                     $query->orWhere('pullout.level', $level);
-                //                 }
-                //             }
-                //         });
-                //     }else $query->whereRaw('1 = 0');
-
-                // } elseif ($current_role === Roles::engineerRoleID) {
-                //     $query->where('pullout.level', 'SUBJECT_TO_CHANGE');
-                // } elseif ($current_role === Roles::requestorID) {
-                //     $query->where('pullout.requested_by', $user_id);
-                // }
+                if ($current_role === Roles::approverRoleID) {
+                    $assigned_levels = $this->user_role_validator->getUserApprovalLevel(PM::approver_category);
+                    if (!empty($assigned_levels)) {
+                        $query->where(function ($query) use ($assigned_levels, $user_id, $user_sbu, $user_department) {
+                            foreach ($assigned_levels as $level) {
+                                if ($level == 1) {
+                                    $query->orWhere(function ($subQuery) use ($user_id) {
+                                        $subQuery->where('pullout.level', PM::SUPERVISOR)->where('pullout.status', PM::pending)
+                                            ->whereExists(function ($existQuery) use ($user_id) {
+                                                $existQuery->select(DB::raw(1))
+                                                    ->from('role_user as ru')
+                                                    ->join(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u', 'ru.user_id', 'u.id')
+                                                    ->where('ru.supervisor_id', $user_id)
+                                                    ->whereColumn('u.id', 'pullout.requested_by');
+                                            });
+                                    });
+                                } //add more if neccessary
+                                elseif ($level == 2) {
+                                    $query->orWhere(function ($subQuery) use ($user_department, $user_sbu) {
+                                        $subQuery->where('pullout.level', PM::OPERATION_SERVICE)
+                                            ->where('pullout.status', PM::pending)
+                                            ->whereExists(function ($existQuery) use ($user_department, $user_sbu) {
+                                                $existQuery->select(DB::raw(1))
+                                                    ->from(DB::connection('mysqlSecond')->getDatabaseName() . '.users as u')
+                                                    ->join('equipment_peripherals as ep', 'ep.service_id', '=', 'pullout.id')
+                                                    ->join('service_master_data as md', 'md.id', '=', 'ep.service_master_data_id')
+                                                    // ->where('md.sbu', '=', $user_sbu)
+                                                    ->where('ep.request_type', 'pullout')
+                                                    ->whereColumn('ep.service_id', 'pullout.id')
+                                                    ->when(
+                                                        $user_department === PM::service_dept,
+                                                        function ($serviceQuery) use ($user_sbu) {
+                                                            $serviceQuery->where('u.department', EhServicesModel::service_department)
+                                                                ->where(function ($q) use ($user_sbu) {
+                                                                    $q->where('md.sbu', $user_sbu); // Match the sbu from the master_data table
+                                                                });
+                                                        }
+                                                    )->orWhereExists(function ($query_manager) {
+                                                        $query_manager->select(DB::raw(1))
+                                                            ->from('role_user')
+                                                            ->where('user_id', Auth::user()->id)
+                                                            ->where('role_id', Roles::NationalManagerID);
+                                                    });
+                                            });
+                                    });
+                                } else {
+                                    $query->orWhere('pullout.level', $level)
+                                        ->where('pullout.status', PM::pending);
+                                }
+                            }
+                        });
+                    } else $query->whereRaw('1 = 0');
+                } elseif ($current_role == Roles::TLRoleID || $current_role == Roles::SBUAssistantRoleID) {
+                    $query->whereIn('pullout.status', [
+                        PM::uninstalling,
+                        PM::completed,
+                    ]);
+                    $query->where(function ($q) use ($tl_assitant_sbu) {
+                        $q->whereExists(function ($existQuery) use ($tl_assitant_sbu) {
+                            $existQuery->select(DB::raw(1))
+                                ->from('equipment_peripherals as ep')
+                                ->join('service_master_data as md', 'md.id', '=', 'ep.service_master_data_id')
+                                ->where('md.sbu', '=', $tl_assitant_sbu)
+                                ->whereColumn('ep.service_id', '=', 'pullout.id');
+                        });
+                    });
+                } elseif ($current_role === Roles::engineerRoleID) {
+                    $query->where('pullout.status', PM::uninstalling);
+                    $query->where(
+                        fn($q) =>
+                        $q->whereExists(
+                            fn($existQuery) =>
+                            $existQuery->select(DB::raw(1))
+                                ->from('engineer_task_delegation as etd')
+                                ->where('etd.assigned_to', '=', $user_id)
+                                ->where('etd.active', '=', 1)
+                                ->whereColumn('etd.service_id', '=', 'pullout.id')
+                        )
+                    );
+                } elseif ($current_role === Roles::requestorID) {
+                    $query->where('pullout.requested_by', $user_id);
+                }
                 $pullout_data = $query->orderBy($sortColumn, $sortDirection)->paginate(
                     $pageSize,
                     ['*'],
@@ -145,15 +193,54 @@ class Pullout extends Controller
     {
         try {
             $request_id = $request->id;
-            $data = PM::with('equipments')
-            ->with(['equipments.general_master_data'])
-            ->with(['equipments.master_data'])
-            ->with(['pullout_decision_outbound' => function ($q) {
-                $q->latest();
-            }])
+            $module_type = $request->module_type ?? null;
+            $data = PM::with(['equipments'])
+                ->with(['equipments.general_master_data'])
+                ->with(['equipments.master_data'])
+                ->with(['pullout_decision_outbound' => function ($q) {
+                    $q->latest();
+                }])
                 ->with(['pullout_decision_service' => function ($q) {
                     $q->latest();
                 }])
+                ->with(['task_delegation' => function ($q) use ($module_type) {
+                    $q->with([
+                        'task_activity' => function ($q) use ($module_type) {
+                            $q->where('type', $module_type);
+                        },
+                        'actions_taken' => function ($q) use ($module_type) {
+                            $q->where('work_type', $module_type);
+                        },
+                        'spareparts' => function ($q) use ($module_type) {
+                            $q->where('type', $module_type)
+                                ->with(['equipment']);
+                        }
+                    ]);
+                }])
+
+                ->with(['latest_task_delegation:id,service_id,status'])  // Get all task delegations
+
+                ->with(['task_delegation_all' => function ($q) use ($module_type) {
+                    $q->select(
+                        'engineer_task_delegation.*',
+                        DB::raw("CONCAT(assigned_to.first_name,' ',assigned_to.last_name) as assigned_to"),
+                    )->leftjoin(DB::connection('mysqlSecond')->getDatabaseName() . '.users as assigned_to', 'engineer_task_delegation.assigned_to', '=', 'assigned_to.id');
+                    $q->with([
+                        'items_acquired' => function ($q) use ($module_type) {
+                            $q->where('work_type', $module_type);
+                        },
+                        'task_activity' => function ($q) use ($module_type) {
+                            $q->where('type', $module_type);
+                        },
+                        'actions_taken' => function ($q) use ($module_type) {
+                            $q->where('work_type', $module_type);
+                        },
+                        'spareparts' => function ($q) use ($module_type) {
+                            $q->where('type', $module_type);
+                        }
+                    ]);
+                }])  // Get all task delegations
+
                 ->where('pullout.id', $request_id)
                 ->select(
                     'pullout.*',
@@ -169,7 +256,7 @@ class Pullout extends Controller
                 $requestor_id = $data->requestor_id;
                 $get_supervisor = RoleUser::where('user_id', $requestor_id)->where('role_id', Roles::requestorID)->value('supervisor_id');
                 $has_schedule = PulloutDecisionLog::where('service_id', $data->id)->exists();
-                $data->has_schedule = $has_schedule; 
+                $data->has_schedule = $has_schedule;
                 $data->pending_decisions = $data->counts_pending_decision();
                 $data->supervisor = $get_supervisor;
             }
@@ -244,6 +331,7 @@ class Pullout extends Controller
         $service_id = $request->service_id ?? null;
         $remark = $request->remark;
         $request_level = $request->level;
+        $request_status = $request->status;
         $date_now = Carbon::now();
         $match = false;
         $underOperationService = false;
@@ -258,6 +346,7 @@ class Pullout extends Controller
 
 
             $level = PM::where('id', $service_id)->value('level');
+            $status = PM::where('id', $service_id)->value('status');
 
             // Add checks to ensure the values were found
             if (is_null($user_approver_level) || is_null($level)) {
@@ -265,20 +354,22 @@ class Pullout extends Controller
             }
 
             // Check if the level is match to proceed the approval
-            if ($level != $request_level) {
-                return response()->json(['errorLog' => 'Approval level does not match']);
+            if ($level != $request_level || $status != $request_status) {
+                return response()->json(['errorLog' => 'Approval level or Status does not match']);
             }
 
-            if ($level == PM::OPERATION_SERVICE) {
+            if ($level == PM::OPERATION_SERVICE && $status == PM::pending) {
                 $type = null;
-                if ($user_department == EhServicesModel::operation_department) {
-                    $type = 'outbound';
-                }
                 if ($user_department == EhServicesModel::service_department) {
                     $type = 'service';
-                }
+                } else $type = 'outbound';
+                // if ($user_department == EhServicesModel::service_department) {
+                //     $type = 'service';
+                // }
                 PulloutDecisionLog::create([
                     'assigned_by' => $user_id,
+                    'engineer' => $request->engineer['value'] ?? null,
+                    'driver' => $request->driver ?? null,
                     'service_id' => $service_id,
                     'scheduled_date' => $request->scheduled_date,
                     'preferred_schedule' => $request->preferred_schedule,
@@ -306,17 +397,31 @@ class Pullout extends Controller
                     && $latest_service->scheduled_date === $latest_outbound->scheduled_date
                 ) {
                     PM::where('id', $service_id)->first()?->update([
-                            'final_schedule' => $latest_service->scheduled_date,
-                            'status' => self::UNINSTALLING
-                        ]);
+                        'final_schedule' => $latest_service->scheduled_date,
+                        'level' => PM::uninstalling,
+                        'status' => PM::uninstalling
+                    ]);
+
+                    $create_delegation = $this->task_delegation->task_delegation_log(
+                        $service_id,
+                        $request->engineer['value'] ?? null,
+                        $user_id,
+                        self::DELEGATED,
+                        self::PULLOUT
+                    );
+                    if(!$create_delegation){
+                        throw new Exception('Error inserting task log');
+                    }
+
+
 
                     PulloutDecisionLog::where('service_id', $service_id)
                         ->where('status', 'Pending')
                         ->update(['status' => 'Agreed']);
-                        
+
                     $match = true;
                 }
-                
+
                 $underOperationService = true;
             } else {
                 $nextApproval = $this->pullout_service->pulloutNextApprovalLevel($level);
@@ -356,6 +461,53 @@ class Pullout extends Controller
             return response()->json([
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+
+
+
+    public function disapproved(Request $request)
+    {
+        $service_id = $request->service_id;
+        $remark = $request->remark;
+        $level = PM::where('id', $service_id)->value('level');
+
+
+        try {
+            DB::beginTransaction();
+
+            $q = PM::find($service_id);
+            $update_main_status = $q->update([
+                'status' => PM::disapproved,
+            ]);
+            if (!$update_main_status) {
+                throw new Exception('Error. Something went wrong in updating.');
+            }
+
+            $logApproval = $this->approval_service->updateLogApproval(
+                $service_id,
+                $level,
+                self::PENDING, //status of approval_log
+                self::PULLOUT,
+                self::DISAPPROVED, // status to update or new status
+                $remark,
+                Carbon::now()
+            );
+            if (!$logApproval) {
+                throw new Exception('Failed to log approval details');
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

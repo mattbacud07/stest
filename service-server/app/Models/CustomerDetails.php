@@ -18,6 +18,7 @@ class CustomerDetails extends Model
         'name',
         'designation',
         'signature',
-        'remarks'
+        'remarks',
+        'type'
     ];
 }

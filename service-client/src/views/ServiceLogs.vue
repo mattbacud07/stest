@@ -3,11 +3,11 @@
     <BaseLayout>
         <v-card class="pa-5">
             <v-row class="mb-3">
-                <v-col cols="12" md="6" sm="6">
+                <v-col cols="12" md="4" sm="4">
                     <v-text-field v-model="params.search" label="Search" density="compact" single-line
                         variant="outlined" clearable></v-text-field>
                 </v-col>
-                <v-col cols="12" md="6" sm="6">
+                <v-col cols="12" md="8" sm="8">
                     <v-btn dense variant="plain" @click="refresh"><v-icon>mdi-refresh</v-icon>
                         <v-tooltip activator="parent" location="bottom">Refresh Table</v-tooltip>
                     </v-btn>
@@ -100,7 +100,7 @@ const cols =
         { field: 'id', title: 'ID', isUnique: true, type: 'number', hide: false },
         { field: 'model', title: 'Model', hide: false },
         { field: 'model_name', title: 'Module Name', hide: false },
-        { field: 'model_id', title: 'Model ID', hide: false },
+        { field: 'model_id', title: 'Records ID', hide: false },
         { field: 'action', title: 'Action', hide: false },
         { field: 'changes', title: 'Changes', hide: false },
         { field: 'original', title: 'Original', hide: false },
